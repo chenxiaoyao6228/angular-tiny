@@ -5,9 +5,10 @@ module.exports = {
   },
   "plugins": [
     "babel",
-    "prettier"
+    "prettier",
+    "jest"
   ],
-  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "extends": ["eslint:recommended", "plugin:prettier/recommended", "plugin:jest/recommended"],
   "env": {
     "es6": true,
     "browser": true,
