@@ -27,5 +27,29 @@ describe('Scope', () => {
       scope.$digest()
       expect(watchFn).toHaveBeenCalledWith(scope)
     })
+    test('call the listener function when the watched value changed', () => {
+      scope.someValue = 'a'
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.someValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      expect(scope.counter).toEqual(0)
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.someValue = 'b'
+      expect(scope.counter).toEqual(1)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
   })
 })

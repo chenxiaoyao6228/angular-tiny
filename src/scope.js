@@ -6,15 +6,19 @@ export default class Scope {
   $watch(watchFn, listenerFn) {
     let watcher = {
       watchFn,
-      listenerFn
+      listenerFn,
+      oldValue: null
     }
     this.$$watchers.push(watcher)
   }
   $digest() {
     this.$$watchers.forEach(watcher => {
       let watchFn = watcher.watchFn
-      if (watchFn(this)) {
-        watcher.listenerFn()
+      let newValue = watchFn(this)
+      let oldValue = watcher.oldValue
+      if (newValue !== oldValue) {
+        watcher.oldValue = newValue
+        watcher.listenerFn(oldValue, newValue, this)
       }
     })
   }
