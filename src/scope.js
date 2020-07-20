@@ -12,7 +12,10 @@ export default class Scope {
   }
   $digest() {
     this.$$watchers.forEach(watcher => {
-      watcher.listenerFn()
+      let watchFn = watcher.watchFn
+      if (watchFn(this)) {
+        watcher.listenerFn()
+      }
     })
   }
 }
