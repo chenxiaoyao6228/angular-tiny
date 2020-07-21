@@ -7,12 +7,19 @@ export default class Scope {
   $watch(watchFn, listenerFn) {
     let watcher = {
       watchFn,
-      listenerFn,
+      listenerFn: listenerFn || function() {},
       oldValue: this.$$initWatch
     }
     this.$$watchers.push(watcher)
   }
   $digest() {
+    let dirty
+    do {
+      dirty = this.$$digestOnce()
+    } while (dirty)
+  }
+  $$digestOnce() {
+    let newValue, oldValue, dirty
     this.$$watchers.forEach(watcher => {
       let watchFn = watcher.watchFn
       let newValue = watchFn(this)
@@ -24,7 +31,9 @@ export default class Scope {
           oldValue === this.$$initWatch ? newValue : oldValue,
           this
         )
+        dirty = true
       }
     })
+    return dirty
   }
 }
