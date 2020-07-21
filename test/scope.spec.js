@@ -114,5 +114,29 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.initial).toBe('B.')
     })
+    test('gives up on the watches after 10 iterations', () => {
+      scope.Acount = 0
+      scope.Bcount = 0
+
+      scope.$watch(
+        function() {
+          return scope.Acount
+        },
+        function() {
+          scope.Bcount++
+        }
+      )
+      scope.$watch(
+        function() {
+          return scope.Bcount
+        },
+        function() {
+          scope.Acount++
+        }
+      )
+      expect(function() {
+        scope.$digest()
+      }).toThrow()
+    })
   })
 })

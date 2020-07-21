@@ -13,10 +13,14 @@ export default class Scope {
     this.$$watchers.push(watcher)
   }
   $digest() {
-    let dirty
+    let dirty,
+      dirtyCountLimit = 10
     do {
       dirty = this.$$digestOnce()
-    } while (dirty)
+      dirtyCountLimit--
+      if (dirtyCountLimit === 0 && dirty)
+        throw new Error('10 digest limit reach!')
+    } while (dirty && dirtyCountLimit > 0)
   }
   $$digestOnce() {
     let newValue, oldValue, dirty
