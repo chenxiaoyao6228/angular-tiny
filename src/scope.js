@@ -7,7 +7,7 @@ export default class Scope {
     let watcher = {
       watchFn,
       listenerFn,
-      oldValue: null
+      oldValue: () => {}
     }
     this.$$watchers.push(watcher)
   }

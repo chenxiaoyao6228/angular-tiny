@@ -51,5 +51,19 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toEqual(2)
     })
+    test('calls listener when watch value is first undefined', () => {
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.someValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+    })
   })
 })
