@@ -65,5 +65,26 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toEqual(1)
     })
+    test('calls listener with new value as old value the first time', () => {
+      scope.someValue = 123
+      let oldValueGiven
+      scope.$watch(
+        function(scope) {
+          return scope.someValue
+        },
+        function(newValue, oldValue, scope) {
+          oldValueGiven = oldValue
+        }
+      )
+      scope.$digest()
+      expect(scope.someValue).toEqual(123)
+    })
+    test('may have watchers that moit the listener function', () => {
+      let watchFn = jest.fn().mockReturnValue('something')
+      scope.$watch(watchFn, () => {})
+
+      scope.$digest()
+      expect(watchFn).toHaveBeenCalled()
+    })
   })
 })

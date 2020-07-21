@@ -2,12 +2,13 @@ export default class Scope {
   constructor() {
     this.aProperty = 1
     this.$$watchers = []
+    this.$$initWatch = () => {}
   }
   $watch(watchFn, listenerFn) {
     let watcher = {
       watchFn,
       listenerFn,
-      oldValue: () => {}
+      oldValue: this.$$initWatch
     }
     this.$$watchers.push(watcher)
   }
@@ -18,7 +19,11 @@ export default class Scope {
       let oldValue = watcher.oldValue
       if (newValue !== oldValue) {
         watcher.oldValue = newValue
-        watcher.listenerFn(oldValue, newValue, this)
+        watcher.listenerFn(
+          newValue,
+          oldValue === this.$$initWatch ? newValue : oldValue,
+          this
+        )
       }
     })
   }

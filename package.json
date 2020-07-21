@@ -8,6 +8,7 @@
     "commit": "git-cz",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint --fix . && echo 'Lint complete.'"
   },
   "keywords": [
