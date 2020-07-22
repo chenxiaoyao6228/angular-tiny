@@ -3,6 +3,7 @@ export default class Scope {
     this.aProperty = 1
     this.$$watchers = []
     this.$$initWatch = () => {}
+    this.$$lastDirtyWatch = null
   }
   $watch(watchFn, listenerFn) {
     let watcher = {
@@ -15,20 +16,26 @@ export default class Scope {
   $digest() {
     let dirty,
       dirtyCountLimit = 10
-    do {
+    this.$$lastDirtyWatch = null
+    dirty = this.$$digestOnce()
+    dirtyCountLimit--
+    while (dirty && dirtyCountLimit > 0) {
       dirty = this.$$digestOnce()
       dirtyCountLimit--
       if (dirtyCountLimit === 0 && dirty)
         throw new Error('10 digest limit reach!')
-    } while (dirty && dirtyCountLimit > 0)
+    }
   }
   $$digestOnce() {
-    let newValue, oldValue, dirty
-    this.$$watchers.forEach(watcher => {
+    let newValue,
+      oldValue,
+      dirty = false
+    this.$$watchers.some(watcher => {
       let watchFn = watcher.watchFn
       let newValue = watchFn(this)
       let oldValue = watcher.oldValue
       if (newValue !== oldValue) {
+        this.$$lastDirtyWatch = watcher
         watcher.oldValue = newValue
         watcher.listenerFn(
           newValue,
@@ -36,6 +43,10 @@ export default class Scope {
           this
         )
         dirty = true
+      } else if (this.$$lastDirtyWatch === watcher) {
+        dirty = false
+        // some在return true的时候终止, every在return false的时候终止
+        return true
       }
     })
     return dirty

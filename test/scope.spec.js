@@ -1,4 +1,5 @@
 import Scope from '../src/scope.js'
+import tools from '../src/utils/tool.js'
 
 describe('Scope', () => {
   test('can be constructed and used as an Object', () => {
@@ -31,9 +32,7 @@ describe('Scope', () => {
       scope.someValue = 'a'
       scope.counter = 0
       scope.$watch(
-        function(scope) {
-          return scope.someValue
-        },
+        scope => scope.someValue,
         function(newValue, oldValue, scope) {
           scope.counter++
         }
@@ -54,10 +53,8 @@ describe('Scope', () => {
     test('calls listener when watch value is first undefined', () => {
       scope.counter = 0
       scope.$watch(
-        function(scope) {
-          return scope.someValue
-        },
-        function(newValue, oldValue, scope) {
+        scope => scope.someValue,
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -69,9 +66,7 @@ describe('Scope', () => {
       scope.someValue = 123
       let oldValueGiven
       scope.$watch(
-        function(scope) {
-          return scope.someValue
-        },
+        scope => scope.someValue,
         function(newValue, oldValue, scope) {
           oldValueGiven = oldValue
         }
@@ -89,9 +84,7 @@ describe('Scope', () => {
     test('trigger chained watchers in the same digest ', () => {
       scope.name = 'Jane'
       scope.$watch(
-        function(scope) {
-          return scope.nameUpper
-        },
+        scope => scope.nameUpper,
         function(newValue, oldValue, scope) {
           if (newValue) {
             scope.initial = newValue.substring(0, 1) + '.'
@@ -99,9 +92,7 @@ describe('Scope', () => {
         }
       )
       scope.$watch(
-        function(scope) {
-          return scope.name
-        },
+        scope => scope.name,
         function(newValue, oldValue, scope) {
           if (newValue) {
             scope.nameUpper = newValue.toUpperCase()
@@ -115,28 +106,42 @@ describe('Scope', () => {
       expect(scope.initial).toBe('B.')
     })
     test('gives up on the watches after 10 iterations', () => {
-      scope.Acount = 0
-      scope.Bcount = 0
+      scope.countA = 0
+      scope.CountB = 0
 
       scope.$watch(
+        () => scope.countA,
         function() {
-          return scope.Acount
-        },
-        function() {
-          scope.Bcount++
+          scope.CountB++
         }
       )
       scope.$watch(
+        () => scope.CountB,
         function() {
-          return scope.Bcount
-        },
-        function() {
-          scope.Acount++
+          scope.countA++
         }
       )
       expect(function() {
         scope.$digest()
       }).toThrow()
+    })
+    test('it ends digest when the last dirty watch is clean in the next round', () => {
+      scope.array = [...Array(2).keys()]
+      let watchExecutions = 0
+      tools.times(2, function(i) {
+        scope.$watch(
+          function(scope) {
+            watchExecutions++
+            return scope.array[i]
+          },
+          function(newValue, oldValue, scope) {}
+        )
+      })
+      scope.$digest()
+      expect(watchExecutions).toEqual(4)
+      scope.array[0] = 420
+      scope.$digest()
+      expect(watchExecutions).toEqual(7)
     })
   })
 })
