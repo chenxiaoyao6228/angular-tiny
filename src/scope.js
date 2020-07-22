@@ -12,6 +12,7 @@ export default class Scope {
       oldValue: this.$$initWatch
     }
     this.$$watchers.push(watcher)
+    this.$$lastDirtyWatch = null
   }
   $digest() {
     let dirty,

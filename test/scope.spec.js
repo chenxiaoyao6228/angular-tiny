@@ -143,5 +143,22 @@ describe('Scope', () => {
       scope.$digest()
       expect(watchExecutions).toEqual(7)
     })
+    test('does not end digest so that new watches are not run', () => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+      scope.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.$watch(
+            scope => scope.aValue,
+            function(newValue, oldValue, scope) {
+              scope.counter++
+            }
+          )
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+    })
   })
 })
