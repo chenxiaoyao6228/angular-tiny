@@ -8,6 +8,7 @@ export default class Scope {
     this.$$lastDirtyWatch = null
     this.$$asyncQueue = []
     this.$$phase = null
+    this.$$applyAsyncQueue = []
   }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
@@ -89,6 +90,18 @@ export default class Scope {
       this.$clearPhase()
       this.$digest()
     }
+  }
+  $applyAsync(expr) {
+    this.$$applyAsyncQueue.push(() => {
+      this.$eval(expr)
+    })
+    setTimeout(() => {
+      this.$apply(() => {
+        while (this.$$applyAsyncQueue.length) {
+          this.$$applyAsyncQueue.shift()()
+        }
+      })
+    }, 0)
   }
   $beginPhase(phase) {
     if (this.$$phase) {

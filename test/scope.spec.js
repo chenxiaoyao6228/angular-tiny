@@ -337,5 +337,55 @@ describe('Scope', () => {
         callback()
       }, 50)
     })
+
+    test('allows async $apply with $applyAsync', function(done) {
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+      scope.$applyAsync(function(scope) {
+        scope.aValue = 'abc'
+      })
+      expect(scope.counter).toBe(1)
+      function callback() {
+        try {
+          expect(scope.counter).toBe(2)
+          done()
+        } catch (e) {
+          done(e)
+        }
+      }
+      setTimeout(() => {
+        callback()
+      }, 50)
+    })
+
+    test("never executes $applyAsync'ed function in the same cycle", function(done) {
+      scope.aValue = [1, 2, 3]
+      scope.asyncApplied = false
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.$applyAsync(function(scope) {
+            scope.asyncApplied = true
+          })
+        }
+      )
+      scope.$digest()
+      expect(scope.asyncApplied).toBe(false)
+      setTimeout(function() {
+        expect(scope.asyncApplied).toBe(true)
+        done()
+      }, 50)
+    })
   })
 })
