@@ -7,6 +7,7 @@ export default class Scope {
     this.$$initWatch = () => {}
     this.$$lastDirtyWatch = null
     this.$$asyncQueue = []
+    this.$$phase = null
   }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
@@ -22,6 +23,7 @@ export default class Scope {
     let dirty,
       dirtyCountLimit = 10
     this.$$lastDirtyWatch = null
+    this.$beginPhase('$digest')
     do {
       while (this.$$asyncQueue.length > 0) {
         let exprObj = this.$$asyncQueue.shift()
@@ -29,9 +31,11 @@ export default class Scope {
       }
       dirty = this.$$digestOnce()
       if ((dirty || this.$$asyncQueue.length) && !dirtyCountLimit--) {
+        this.$clearPhase()
         throw new Error('10 digest limit reach!')
       }
     } while (dirty || this.$$asyncQueue.length)
+    this.$clearPhase()
   }
   $$digestOnce() {
     let newValue,
@@ -71,10 +75,21 @@ export default class Scope {
   }
   $apply(expression) {
     try {
+      this.$beginPhase('$apply')
       expression.apply(null, [this])
     } finally {
+      this.$clearPhase()
       this.$digest()
     }
+  }
+  $beginPhase(phase) {
+    if (this.$$phase) {
+      throw this.$$phase + ' already in progress.'
+    }
+    this.$$phase = phase
+  }
+  $clearPhase() {
+    this.$$phase = null
   }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {
