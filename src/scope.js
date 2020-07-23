@@ -57,6 +57,10 @@ export default class Scope {
     })
     return dirty
   }
+  $eval(executor, locals) {
+    let self = this
+    return executor.apply(null, [self, locals])
+  }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {
       return utils.deepEqual(newValue, oldValue)

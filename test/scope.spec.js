@@ -193,5 +193,18 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toBe(1)
     })
+    // $eval
+    test('execute $eval and return value from the scope', () => {
+      scope.value = 42
+      let result = scope.$eval(scope => scope.value)
+      expect(result).toEqual(42)
+    })
+    test('passes the second $eval argument straight through', function() {
+      scope.aValue = 42
+      let result = scope.$eval(function(scope, arg) {
+        return scope.aValue + arg
+      }, 2)
+      expect(result).toBe(44)
+    })
   })
 })
