@@ -68,6 +68,14 @@ export default class Scope {
     return expression.apply(null, [this, locals])
   }
   $evalAsync(expression) {
+    if (!this.$$phase && !this.$$asyncQueue.length) {
+      setTimeout(() => {
+        if (this.$$asyncQueue.length) {
+          this.$digest()
+        }
+      }, 0)
+    }
+
     this.$$asyncQueue.push({
       scope: this,
       expression: expression
