@@ -1,3 +1,5 @@
+import utils from './utils/tool.js'
+
 export default class Scope {
   constructor() {
     this.aProperty = 1
@@ -5,10 +7,11 @@ export default class Scope {
     this.$$initWatch = () => {}
     this.$$lastDirtyWatch = null
   }
-  $watch(watchFn, listenerFn) {
+  $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
       watchFn,
       listenerFn: listenerFn || function() {},
+      valueEq: !!valueEq,
       oldValue: this.$$initWatch
     }
     this.$$watchers.push(watcher)
@@ -35,9 +38,11 @@ export default class Scope {
       let watchFn = watcher.watchFn
       let newValue = watchFn(this)
       let oldValue = watcher.oldValue
-      if (newValue !== oldValue) {
+      if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
         this.$$lastDirtyWatch = watcher
-        watcher.oldValue = newValue
+        watcher.oldValue = watcher.valueEq
+          ? utils.deepClone(newValue)
+          : newValue
         watcher.listenerFn(
           newValue,
           oldValue === this.$$initWatch ? newValue : oldValue,
@@ -51,5 +56,18 @@ export default class Scope {
       }
     })
     return dirty
+  }
+  $$areEqual(newValue, oldValue, valueEqual) {
+    if (valueEqual) {
+      return utils.deepEqual(newValue, oldValue)
+    } else {
+      return (
+        newValue === oldValue ||
+        (typeof newValue === 'number' &&
+          typeof oldValue === 'number' &&
+          isNaN(newValue) &&
+          isNaN(oldValue))
+      )
+    }
   }
 }

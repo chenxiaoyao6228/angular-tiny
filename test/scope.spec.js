@@ -160,5 +160,38 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toEqual(1)
     })
+    test('compares based on value if enabled', () => {
+      scope.aValue = [1, 2, 3]
+      scope.counter = 0
+      scope.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        },
+        true
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+      scope.aValue.push(4)
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+    test('correctly handles NaNs', () => {
+      scope.number = 0 / 0 // NaN scope.counter = 0;
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.number
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+    })
   })
 })
