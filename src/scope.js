@@ -9,6 +9,7 @@ export default class Scope {
     this.$$asyncQueue = []
     this.$$phase = null
     this.$$applyAsyncQueue = []
+    this.$$applyAsyncId = null
   }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
@@ -95,13 +96,16 @@ export default class Scope {
     this.$$applyAsyncQueue.push(() => {
       this.$eval(expr)
     })
-    setTimeout(() => {
-      this.$apply(() => {
-        while (this.$$applyAsyncQueue.length) {
-          this.$$applyAsyncQueue.shift()()
-        }
-      })
-    }, 0)
+    if (this.$$applyAsyncId === null) {
+      this.$$applyAsyncId = setTimeout(() => {
+        this.$apply(() => {
+          while (this.$$applyAsyncQueue.length) {
+            this.$$applyAsyncQueue.shift()()
+          }
+          this.$$applyAsyncId = null
+        })
+      }, 0)
+    }
   }
   $beginPhase(phase) {
     if (this.$$phase) {

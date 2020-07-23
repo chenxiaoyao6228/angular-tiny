@@ -325,16 +325,9 @@ describe('Scope', () => {
       )
       scope.$evalAsync(function(scope) {})
       expect(scope.counter).toBe(0)
-      function callback() {
-        try {
-          expect(scope.counter).toBe(1)
-          done()
-        } catch (e) {
-          done(e)
-        }
-      }
       setTimeout(() => {
-        callback()
+        expect(scope.counter).toBe(1)
+        done()
       }, 50)
     })
 
@@ -354,16 +347,9 @@ describe('Scope', () => {
         scope.aValue = 'abc'
       })
       expect(scope.counter).toBe(1)
-      function callback() {
-        try {
-          expect(scope.counter).toBe(2)
-          done()
-        } catch (e) {
-          done(e)
-        }
-      }
       setTimeout(() => {
-        callback()
+        expect(scope.counter).toBe(2)
+        done()
       }, 50)
     })
 
@@ -384,6 +370,27 @@ describe('Scope', () => {
       expect(scope.asyncApplied).toBe(false)
       setTimeout(function() {
         expect(scope.asyncApplied).toBe(true)
+        done()
+      }, 50)
+    })
+
+    test('coalesces many calls to $applyAsync', function(done) {
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          scope.counter++
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {}
+      )
+      scope.$applyAsync(scope => {
+        scope.aValue = 'abc'
+      })
+      scope.$applyAsync(function(scope) {
+        scope.aValue = 'def'
+      })
+      setTimeout(function() {
+        expect(scope.counter).toBe(2)
         done()
       }, 50)
     })
