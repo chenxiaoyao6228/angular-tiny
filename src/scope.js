@@ -32,11 +32,21 @@ export default class Scope {
     let newValues = new Array(watchFns.length)
     let oldValues = new Array(watchFns.length)
 
+    let changeReactionScheduled = false
+
+    const watchGroupListener = () => {
+      listenerFn(newValues, oldValues, this)
+      changeReactionScheduled = false
+    }
+
     watchFns.forEach((watchFn, i) => {
       this.$watch(watchFn, (newValue, oldValue) => {
         newValues[i] = newValue
         oldValues[i] = oldValue
-        listenerFn(newValues, oldValues, this)
+        if (!changeReactionScheduled) {
+          changeReactionScheduled = true
+          this.$evalAsync(watchGroupListener)
+        }
       })
     })
   }
