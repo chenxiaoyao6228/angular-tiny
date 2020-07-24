@@ -628,4 +628,31 @@ describe('Scope', () => {
       expect(scope.counter).toEqual(0)
     })
   })
+
+  describe('$watchGroup', () => {
+    let scope
+    beforeEach(() => {
+      scope = new Scope()
+    })
+
+    test('takes watches as an array and calls listener with arrays', () => {
+      let gotNewValues, gotOldValues
+
+      scope.aValue = 1
+      scope.anotherValue = 2
+
+      scope.$watchGroup(
+        [scope => scope.aValue, scope => scope.anotherValue],
+        (newValues, oldValues, scope) => {
+          gotNewValues = newValues
+          gotOldValues = oldValues
+        }
+      )
+
+      scope.$digest()
+
+      expect(gotNewValues).toEqual([1, 2])
+      expect(gotOldValues).toEqual([1, 2])
+    })
+  })
 })

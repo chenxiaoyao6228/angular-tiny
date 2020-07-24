@@ -28,6 +28,18 @@ export default class Scope {
       }
     }
   }
+  $watchGroup(watchFns, listenerFn) {
+    let newValues = new Array(watchFns.length)
+    let oldValues = new Array(watchFns.length)
+
+    watchFns.forEach((watchFn, i) => {
+      this.$watch(watchFn, (newValue, oldValue) => {
+        newValues[i] = newValue
+        oldValues[i] = oldValue
+        listenerFn(newValues, oldValues, this)
+      })
+    })
+  }
   $digest() {
     let dirty,
       dirtyCountLimit = 10
