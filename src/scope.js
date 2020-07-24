@@ -1,5 +1,4 @@
 import utils from './utils/tool.js'
-
 export default class Scope {
   constructor() {
     this.aProperty = 1
@@ -25,6 +24,7 @@ export default class Scope {
       let index = this.$$watchers.indexOf(watcher)
       if (index >= 0) {
         this.$$watchers.splice(index, 1)
+        this.$$lastDirtyWatch = null
       }
     }
   }
@@ -68,10 +68,8 @@ export default class Scope {
     let newValue,
       oldValue,
       dirty = false
-    this.$$watchers
-      .slice()
-      .reverse()
-      .some(watcher => {
+    utils.forEachRight(this.$$watchers, watcher => {
+      if (watcher) {
         try {
           let watchFn = watcher.watchFn
           let newValue = watchFn(this)
@@ -89,13 +87,13 @@ export default class Scope {
             dirty = true
           } else if (this.$$lastDirtyWatch === watcher) {
             dirty = false
-            // some在return true的时候终止, every在return false的时候终止
-            return true
+            return false
           }
         } catch (e) {
           console.error(e)
         }
-      })
+      }
+    })
     return dirty
   }
   $$postDigest(fn) {

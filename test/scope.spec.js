@@ -565,7 +565,7 @@ describe('Scope', () => {
       expect(scope.counter).toEqual(2)
     })
 
-    it('allows destroying a $watch during digest', function() {
+    test('allows destroying a $watch during digest', function() {
       scope.aValue = 'abc'
       let watchCalls = []
       scope.$watch(function(scope) {
@@ -582,6 +582,50 @@ describe('Scope', () => {
       })
       scope.$digest()
       expect(watchCalls).toEqual(['first', 'second', 'third', 'first', 'third'])
+    })
+    test('allows a $watch to destroy another during digest', () => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+      scope.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          destroyWatch()
+        }
+      )
+      let destroyWatch = scope.$watch(
+        scope => {},
+        (newValue, oldValue, scope) => {}
+      )
+      scope.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+    })
+    test('allows destroying several $watches during disgest', () => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+
+      let destroyWatch1 = scope.$watch(function(scope) {
+        destroyWatch1()
+        destroyWatch2()
+      })
+
+      let destroyWatch2 = scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+
+      expect(scope.counter).toEqual(0)
     })
   })
 })

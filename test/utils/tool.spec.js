@@ -70,3 +70,24 @@ describe('deepClone function for nested Object', () => {
     expect(copy).toEqual(valueA)
   })
 })
+
+describe('forEachRight', () => {
+  let forEachRight = utils.forEachRight
+  let arr = [1, 2, 3, 4]
+  test('should iterate array from right to left', () => {
+    let res = ''
+    forEachRight(arr, item => {
+      res += item
+    })
+    expect(res).toEqual('4321')
+  })
+
+  test('should break if callback return false', () => {
+    let res = ''
+    forEachRight(arr, item => {
+      res += item
+      if (item === 2) return false
+    })
+    expect(res).toEqual('432')
+  })
+})
