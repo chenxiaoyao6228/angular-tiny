@@ -26,6 +26,12 @@ export default class Scope {
       dirtyCountLimit = 10
     this.$$lastDirtyWatch = null
     this.$beginPhase('$digest')
+
+    if (this.$$applyAsyncId) {
+      clearTimeout(this.$$applyAsyncId)
+      this.$$flushApplyAsync()
+    }
+
     do {
       while (this.$$asyncQueue.length > 0) {
         let exprObj = this.$$asyncQueue.shift()
@@ -92,18 +98,20 @@ export default class Scope {
       this.$digest()
     }
   }
+  $$flushApplyAsync() {
+    while (this.$$applyAsyncQueue.length) {
+      this.$$applyAsyncQueue.shift()()
+    }
+    this.$$applyAsyncId = null
+  }
+
   $applyAsync(expr) {
     this.$$applyAsyncQueue.push(() => {
       this.$eval(expr)
     })
     if (this.$$applyAsyncId === null) {
       this.$$applyAsyncId = setTimeout(() => {
-        this.$apply(() => {
-          while (this.$$applyAsyncQueue.length) {
-            this.$$applyAsyncQueue.shift()()
-          }
-          this.$$applyAsyncId = null
-        })
+        this.$apply(this.$$flushApplyAsync.bind(this))
       }, 0)
     }
   }
