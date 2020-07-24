@@ -35,8 +35,12 @@ export default class Scope {
 
     do {
       while (this.$$asyncQueue.length > 0) {
-        let exprObj = this.$$asyncQueue.shift()
-        exprObj.scope.$eval(exprObj.expression)
+        try {
+          let exprObj = this.$$asyncQueue.shift()
+          exprObj.scope.$eval(exprObj.expression)
+        } catch (e) {
+          console.error(e)
+        }
       }
       dirty = this.$$digestOnce()
       if ((dirty || this.$$asyncQueue.length) && !dirtyCountLimit--) {
@@ -47,7 +51,11 @@ export default class Scope {
     this.$clearPhase()
 
     while (this.$$postDigestQueue.length) {
-      this.$$postDigestQueue.shift()()
+      try {
+        this.$$postDigestQueue.shift()()
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
   $$digestOnce() {
@@ -55,24 +63,28 @@ export default class Scope {
       oldValue,
       dirty = false
     this.$$watchers.some(watcher => {
-      let watchFn = watcher.watchFn
-      let newValue = watchFn(this)
-      let oldValue = watcher.oldValue
-      if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
-        this.$$lastDirtyWatch = watcher
-        watcher.oldValue = watcher.valueEq
-          ? utils.deepClone(newValue)
-          : newValue
-        watcher.listenerFn(
-          newValue,
-          oldValue === this.$$initWatch ? newValue : oldValue,
-          this
-        )
-        dirty = true
-      } else if (this.$$lastDirtyWatch === watcher) {
-        dirty = false
-        // some在return true的时候终止, every在return false的时候终止
-        return true
+      try {
+        let watchFn = watcher.watchFn
+        let newValue = watchFn(this)
+        let oldValue = watcher.oldValue
+        if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
+          this.$$lastDirtyWatch = watcher
+          watcher.oldValue = watcher.valueEq
+            ? utils.deepClone(newValue)
+            : newValue
+          watcher.listenerFn(
+            newValue,
+            oldValue === this.$$initWatch ? newValue : oldValue,
+            this
+          )
+          dirty = true
+        } else if (this.$$lastDirtyWatch === watcher) {
+          dirty = false
+          // some在return true的时候终止, every在return false的时候终止
+          return true
+        }
+      } catch (e) {
+        console.error(e)
       }
     })
     return dirty
@@ -108,7 +120,11 @@ export default class Scope {
   }
   $$flushApplyAsync() {
     while (this.$$applyAsyncQueue.length) {
-      this.$$applyAsyncQueue.shift()()
+      try {
+        this.$$applyAsyncQueue.shift()()
+      } catch (e) {
+        console.error(e)
+      }
     }
     this.$$applyAsyncId = null
   }

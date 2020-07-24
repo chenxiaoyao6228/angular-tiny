@@ -447,5 +447,95 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.watchedValue).toBe('changed value')
     })
+    test('catches exceptions in watch function and continues', () => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+
+      scope.$watch(
+        function(scope) {
+          throw 'error'
+        },
+        function(newValue, oldValue, scope) {}
+      )
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+    })
+    test('catches exceptions in listener functions and continues', () => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          throw 'Error'
+        }
+      )
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+    })
+    test('catches exceptions in $evalAsync', done => {
+      scope.aValue = 'abc'
+      scope.counter = 0
+      scope.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$evalAsync(function(scope) {
+        throw 'Error'
+      })
+      setTimeout(function() {
+        expect(scope.counter).toBe(1)
+        done()
+      }, 50)
+    })
+    test('catches exceptions in $applyAsync', done => {
+      scope.$applyAsync(function(scope) {
+        throw 'Error'
+      })
+      scope.$applyAsync(function(scope) {
+        throw 'Error'
+      })
+      scope.$applyAsync(function(scope) {
+        scope.applied = true
+      })
+      setTimeout(function() {
+        expect(scope.applied).toBe(true)
+        done()
+      }, 50)
+    })
+
+    it('catches exceptions in $$postDigest', function() {
+      let didRun = false
+      scope.$$postDigest(function() {
+        throw 'Error'
+      })
+      scope.$$postDigest(function() {
+        didRun = true
+      })
+      scope.$digest()
+      expect(didRun).toBe(true)
+    })
   })
 })
