@@ -7,8 +7,9 @@ export default class Scope {
     this.$$initWatch = () => {}
     this.$$lastDirtyWatch = null
     this.$$asyncQueue = []
-    this.$$phase = null
     this.$$applyAsyncQueue = []
+    this.$$postDigestQueue = []
+    this.$$phase = null
     this.$$applyAsyncId = null
   }
   $watch(watchFn, listenerFn, valueEq) {
@@ -44,6 +45,10 @@ export default class Scope {
       }
     } while (dirty || this.$$asyncQueue.length)
     this.$clearPhase()
+
+    while (this.$$postDigestQueue.length) {
+      this.$$postDigestQueue.shift()()
+    }
   }
   $$digestOnce() {
     let newValue,
@@ -71,6 +76,9 @@ export default class Scope {
       }
     })
     return dirty
+  }
+  $$postDigest(fn) {
+    this.$$postDigestQueue.push(fn)
   }
   $eval(expression, locals) {
     return expression.apply(null, [this, locals])
