@@ -19,8 +19,14 @@ export default class Scope {
       valueEq: !!valueEq,
       oldValue: this.$$initWatch
     }
-    this.$$watchers.push(watcher)
+    this.$$watchers.unshift(watcher)
     this.$$lastDirtyWatch = null
+    return () => {
+      let index = this.$$watchers.indexOf(watcher)
+      if (index >= 0) {
+        this.$$watchers.splice(index, 1)
+      }
+    }
   }
   $digest() {
     let dirty,
@@ -62,31 +68,34 @@ export default class Scope {
     let newValue,
       oldValue,
       dirty = false
-    this.$$watchers.some(watcher => {
-      try {
-        let watchFn = watcher.watchFn
-        let newValue = watchFn(this)
-        let oldValue = watcher.oldValue
-        if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
-          this.$$lastDirtyWatch = watcher
-          watcher.oldValue = watcher.valueEq
-            ? utils.deepClone(newValue)
-            : newValue
-          watcher.listenerFn(
-            newValue,
-            oldValue === this.$$initWatch ? newValue : oldValue,
-            this
-          )
-          dirty = true
-        } else if (this.$$lastDirtyWatch === watcher) {
-          dirty = false
-          // some在return true的时候终止, every在return false的时候终止
-          return true
+    this.$$watchers
+      .slice()
+      .reverse()
+      .some(watcher => {
+        try {
+          let watchFn = watcher.watchFn
+          let newValue = watchFn(this)
+          let oldValue = watcher.oldValue
+          if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
+            this.$$lastDirtyWatch = watcher
+            watcher.oldValue = watcher.valueEq
+              ? utils.deepClone(newValue)
+              : newValue
+            watcher.listenerFn(
+              newValue,
+              oldValue === this.$$initWatch ? newValue : oldValue,
+              this
+            )
+            dirty = true
+          } else if (this.$$lastDirtyWatch === watcher) {
+            dirty = false
+            // some在return true的时候终止, every在return false的时候终止
+            return true
+          }
+        } catch (e) {
+          console.error(e)
         }
-      } catch (e) {
-        console.error(e)
-      }
-    })
+      })
     return dirty
   }
   $$postDigest(fn) {

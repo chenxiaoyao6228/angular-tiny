@@ -526,7 +526,7 @@ describe('Scope', () => {
       }, 50)
     })
 
-    it('catches exceptions in $$postDigest', function() {
+    test('catches exceptions in $$postDigest', function() {
       let didRun = false
       scope.$$postDigest(function() {
         throw 'Error'
@@ -536,6 +536,52 @@ describe('Scope', () => {
       })
       scope.$digest()
       expect(didRun).toBe(true)
+    })
+
+    test('allows destroying a $watch with a removal function', function() {
+      scope.aValue = 'abc'
+      scope.counter = 0
+
+      let destroyWatch = scope.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.aValue = 'def'
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.aValue = 'ghi'
+
+      destroyWatch()
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+
+    it('allows destroying a $watch during digest', function() {
+      scope.aValue = 'abc'
+      let watchCalls = []
+      scope.$watch(function(scope) {
+        watchCalls.push('first')
+        return scope.aValue
+      })
+      let destroyWatch = scope.$watch(function(scope) {
+        watchCalls.push('second')
+        destroyWatch()
+      })
+      scope.$watch(function(scope) {
+        watchCalls.push('third')
+        return scope.aValue
+      })
+      scope.$digest()
+      expect(watchCalls).toEqual(['first', 'second', 'third', 'first', 'third'])
     })
   })
 })
