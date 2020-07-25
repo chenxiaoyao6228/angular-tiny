@@ -12,20 +12,21 @@ export default class Scope {
     this.$$children = []
     this.$root = this
   }
-  $new(isolated) {
+  $new(isolated, parent) {
     let child
+    parent = parent || this
     if (isolated) {
       child = new Scope()
-      child.$root = this.$root
-      child.$$asyncQueue = []
-      child.$$postDigestQueue = []
-      child.$$applyAsyncQueue = []
+      child.$root = parent.$root
+      child.$$asyncQueue = parent.$$asyncQueue
+      child.$$postDigestQueue = parent.$$postDigestQueue
+      child.$$applyAsyncQueue = parent.$$applyAsyncQueue
     } else {
       let ChildScope = function() {}
       ChildScope.prototype = this
       child = new ChildScope()
     }
-    this.$$children.push(child)
+    parent.$$children.push(child)
     child.$$watchers = []
     child.$$children = []
     return child
@@ -127,9 +128,6 @@ export default class Scope {
         console.error(e)
       }
     }
-
-    // digest children
-    this.$$children.forEach(child => child.$digest())
   }
   $$digestOnce() {
     let dirty

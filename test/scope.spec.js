@@ -1047,5 +1047,27 @@ describe('Scope', () => {
       parent.$digest()
       expect(child.didPostDigest).toBe(true)
     })
+
+    test('can take some other scope as the parent', () => {
+      let prototypeParent = new Scope()
+      prototypeParent.name = 'prototypeParent'
+      let hierarchyParent = new Scope()
+      hierarchyParent.name = 'hierarchyParent'
+
+      let child = prototypeParent.$new(false, hierarchyParent)
+
+      prototypeParent.a = 42
+      expect(child.a).toEqual(42)
+
+      child.counter = 0
+      child.$watch(scope => {
+        scope.counter++
+      })
+      prototypeParent.$digest()
+      expect(child.counter).toEqual(0)
+
+      hierarchyParent.$digest()
+      expect(child.counter).toEqual(2)
+    })
   })
 })
