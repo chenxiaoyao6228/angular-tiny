@@ -671,5 +671,92 @@ describe('Scope', () => {
       scope.$digest()
       expect(counter).toEqual(1)
     })
+
+    test('uses the same array of old and new values on first run', () => {
+      let gotNewValues, gotOldValues
+
+      scope.aValue = 1
+      scope.anotherValue = 2
+
+      scope.$watchGroup(
+        [scope => scope.aValue, scope => scope.anotherValue],
+        (newValues, oldValues, scope) => {
+          gotNewValues = newValues
+          gotOldValues = oldValues
+        }
+      )
+
+      scope.$digest()
+      expect(gotNewValues).toEqual(gotOldValues)
+    })
+    test('uses different arrays for old and new values on subsequent runs', () => {
+      let gotNewValues, gotOldValues
+
+      scope.aValue = 1
+      scope.anotherValue = 2
+
+      scope.$watchGroup(
+        [scope => scope.aValue, scope => scope.anotherValue],
+        (newValues, oldValues, scope) => {
+          gotNewValues = newValues
+          gotOldValues = oldValues
+        }
+      )
+
+      scope.$digest()
+
+      scope.anotherValue = 3
+      scope.$digest()
+
+      expect(gotNewValues).toEqual([1, 3])
+      expect(gotOldValues).toEqual([1, 2])
+    })
+    test('calls the listener once when the watch array is empty', () => {
+      let gotNewValues, gotOldValues
+
+      scope.$watchGroup([], function(newValues, oldValues, scope) {
+        gotNewValues = newValues
+        gotOldValues = oldValues
+      })
+
+      scope.$digest()
+      expect(gotNewValues).toEqual([])
+      expect(gotOldValues).toEqual([])
+    })
+    test('can be deregistered', () => {
+      let counter = 0
+
+      scope.aValue = 1
+      scope.anotherValue = 24
+
+      let destroyGroup = scope.$watchGroup(
+        [scope => scope.aValue, scope => scope.anotherValue],
+        function(newValues, oldValues, scope) {
+          counter++
+        }
+      )
+
+      scope.$digest()
+      scope.anotherValue = 3
+
+      destroyGroup()
+      scope.$digest()
+
+      expect(counter).toEqual(1)
+    })
+
+    test('does not call the zero-watch listener when deregistered first', () => {
+      let counter = 0
+      let destroyGroup = scope.$watchGroup([], function(
+        newValues,
+        oldValues,
+        scope
+      ) {
+        counter++
+      })
+      destroyGroup()
+      scope.$digest()
+      expect(counter).toEqual(0)
+    })
   })
 })

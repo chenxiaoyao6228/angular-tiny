@@ -13,7 +13,7 @@ export default class Scope {
   }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
-      watchFn,
+      watchFn: watchFn,
       listenerFn: listenerFn || function() {},
       valueEq: !!valueEq,
       oldValue: this.$$initWatch
@@ -33,14 +33,32 @@ export default class Scope {
     let oldValues = new Array(watchFns.length)
 
     let changeReactionScheduled = false
+    let firstRun = true
+
+    if (watchFns.length === 0) {
+      let shouldCall = true
+      this.$evalAsync(() => {
+        if (shouldCall) {
+          listenerFn(newValues, oldValues, this)
+        }
+      })
+      return () => {
+        shouldCall = false
+      }
+    }
 
     const watchGroupListener = () => {
+      if (firstRun) {
+        firstRun = false
+      }
       listenerFn(newValues, oldValues, this)
       changeReactionScheduled = false
     }
 
+    let destroyGroupWatchers = []
+
     watchFns.forEach((watchFn, i) => {
-      this.$watch(watchFn, (newValue, oldValue) => {
+      let destroyWatch = this.$watch(watchFn, (newValue, oldValue) => {
         newValues[i] = newValue
         oldValues[i] = oldValue
         if (!changeReactionScheduled) {
@@ -48,7 +66,12 @@ export default class Scope {
           this.$evalAsync(watchGroupListener)
         }
       })
+      destroyGroupWatchers.push(destroyWatch)
     })
+
+    return () => {
+      destroyGroupWatchers.forEach(destroyWatch => destroyWatch())
+    }
   }
   $digest() {
     let dirty,
