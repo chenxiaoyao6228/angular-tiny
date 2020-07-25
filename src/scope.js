@@ -10,6 +10,7 @@ export default class Scope {
     this.$$phase = null
     this.$$applyAsyncId = null
     this.$$children = []
+    this.$root = this
   }
   $new() {
     let ChildScope = function() {}
@@ -182,7 +183,7 @@ export default class Scope {
       expression.apply(null, [this])
     } finally {
       this.$clearPhase()
-      this.$digest()
+      this.$root.$digest()
     }
   }
   $$flushApplyAsync() {

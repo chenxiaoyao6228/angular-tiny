@@ -902,5 +902,23 @@ describe('Scope', () => {
       parent.$digest()
       expect(child.counter).toEqual(1)
     })
+
+    test('digests from root on $apply', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      let child2 = child.$new()
+
+      parent.aValue = 'abc'
+      parent.counter = 0
+      parent.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      child2.$apply(function(scope) {})
+      expect(parent.counter).toEqual(1)
+    })
   })
 })
