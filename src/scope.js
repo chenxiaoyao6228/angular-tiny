@@ -117,36 +117,42 @@ export default class Scope {
         console.error(e)
       }
     }
+
+    // digest children
+    this.$$children.forEach(child => child.$digest())
   }
   $$digestOnce() {
-    let newValue,
-      oldValue,
-      dirty = false
-    utils.forEachRight(this.$$watchers, watcher => {
-      if (watcher) {
+    let dirty
+    let continueLoop = true
+    this.$$everyScope(scope => {
+      let newValue, oldValue
+      utils.forEachRight(scope.$$watchers, watcher => {
         try {
-          let watchFn = watcher.watchFn
-          let newValue = watchFn(this)
-          let oldValue = watcher.oldValue
-          if (!this.$$areEqual(newValue, oldValue, watcher.valueEq)) {
-            this.$$lastDirtyWatch = watcher
-            watcher.oldValue = watcher.valueEq
-              ? utils.deepClone(newValue)
-              : newValue
-            watcher.listenerFn(
-              newValue,
-              oldValue === this.$$initWatch ? newValue : oldValue,
-              this
-            )
-            dirty = true
-          } else if (this.$$lastDirtyWatch === watcher) {
-            dirty = false
-            return false
+          if (watcher) {
+            let newValue = watcher.watchFn(scope)
+            let oldValue = watcher.oldValue
+            if (!scope.$$areEqual(newValue, oldValue, watcher.valueEq)) {
+              this.$$lastDirtyWatch = watcher // lastDirty还是记录在parent上
+              watcher.oldValue = watcher.valueEq
+                ? utils.deepClone(newValue)
+                : newValue
+              watcher.listenerFn(
+                newValue,
+                oldValue === this.$$initWatch ? newValue : oldValue,
+                scope
+              )
+              dirty = true
+            } else if (this.$$lastDirtyWatch === watcher) {
+              continueLoop = false
+              dirty = false
+              return false
+            }
           }
         } catch (e) {
           console.error(e)
         }
-      }
+      })
+      return continueLoop
     })
     return dirty
   }
@@ -220,6 +226,15 @@ export default class Scope {
           isNaN(newValue) &&
           isNaN(oldValue))
       )
+    }
+  }
+  $$everyScope(fn) {
+    if (fn(this)) {
+      return this.$$children.every(child => {
+        return child.$$everyScope(fn)
+      })
+    } else {
+      return false
     }
   }
 }

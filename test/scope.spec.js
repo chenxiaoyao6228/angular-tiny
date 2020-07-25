@@ -886,5 +886,21 @@ describe('Scope', () => {
       expect(child2.$$children.length).toEqual(1)
       expect(child2.$$children[0]).toEqual(child2_1)
     })
+
+    test('digests its children', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+
+      child.aValue = 'abc'
+      child.counter = 0
+      child.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          child.counter++
+        }
+      )
+      parent.$digest()
+      expect(child.counter).toEqual(1)
+    })
   })
 })
