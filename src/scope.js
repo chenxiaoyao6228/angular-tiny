@@ -1,7 +1,6 @@
 import utils from './utils/tool.js'
 export default class Scope {
   constructor() {
-    this.aProperty = 1
     this.$$watchers = []
     this.$$initWatch = () => {}
     this.$$lastDirtyWatch = null
@@ -10,11 +9,15 @@ export default class Scope {
     this.$$postDigestQueue = []
     this.$$phase = null
     this.$$applyAsyncId = null
+    this.$$children = []
   }
   $new() {
     let ChildScope = function() {}
     ChildScope.prototype = this
     let child = new ChildScope()
+    this.$$children.push(child)
+    child.$$watchers = []
+    child.$$children = []
     return child
   }
   $watch(watchFn, listenerFn, valueEq) {

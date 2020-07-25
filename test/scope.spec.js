@@ -854,5 +854,37 @@ describe('Scope', () => {
       expect(child.user.name).toBe('Jill')
       expect(parent.user.name).toBe('Jill')
     })
+
+    test('does not digest its parents', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+
+      parent.aValue = 'abc'
+
+      parent.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.aValueWas = newValue
+        }
+      )
+
+      child.$digest()
+
+      expect(child.aValueWas).toBeUndefined()
+    })
+    test('keep a record of its children', () => {
+      let parent = new Scope()
+      let child1 = parent.$new()
+      let child2 = parent.$new()
+      let child2_1 = child2.$new()
+
+      expect(parent.$$children.length).toEqual(2)
+      expect(parent.$$children[0]).toEqual(child1)
+      expect(parent.$$children[1]).toEqual(child2)
+
+      expect(child1.$$children.length).toEqual(0)
+      expect(child2.$$children.length).toEqual(1)
+      expect(child2.$$children[0]).toEqual(child2_1)
+    })
   })
 })
