@@ -759,4 +759,100 @@ describe('Scope', () => {
       expect(counter).toEqual(0)
     })
   })
+
+  describe('inheritance', () => {
+    test("inherits the parent's properties", () => {
+      let parent = new Scope()
+      parent.aValue = [1, 2, 3]
+
+      let child = parent.$new()
+
+      expect(child.aValue).toEqual([1, 2, 3])
+    })
+
+    test('does not cause a parent to inherit its properties', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      child.aValue = [1, 2, 3]
+      expect(parent.aValue).toBeUndefined()
+    })
+
+    test("inherits the parent's properties whenever they are defined", () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      parent.aValue = [1, 2, 3]
+      expect(child.aValue).toEqual([1, 2, 3])
+    })
+    test("can manipulate a parent scope's property", () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      parent.aValue = [1, 2, 3]
+      child.aValue.push(4)
+      expect(child.aValue).toEqual([1, 2, 3, 4])
+      expect(parent.aValue).toEqual([1, 2, 3, 4])
+    })
+
+    test('can watch a property in the parent ', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+
+      parent.aValue = [1, 2, 3]
+      child.counter = 0
+
+      child.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        },
+        true
+      )
+
+      child.$digest()
+      expect(child.counter).toEqual(1)
+
+      parent.aValue.push(4)
+
+      child.$digest()
+      expect(child.counter).toEqual(2)
+    })
+    test('can be nested at any depth', () => {
+      let a = new Scope()
+      let aa = a.$new()
+      let aaa = aa.$new()
+      let aab = aa.$new()
+      let ab = a.$new()
+      let abb = ab.$new()
+
+      a.value = 1
+
+      expect(aa.value).toEqual(1)
+      expect(aaa.value).toEqual(1)
+      expect(aab.value).toEqual(1)
+      expect(ab.value).toEqual(1)
+      expect(abb.value).toEqual(1)
+
+      ab.anotherValue = 2
+      expect(abb.anotherValue).toEqual(2)
+      expect(aa.anotherValue).toBeUndefined()
+      expect(aaa.anotherValue).toBeUndefined()
+    })
+
+    test("shadows a parent's property with the same name", () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      parent.name = 'Joe'
+      child.name = 'Jill'
+      expect(child.name).toBe('Jill')
+      expect(parent.name).toBe('Joe')
+    })
+
+    test("does not shadow members of parent scope's attributes", () => {
+      let parent = new Scope()
+      let child = parent.$new()
+      parent.user = { name: 'Joe' }
+      child.user.name = 'Jill'
+      expect(child.user.name).toBe('Jill')
+      expect(parent.user.name).toBe('Jill')
+    })
+  })
 })

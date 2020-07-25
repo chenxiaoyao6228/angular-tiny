@@ -11,6 +11,12 @@ export default class Scope {
     this.$$phase = null
     this.$$applyAsyncId = null
   }
+  $new() {
+    let ChildScope = function() {}
+    ChildScope.prototype = this
+    let child = new ChildScope()
+    return child
+  }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
       watchFn: watchFn,
