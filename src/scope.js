@@ -29,6 +29,7 @@ export default class Scope {
     parent.$$children.push(child)
     child.$$watchers = []
     child.$$children = []
+    child.$parent = parent
     return child
   }
   $watch(watchFn, listenerFn, valueEq) {
@@ -91,6 +92,16 @@ export default class Scope {
 
     return () => {
       destroyGroupWatchers.forEach(destroyWatch => destroyWatch())
+    }
+  }
+  $destroy() {
+    if (this.$parent) {
+      let siblings = this.$parent.$$children
+      let indexOfThis = siblings.indexOf(this)
+      if (indexOfThis >= 0) {
+        siblings.splice(indexOfThis, 1)
+      }
+      this.$$watchers = null
     }
   }
   $digest() {

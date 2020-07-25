@@ -1069,5 +1069,32 @@ describe('Scope', () => {
       hierarchyParent.$digest()
       expect(child.counter).toEqual(2)
     })
+
+    test('is no longer digested when $destroy has been called', () => {
+      let parent = new Scope()
+      let child = parent.$new()
+
+      child.aValue = [1, 2, 3]
+      child.counter = 0
+      child.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        },
+        true
+      )
+
+      parent.$digest()
+      expect(child.counter).toEqual(1)
+
+      child.aValue.push(4)
+      parent.$digest()
+      expect(child.counter).toEqual(2)
+
+      child.$destroy()
+      child.aValue.push(5)
+      parent.$digest()
+      expect(child.counter).toEqual(2)
+    })
   })
 })
