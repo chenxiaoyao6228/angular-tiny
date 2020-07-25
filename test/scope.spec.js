@@ -920,5 +920,28 @@ describe('Scope', () => {
       child2.$apply(function(scope) {})
       expect(parent.counter).toEqual(1)
     })
+
+    test('scheduls a digest from root on $evalAsync', done => {
+      let parent = new Scope()
+      let child = parent.$new()
+      let child2 = child.$new()
+
+      parent.aValue = 'abc'
+      parent.counter = 0
+
+      parent.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      child2.$evalAsync(function(scope) {})
+
+      setTimeout(function() {
+        expect(parent.counter).toEqual(1)
+        done()
+      }, 50)
+    })
   })
 })

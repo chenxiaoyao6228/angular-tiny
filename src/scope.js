@@ -29,12 +29,12 @@ export default class Scope {
       oldValue: this.$$initWatch
     }
     this.$$watchers.unshift(watcher)
-    this.$$lastDirtyWatch = null
+    this.$root.$$lastDirtyWatch = null
     return () => {
       let index = this.$$watchers.indexOf(watcher)
       if (index >= 0) {
         this.$$watchers.splice(index, 1)
-        this.$$lastDirtyWatch = null
+        this.$root.$$lastDirtyWatch = null
       }
     }
   }
@@ -86,7 +86,7 @@ export default class Scope {
   $digest() {
     let dirty,
       dirtyCountLimit = 10
-    this.$$lastDirtyWatch = null
+    this.$root.$$lastDirtyWatch = null
     this.$beginPhase('$digest')
 
     if (this.$$applyAsyncId) {
@@ -133,7 +133,7 @@ export default class Scope {
             let newValue = watcher.watchFn(scope)
             let oldValue = watcher.oldValue
             if (!scope.$$areEqual(newValue, oldValue, watcher.valueEq)) {
-              this.$$lastDirtyWatch = watcher // lastDirty还是记录在parent上
+              this.$root.$$lastDirtyWatch = watcher // lastDirty还是记录在parent上
               watcher.oldValue = watcher.valueEq
                 ? utils.deepClone(newValue)
                 : newValue
@@ -143,7 +143,7 @@ export default class Scope {
                 scope
               )
               dirty = true
-            } else if (this.$$lastDirtyWatch === watcher) {
+            } else if (this.$root.$$lastDirtyWatch === watcher) {
               continueLoop = false
               dirty = false
               return false
@@ -167,7 +167,7 @@ export default class Scope {
     if (!this.$$phase && !this.$$asyncQueue.length) {
       setTimeout(() => {
         if (this.$$asyncQueue.length) {
-          this.$digest()
+          this.$root.$digest()
         }
       }, 0)
     }
