@@ -94,6 +94,24 @@ export default class Scope {
       destroyGroupWatchers.forEach(destroyWatch => destroyWatch())
     }
   }
+  $watchCollection(watchFn, listenerFn) {
+    let newValue, oldValue
+    let changeCount = 0
+    let internalWatchFn = scope => {
+      newValue = watchFn(scope)
+
+      if (this.$$areEqual(oldValue, newValue, false)) {
+        changeCount++
+      }
+
+      return changeCount
+    }
+    let internalListenerFn = () => {
+      listenerFn(newValue, oldValue, this)
+    }
+
+    return this.$watch(internalWatchFn, internalListenerFn)
+  }
   $destroy() {
     if (this.$parent) {
       let siblings = this.$parent.$$children
