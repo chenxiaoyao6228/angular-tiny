@@ -16,6 +16,10 @@ export default class Scope {
     let child
     if (isolated) {
       child = new Scope()
+      child.$root = this.$root
+      child.$$asyncQueue = []
+      child.$$postDigestQueue = []
+      child.$$applyAsyncQueue = []
     } else {
       let ChildScope = function() {}
       ChildScope.prototype = this
@@ -94,8 +98,8 @@ export default class Scope {
     this.$root.$$lastDirtyWatch = null
     this.$beginPhase('$digest')
 
-    if (this.$$applyAsyncId) {
-      clearTimeout(this.$$applyAsyncId)
+    if (this.$root.$$applyAsyncId) {
+      clearTimeout(this.$root.$$applyAsyncId)
       this.$$flushApplyAsync()
     }
 
@@ -199,15 +203,15 @@ export default class Scope {
         console.error(e)
       }
     }
-    this.$$applyAsyncId = null
+    this.$root.$$applyAsyncId = null
   }
 
   $applyAsync(expr) {
     this.$$applyAsyncQueue.push(() => {
       this.$eval(expr)
     })
-    if (this.$$applyAsyncId === null) {
-      this.$$applyAsyncId = setTimeout(() => {
+    if (this.$root.$$applyAsyncId === null) {
+      this.$root.$$applyAsyncId = setTimeout(() => {
         this.$apply(this.$$flushApplyAsync.bind(this))
       }, 0)
     }

@@ -969,5 +969,83 @@ describe('Scope', () => {
       child.$digest()
       expect(child.aValueWas).toBeUndefined()
     })
+
+    test('digests its isolated children', () => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+
+      child.aValue = 'abc'
+      child.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.aValueWas = newValue
+        }
+      )
+
+      parent.$digest()
+      expect(child.aValueWas).toEqual('abc')
+    })
+
+    test('digests from root on $apply when isolated', () => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+      let child2 = child.$new()
+
+      parent.aValue = 'abc'
+      parent.counter = 0
+
+      parent.$watch(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      child2.$apply(function(scope) {})
+
+      expect(parent.counter).toEqual(1)
+    })
+
+    test('schedules a digest from root on $evalAsyn when isolated', done => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+      let child2 = child.$new()
+      parent.aValue = 'abc'
+      parent.counter = 0
+      parent.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      child2.$evalAsync(function(scope) {})
+      setTimeout(function() {
+        expect(parent.counter).toBe(1)
+        done()
+      }, 50)
+    })
+
+    test('executes $evalAsync functions on isolated scopes', done => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+      child.$evalAsync(function(scope) {
+        scope.didEvalAsync = true
+      })
+      setTimeout(function() {
+        expect(child.didEvalAsync).toBe(true)
+        done()
+      }, 50)
+    })
+    test('executes $$postDigest functions on isolated scopes', () => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+      child.$$postDigest(function() {
+        child.didPostDigest = true
+      })
+      parent.$digest()
+      expect(child.didPostDigest).toBe(true)
+    })
   })
 })
