@@ -12,10 +12,15 @@ export default class Scope {
     this.$$children = []
     this.$root = this
   }
-  $new() {
-    let ChildScope = function() {}
-    ChildScope.prototype = this
-    let child = new ChildScope()
+  $new(isolated) {
+    let child
+    if (isolated) {
+      child = new Scope()
+    } else {
+      let ChildScope = function() {}
+      ChildScope.prototype = this
+      child = new ChildScope()
+    }
     this.$$children.push(child)
     child.$$watchers = []
     child.$$children = []

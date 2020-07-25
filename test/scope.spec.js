@@ -943,5 +943,31 @@ describe('Scope', () => {
         done()
       }, 50)
     })
+
+    // isolated Scope
+    test('does not have access to parent attributes when isolated', () => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+
+      parent.aValue = 'abc'
+
+      expect(child.aValue).toBeUndefined()
+    })
+
+    test('cannot watch parent attributes when isolated', () => {
+      let parent = new Scope()
+      let child = parent.$new(true)
+      parent.aValue = 'abc'
+      child.$watch(
+        function(scope) {
+          return scope.aValue
+        },
+        function(newValue, oldValue, scope) {
+          scope.aValueWas = newValue
+        }
+      )
+      child.$digest()
+      expect(child.aValueWas).toBeUndefined()
+    })
   })
 })
