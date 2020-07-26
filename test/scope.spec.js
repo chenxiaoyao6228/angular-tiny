@@ -1147,5 +1147,102 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toBe(1)
     })
+    test('notices when the value becomes an array', () => {
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.arr,
+        (newValue, oldValue, scope) => {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.arr = [1, 2, 3]
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+
+    test('notices an item added to an array', () => {
+      scope.arr = [1, 2, 3]
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.arr,
+        (newValue, oldValue, scope) => {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.arr.push(4)
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+    test('notices an item removed from an array', () => {
+      scope.arr = [1, 2, 3]
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.arr,
+        (newValue, oldValue, scope) => {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.arr.shift()
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+
+    test('notices items reordered in  an array', () => {
+      scope.arr = [2, 1, 3]
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.arr,
+        (newValue, oldValue, scope) => {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.arr.sort()
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+    test('does not fail on NaNs in arrays', () => {
+      scope.arr = [2, NaN, 3]
+      scope.counter = 0
+      scope.$watchCollection(
+        scope => scope.arr,
+        (newValue, oldValue, scope) => {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+    })
   })
 })

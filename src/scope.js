@@ -1,4 +1,5 @@
 import utils from './utils/tool.js'
+import _ from 'lodash'
 export default class Scope {
   constructor() {
     this.$$watchers = []
@@ -97,15 +98,41 @@ export default class Scope {
   $watchCollection(watchFn, listenerFn) {
     let newValue, oldValue
     let changeCount = 0
+
     let internalWatchFn = scope => {
       newValue = watchFn(scope)
-
-      if (this.$$areEqual(oldValue, newValue, false)) {
-        changeCount++
+      // 复合数据类型
+      if (_.isObject(newValue)) {
+        if (_.isArray(newValue)) {
+          // 非数组变为数组
+          if (!_.isArray(oldValue)) {
+            changeCount++
+            oldValue = []
+          }
+          if (newValue.length !== oldValue.length) {
+            changeCount++
+            oldValue.length = newValue.length // oldValue = newValue ?
+          }
+          newValue.forEach((newItem, index) => {
+            let bothNaN = _.isNaN(newItem) && _.isNaN(oldValue[index])
+            if (!bothNaN && newItem !== oldValue[index]) {
+              changeCount++
+              oldValue[index] = newItem
+            }
+          })
+        } else {
+          //
+        }
+      } else {
+        // 基础数据类型
+        if (!this.$$areEqual(oldValue, newValue, false)) {
+          changeCount++
+        }
+        oldValue = newValue
       }
-
       return changeCount
     }
+
     let internalListenerFn = () => {
       listenerFn(newValue, oldValue, this)
     }
