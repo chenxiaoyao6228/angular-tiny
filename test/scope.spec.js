@@ -1567,5 +1567,27 @@ describe('Scope', () => {
         expect(nextListener).toHaveBeenCalled()
       })
     })
+    test('propagates up the scope hierarchy on $emit', () => {
+      let parentListener = jest.fn()
+      let scopeListener = jest.fn()
+      parent.$on('someEvent', parentListener)
+      scope.$on('someEvent', scopeListener)
+      scope.$emit('someEvent')
+      expect(scopeListener).toHaveBeenCalled()
+      expect(parentListener).toHaveBeenCalled()
+    })
+
+    test('propagates the same event up on $emit', () => {
+      let parentListener = jest.fn()
+      let scopeListener = jest.fn()
+      parent.$on('someEvent', parentListener)
+      scope.$on('someEvent', scopeListener)
+      scope.$emit('someEvent')
+      let scopeEvent =
+        scopeListener.mock.calls[scopeListener.mock.calls.length - 1][0]
+      let parentEvent =
+        parentListener.mock.calls[parentListener.mock.calls.length - 1][0]
+      expect(scopeEvent).toEqual(parentEvent)
+    })
   })
 })

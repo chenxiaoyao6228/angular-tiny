@@ -340,10 +340,19 @@ export default class Scope {
     }
   }
   $emit(eventName, ...additionalArgs) {
-    return this.$$fireEventOnScope(eventName, additionalArgs)
+    let scope = this
+    let event = { name: eventName }
+    do {
+      event = scope.$$fireEventOnScope(eventName, additionalArgs)
+      scope = scope.$parent
+    } while (scope)
+
+    return event
   }
   $broadcast(eventName, ...additionalArgs) {
-    return this.$$fireEventOnScope(eventName, additionalArgs)
+    let event = { name: eventName }
+    this.$$fireEventOnScope(eventName, additionalArgs)
+    return event
   }
   $$fireEventOnScope(eventName, additionalArgs) {
     let event = { name: eventName }
