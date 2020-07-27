@@ -332,18 +332,27 @@ export default class Scope {
       this.$$listeners[eventName] = listeners = []
     }
     listeners.push(eventListener)
+    return () => {
+      let index = listeners.indexOf(eventListener)
+      if (index > -1) {
+        listeners[index] = null
+      }
+    }
   }
   $emit(eventName, ...additionalArgs) {
-    console.log('additionalArgs', additionalArgs)
-    this.$$fireEventOnScope(eventName, additionalArgs)
+    return this.$$fireEventOnScope(eventName, additionalArgs)
   }
   $broadcast(eventName, ...additionalArgs) {
-    this.$$fireEventOnScope(eventName, additionalArgs)
+    return this.$$fireEventOnScope(eventName, additionalArgs)
   }
   $$fireEventOnScope(eventName, additionalArgs) {
     let event = { name: eventName }
     let listeners = this.$$listeners[eventName] || []
-    listeners.forEach(listener => listener(event, ...additionalArgs))
+    listeners.forEach(
+      // 注意listener可能为空
+      listener => listener && listener(event, ...additionalArgs)
+    )
+    return event
   }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {

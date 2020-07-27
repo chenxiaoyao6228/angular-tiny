@@ -1543,6 +1543,29 @@ describe('Scope', () => {
           '...'
         )
       })
+      test(`returns the event object on  ${method}`, () => {
+        let returnedEvent = scope[method]('someEvent')
+        expect(returnedEvent).toBeDefined()
+        expect(returnedEvent.name).toEqual('someEvent')
+      })
+      test(`can be deregistered ${method}`, () => {
+        let listener = jest.fn()
+        let deregister = scope.$on('someEvent', listener)
+        deregister()
+        scope[method]('someEvent')
+        expect(listener).not.toHaveBeenCalled()
+      })
+      test(`does not skip the next listener when removed on ${method}`, () => {
+        let deregister
+        let listener = function() {
+          deregister()
+        }
+        let nextListener = jest.fn()
+        deregister = scope.$on('someEvent', listener)
+        scope.$on('someEvent', nextListener)
+        scope[method]('someEvent')
+        expect(nextListener).toHaveBeenCalled()
+      })
     })
   })
 })
