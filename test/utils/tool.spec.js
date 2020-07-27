@@ -1,4 +1,4 @@
-import utils from '../../src/utils/tool'
+import utils from '../../src/utils'
 
 describe('times func', () => {
   let times = utils.times

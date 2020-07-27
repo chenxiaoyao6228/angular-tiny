@@ -1,4 +1,5 @@
-import utils from './utils/tool.js'
+import utils from './utils'
+import _ from 'lodash'
 export default class Scope {
   constructor() {
     this.$$watchers = []
@@ -95,10 +96,14 @@ export default class Scope {
     }
   }
   $watchCollection(watchFn, listenerFn) {
-    let newValue, oldValue
+    let newValue, oldValue, oldLength, veryOldValue
+
+    let trackVeryOldValue = listenerFn.length > 1
     let changeCount = 0
+    let firstRun = true
 
     let internalWatchFn = scope => {
+      let newLength
       newValue = watchFn(scope)
       // 复合数据类型
       if (utils.isObject(newValue)) {
@@ -108,6 +113,7 @@ export default class Scope {
             changeCount++
             oldValue = []
           }
+          // 元素新增或者移除
           if (newValue.length !== oldValue.length) {
             changeCount++
             oldValue.length = newValue.length
@@ -120,7 +126,38 @@ export default class Scope {
             }
           })
         } else {
-          //
+          // 除了数组,类数组之外的对象
+
+          // 由非对象转为普通对象或者由数组转化为对象
+          if (!utils.isObject(oldValue) || utils.isArrayLike(oldValue)) {
+            changeCount++
+            oldValue = {}
+            oldLength = 0
+          }
+          newLength = 0
+          _.forOwn(newValue, function(newVal, key) {
+            newLength++
+            if (oldValue.hasOwnProperty(key)) {
+              let bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key])
+              if (!bothNaN && oldValue[key] !== newVal) {
+                changeCount++
+                oldValue[key] = newVal
+              }
+            } else {
+              changeCount++
+              oldLength++
+              oldValue[key] = newVal
+            }
+          })
+          if (oldLength > newLength) {
+            _.forOwn(oldValue, function(oldVal, key) {
+              if (!newValue.hasOwnProperty(key)) {
+                oldLength--
+                changeCount++
+                delete oldValue[key]
+              }
+            })
+          }
         }
       } else {
         // 基础数据类型
@@ -133,7 +170,15 @@ export default class Scope {
     }
 
     let internalListenerFn = () => {
-      listenerFn(newValue, oldValue, this)
+      if (firstRun) {
+        listenerFn(newValue, newValue, this)
+        firstRun = false
+      } else {
+        listenerFn(newValue, veryOldValue, this)
+      }
+      if (trackVeryOldValue) {
+        veryOldValue = utils.clone(newValue)
+      }
     }
 
     return this.$watch(internalWatchFn, internalListenerFn)

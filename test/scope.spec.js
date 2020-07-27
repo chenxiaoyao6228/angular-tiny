@@ -1,5 +1,5 @@
 import Scope from '../src/scope.js'
-import tools from '../src/utils/tool.js'
+import utils from '../src/utils'
 
 describe('Scope', () => {
   test('can be constructed and used as an Object', () => {
@@ -128,7 +128,7 @@ describe('Scope', () => {
     test('it ends digest when the last dirty watch is clean in the next round', () => {
       scope.array = [...Array(2).keys()]
       let watchExecutions = 0
-      tools.times(2, function(i) {
+      utils.times(2, function(i) {
         scope.$watch(
           function(scope) {
             watchExecutions++
@@ -1291,6 +1291,179 @@ describe('Scope', () => {
 
       scope.$digest()
       expect(scope.counter).toEqual(2)
+    })
+    test('notices when the value becomes an object', () => {
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      scope.obj = { a: 1 }
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+
+    test('notices when an attribute is added to an object', () => {
+      scope.counter = 0
+      scope.obj = { a: 1 }
+
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+
+      scope.obj.b = 2
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+    })
+
+    test('notices when an attribute is changed in an object', () => {
+      scope.counter = 0
+      scope.obj = { a: 1 }
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+      scope.obj.a = 2
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+    })
+
+    test('does not fail on NaN attributes in objects', () => {
+      scope.counter = 0
+      scope.obj = { a: NaN }
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+    })
+
+    test('notices when an attribute is removed from an object', () => {
+      scope.counter = 0
+      scope.obj = { a: 1 }
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+      delete scope.obj.a
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+    })
+    test('does not consider any object with a length property an array', () => {
+      scope.obj = { length: 42, otherKey: 'abc' }
+
+      scope.counter = 0
+      scope.$watchCollection(
+        scope => scope.obj,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+
+      scope.$digest()
+
+      scope.obj.newKey = 'def'
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+    })
+
+    test('gives the old non-collection value to listeners', () => {
+      scope.aValue = 42
+      let oldValueGiven
+
+      scope.$watchCollection(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          oldValueGiven = oldValue
+        }
+      )
+
+      scope.$digest()
+      scope.aValue = 43
+      scope.$digest()
+      expect(oldValueGiven).toEqual(42)
+    })
+
+    test('gives the old array value to listeners', () => {
+      scope.aValue = [1, 2, 3]
+      let oldValueGiven
+
+      scope.$watchCollection(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          oldValueGiven = oldValue
+        }
+      )
+
+      scope.$digest()
+      scope.aValue.push(4)
+      scope.$digest()
+      expect(oldValueGiven).toEqual([1, 2, 3])
+    })
+
+    test('gives the old object value to listeners', () => {
+      scope.aValue = { a: 1, b: 2 }
+
+      let oldValueGiven
+
+      scope.$watchCollection(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          oldValueGiven = oldValue
+        }
+      )
+
+      scope.$digest()
+      scope.aValue.c = 3
+      scope.$digest()
+      expect(oldValueGiven).toEqual({ a: 1, b: 2 })
+    })
+
+    test('uses the new value as the old value on first digest', () => {
+      scope.aValue = { a: 1, b: 2 }
+      let oldValueGiven
+      scope.$watchCollection(
+        scope => scope.aValue,
+        function(newValue, oldValue, scope) {
+          oldValueGiven = oldValue
+        }
+      )
+      scope.$digest()
+      expect(oldValueGiven).toEqual({ a: 1, b: 2 })
     })
   })
 })

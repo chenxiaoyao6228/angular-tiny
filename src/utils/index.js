@@ -19,6 +19,10 @@ function deepClone(a) {
   return _.cloneDeep(a)
 }
 
+function clone(a) {
+  return _.clone(a)
+}
+
 function forEachRight(arr, callback) {
   let len = arr.length
   for (let i = len - 1; i >= 0; i--) {
@@ -41,7 +45,7 @@ function isArrayLike(obj) {
     return false
   }
   let length = obj.length
-  return _.isNumber(length)
+  return length === 0 || (_.isNumber(length) && length > 0 && length - 1 in obj)
 }
 
 function isPlainObject(obj) {
@@ -64,6 +68,7 @@ export default {
   times,
   deepEqual,
   deepClone,
+  clone,
   forEachRight,
   isObject,
   isArray,
