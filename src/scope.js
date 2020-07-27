@@ -350,7 +350,14 @@ export default class Scope {
     let listeners = this.$$listeners[eventName] || []
     listeners.forEach(
       // 注意listener可能为空
-      listener => listener && listener(event, ...additionalArgs)
+      (listener, i) => {
+        if (listener === null) {
+          listeners.splice(i, 1)
+        } else {
+          listener(event, ...additionalArgs)
+          i++
+        }
+      }
     )
     return event
   }
