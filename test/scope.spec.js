@@ -1147,6 +1147,7 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toBe(1)
     })
+    // array
     test('notices when the value becomes an array', () => {
       scope.counter = 0
 
@@ -1243,6 +1244,53 @@ describe('Scope', () => {
       )
       scope.$digest()
       expect(scope.counter).toBe(1)
+    })
+    // array-like
+    test('notices an item replaced in an arguments object', () => {
+      ;(function() {
+        scope.arrayLike = arguments
+      })(1, 2, 3)
+
+      scope.counter = 0
+      scope.$watchCollection(
+        scope => scope.arrayLike,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toBe(1)
+
+      scope.arrayLike[1] = 42
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+
+      scope.$digest()
+      expect(scope.counter).toBe(2)
+    })
+
+    test('notices an item replaced in a NodeList object', () => {
+      document.documentElement.appendChild(document.createElement('div'))
+
+      scope.arrayLike = document.getElementsByTagName('div')
+
+      scope.counter = 0
+
+      scope.$watchCollection(
+        scope => scope.arrayLike,
+        function(newValue, oldValue, scope) {
+          scope.counter++
+        }
+      )
+      scope.$digest()
+      expect(scope.counter).toEqual(1)
+
+      document.documentElement.appendChild(document.createElement('div'))
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
+
+      scope.$digest()
+      expect(scope.counter).toEqual(2)
     })
   })
 })

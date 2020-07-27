@@ -18,6 +18,7 @@ function deepClone(a) {
   // return JSON.parse(JSON.stringify(a)) // 不能处理值为function的情况
   return _.cloneDeep(a)
 }
+
 function forEachRight(arr, callback) {
   let len = arr.length
   for (let i = len - 1; i >= 0; i--) {
@@ -26,9 +27,47 @@ function forEachRight(arr, callback) {
   }
 }
 
+function isObject(obj) {
+  // return obj instanceof Object => 无法处理NodeList的情况
+  return _.isObject(obj)
+}
+
+function isArray(obj) {
+  return Array.isArray(obj)
+}
+
+function isArrayLike(obj) {
+  if (_.isNull(obj) || _.isUndefined(obj)) {
+    return false
+  }
+  let length = obj.length
+  return _.isNumber(length)
+}
+
+function isPlainObject(obj) {
+  if (typeof obj == 'object' && obj !== null) {
+    if (typeof Object.getPrototypeOf == 'function') {
+      let proto = Object.getPrototypeOf(obj)
+      return proto === Object.prototype || proto === null
+    }
+    return Object.prototype.toString.call(obj) == '[object Object]'
+  }
+
+  return false
+}
+
+function forEach(array, operator) {
+  return _.forEach(array, operator)
+}
+
 export default {
   times,
   deepEqual,
   deepClone,
-  forEachRight
+  forEachRight,
+  isObject,
+  isArray,
+  isArrayLike,
+  isPlainObject,
+  forEach
 }
