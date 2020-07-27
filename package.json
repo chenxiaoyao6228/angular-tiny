@@ -90,6 +90,8 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
+    "@babel/plugin-proposal-object-rest-spread": "^7.10.4",
+    "@babel/plugin-transform-destructuring": "^7.10.4",
     "lodash": "^4.17.19"
   }
 }
