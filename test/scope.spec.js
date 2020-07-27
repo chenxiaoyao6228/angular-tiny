@@ -1574,6 +1574,16 @@ describe('Scope', () => {
         let event = scope[method]('someEvent')
         expect(event.defaultPrevented).toBe(true)
       })
+      test(`does not stop on exceptions on ${method}`, () => {
+        let listener1 = function(event) {
+          throw 'listener1 throwing an exception'
+        }
+        let listener2 = jest.fn()
+        scope.$on('someEvent', listener1)
+        scope.$on('someEvent', listener2)
+        scope[method]('someEvent')
+        expect(listener2).toHaveBeenCalled()
+      })
     })
     test('propagates up the scope hierarchy on $emit', () => {
       let parentListener = jest.fn()
@@ -1738,6 +1748,13 @@ describe('Scope', () => {
       child.$on('$destroy', listener)
       scope.$destroy()
       expect(listener).toHaveBeenCalled()
+    })
+    test('no longers calls listeners after destroyed', () => {
+      let listener = jest.fn()
+      scope.$on('myEvent', listener)
+      scope.$destroy()
+      scope.$emit('myEvent')
+      expect(listener).not.toHaveBeenCalled()
     })
   })
 })

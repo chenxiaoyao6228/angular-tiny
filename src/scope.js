@@ -195,6 +195,7 @@ export default class Scope {
         siblings.splice(indexOfThis, 1)
       }
       this.$$watchers = null
+      this.$$listeners = {}
     }
   }
   $digest() {
@@ -390,7 +391,11 @@ export default class Scope {
         if (listener === null) {
           listeners.splice(i, 1)
         } else {
-          listener.apply(null, listenerArgs)
+          try {
+            listener.apply(null, listenerArgs)
+          } catch (e) {
+            console.error(e)
+          }
           i++
         }
       }
