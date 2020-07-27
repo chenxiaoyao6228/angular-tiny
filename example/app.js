@@ -1,3 +1,8 @@
+/*
+  Source: https://codepen.io/Russbrown/pen/IgBuh
+  Author: Russbrown
+*/
+
 function TodoCtrl($scope) {
   $scope.todos = [
     { text: 'Learn AngularJS', done: false },
@@ -14,7 +19,7 @@ function TodoCtrl($scope) {
   }
 
   $scope.clearCompleted = function() {
-    $scope.todos = $scope.todos.filter(function(todo) {
+    $scope.todos = $scope.todos.filter(todo => {
       return !todo.done
     })
   }

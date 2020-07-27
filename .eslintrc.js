@@ -23,6 +23,9 @@ module.exports = {
     jest: true
   },
   "rules": {
-    "prettier/prettier": "error"
+    "prettier/prettier": "error",
+    "no-var": "error",
+    "no-unused-vars": "off",
+    "prefer-arrow-callback": [ "error", { "allowNamedFunctions": true } ]
   }
 }
