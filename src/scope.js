@@ -333,16 +333,17 @@ export default class Scope {
     }
     listeners.push(eventListener)
   }
-  $emit(eventName) {
-    this.$$fireEventOnScope(eventName)
+  $emit(eventName, ...additionalArgs) {
+    console.log('additionalArgs', additionalArgs)
+    this.$$fireEventOnScope(eventName, additionalArgs)
   }
-  $broadcast(eventName) {
-    this.$$fireEventOnScope(eventName)
+  $broadcast(eventName, ...additionalArgs) {
+    this.$$fireEventOnScope(eventName, additionalArgs)
   }
-  $$fireEventOnScope(eventName) {
+  $$fireEventOnScope(eventName, additionalArgs) {
     let event = { name: eventName }
     let listeners = this.$$listeners[eventName] || []
-    listeners.forEach(listener => listener(event))
+    listeners.forEach(listener => listener(event, ...additionalArgs))
   }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {

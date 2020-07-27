@@ -1496,7 +1496,7 @@ describe('Scope', () => {
       expect(child.$$listeners).toEqual({ someEvent: [listener2] })
       expect(isolatedChild.$$listeners).toEqual({ someEvent: [listener3] })
     })
-    ;[('$emit', '$broadcast')].forEach(method => {
+    ;['$broadcast', '$emit'].forEach(method => {
       test(`calls the listeners of the matching event on ${method}`, () => {
         let listener1 = jest.fn()
         let listener2 = jest.fn()
@@ -1525,6 +1525,23 @@ describe('Scope', () => {
         let event1 = listener1.mock.calls[listener1.mock.calls.length - 1][0]
         let event2 = listener2.mock.calls[listener2.mock.calls.length - 1][0]
         expect(event1).toBe(event2)
+      })
+      test(`passes additional arguments to listeners on ${method}`, () => {
+        let listener = jest.fn()
+        scope.$on('someEvent', listener)
+
+        scope[method]('someEvent', 'and', ['additional', 'arguments'], '...')
+
+        expect(listener.mock.calls[listener.mock.calls.length - 1][1]).toEqual(
+          'and'
+        )
+        expect(listener.mock.calls[listener.mock.calls.length - 1][2]).toEqual([
+          'additional',
+          'arguments'
+        ])
+        expect(listener.mock.calls[listener.mock.calls.length - 1][3]).toEqual(
+          '...'
+        )
       })
     })
   })
