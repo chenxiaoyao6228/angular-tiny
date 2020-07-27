@@ -1699,5 +1699,25 @@ describe('Scope', () => {
       scope.$broadcast('someEvent')
       expect(event.currentScope).toBe(null)
     })
+    test('does not propagate to parents when stopped', () => {
+      let scopeListener = function(event) {
+        event.stopPropagation()
+      }
+      let parentListener = jest.fn()
+      scope.$on('someEvent', scopeListener)
+      parent.$on('someEvent', parentListener)
+      scope.$emit('someEvent')
+      expect(parentListener).not.toHaveBeenCalled()
+    })
+    test('is received by listeners on current scope after being stopped', () => {
+      let listener1 = function(event) {
+        event.stopPropagation()
+      }
+      let listener2 = jest.fn()
+      scope.$on('someEvent', listener1)
+      scope.$on('someEvent', listener2)
+      scope.$emit('someEvent')
+      expect(listener2).toHaveBeenCalled()
+    })
   })
 })

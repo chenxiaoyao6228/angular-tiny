@@ -341,14 +341,21 @@ export default class Scope {
   }
   $emit(eventName, ...restArg) {
     let scope = this
-    let event = { name: eventName, targetScope: this }
+    let propogationStopped = false
+    let event = {
+      name: eventName,
+      targetScope: this,
+      stopPropagation() {
+        propogationStopped = true
+      }
+    }
 
     let listenerArgs = [event].concat(restArg)
     do {
       event.currentScope = scope
       scope.$$fireEventOnScope(eventName, listenerArgs)
       scope = scope.$parent
-    } while (scope)
+    } while (scope && !propogationStopped)
 
     event.currentScope = null
     return event
