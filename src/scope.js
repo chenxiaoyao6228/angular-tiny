@@ -186,6 +186,8 @@ export default class Scope {
     return this.$watch(internalWatchFn, internalListenerFn)
   }
   $destroy() {
+    this.$broadcast('$destroy')
+
     if (this.$parent) {
       let siblings = this.$parent.$$children
       let indexOfThis = siblings.indexOf(this)

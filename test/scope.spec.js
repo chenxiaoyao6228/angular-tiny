@@ -1727,5 +1727,17 @@ describe('Scope', () => {
       scope.$emit('someEvent')
       expect(listener2).toHaveBeenCalled()
     })
+    test('fires $destroy when destroyed', () => {
+      let listener = jest.fn()
+      scope.$on('$destroy', listener)
+      scope.$destroy()
+      expect(listener).toHaveBeenCalled()
+    })
+    test('fires $destroy on children destroyed', () => {
+      let listener = jest.fn()
+      child.$on('$destroy', listener)
+      scope.$destroy()
+      expect(listener).toHaveBeenCalled()
+    })
   })
 })
