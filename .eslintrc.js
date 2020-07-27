@@ -25,6 +25,7 @@ module.exports = {
   "rules": {
     "prettier/prettier": "error",
     "no-var": "error",
-    "no-unused-vars": "off"
+    "no-unused-vars": "off",
+    "prefer-arrow-callback": [ "error", { "allowNamedFunctions": true } ]
   }
 }

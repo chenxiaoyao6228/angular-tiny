@@ -137,7 +137,7 @@ export default class Scope {
             oldLength = 0
           }
           newLength = 0
-          _.forOwn(newValue, function(newVal, key) {
+          _.forOwn(newValue, (newVal, key) => {
             newLength++
             if (Object.prototype.hasOwnProperty.call(oldValue, key)) {
               let bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key])
@@ -152,7 +152,7 @@ export default class Scope {
             }
           })
           if (oldLength > newLength) {
-            _.forOwn(oldValue, function(oldVal, key) {
+            _.forOwn(oldValue, (oldVal, key) => {
               if (!Object.prototype.hasOwnProperty.call(newValue, key)) {
                 oldLength--
                 changeCount++
@@ -351,7 +351,10 @@ export default class Scope {
   }
   $broadcast(eventName, ...additionalArgs) {
     let event = { name: eventName }
-    this.$$fireEventOnScope(eventName, additionalArgs)
+    this.$$everyScope(scope => {
+      scope.$$fireEventOnScope(eventName, additionalArgs)
+      return true
+    })
     return event
   }
   $$fireEventOnScope(eventName, additionalArgs) {

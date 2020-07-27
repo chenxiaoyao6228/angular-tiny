@@ -33,7 +33,7 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watch(
         scope => scope.someValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -67,7 +67,7 @@ describe('Scope', () => {
       let oldValueGiven
       scope.$watch(
         scope => scope.someValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           oldValueGiven = oldValue
         }
       )
@@ -85,7 +85,7 @@ describe('Scope', () => {
       scope.name = 'Jane'
       scope.$watch(
         scope => scope.nameUpper,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           if (newValue) {
             scope.initial = newValue.substring(0, 1) + '.'
           }
@@ -93,7 +93,7 @@ describe('Scope', () => {
       )
       scope.$watch(
         scope => scope.name,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           if (newValue) {
             scope.nameUpper = newValue.toUpperCase()
           }
@@ -111,30 +111,30 @@ describe('Scope', () => {
 
       scope.$watch(
         () => scope.countA,
-        function() {
+        () => {
           scope.CountB++
         }
       )
       scope.$watch(
         () => scope.CountB,
-        function() {
+        () => {
           scope.countA++
         }
       )
-      expect(function() {
+      expect(() => {
         scope.$digest()
       }).toThrow()
     })
     test('it ends digest when the last dirty watch is clean in the next round', () => {
       scope.array = [...Array(2).keys()]
       let watchExecutions = 0
-      utils.times(2, function(i) {
+      utils.times(2, i => {
         scope.$watch(
-          function(scope) {
+          scope => {
             watchExecutions++
             return scope.array[i]
           },
-          function(newValue, oldValue, scope) {}
+          (newValue, oldValue, scope) => {}
         )
       })
       scope.$digest()
@@ -148,10 +148,10 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.$watch(
             scope => scope.aValue,
-            function(newValue, oldValue, scope) {
+            (newValue, oldValue, scope) => {
               scope.counter++
             }
           )
@@ -165,7 +165,7 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         },
         true
@@ -181,10 +181,10 @@ describe('Scope', () => {
       scope.number = 0 / 0 // NaN scope.counter = 0;
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.number
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -199,9 +199,9 @@ describe('Scope', () => {
       let result = scope.$eval(scope => scope.value)
       expect(result).toEqual(42)
     })
-    test('passes the second $eval argument straight through', function() {
+    test('passes the second $eval argument straight through', () => {
       scope.aValue = 42
-      let result = scope.$eval(function(scope, arg) {
+      let result = scope.$eval((scope, arg) => {
         return scope.aValue + arg
       }, 2)
       expect(result).toBe(44)
@@ -213,14 +213,14 @@ describe('Scope', () => {
 
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
 
       scope.$digest()
       expect(scope.counter).toBe(1)
-      scope.$apply(function(scope) {
+      scope.$apply(scope => {
         scope.aValue = 'someOtherValue'
       })
       expect(scope.counter).toBe(2)
@@ -232,8 +232,8 @@ describe('Scope', () => {
 
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
-          scope.$evalAsync(function(scope) {
+        (newValue, oldValue, scope) => {
+          scope.$evalAsync(scope => {
             scope.asyncEvaluated = true
           })
           scope.asyncEvaluatedImmediately = scope.asyncEvaluated
@@ -244,70 +244,70 @@ describe('Scope', () => {
       expect(scope.asyncEvaluated).toBeTruthy()
       expect(scope.asyncEvaluatedImmediately).toBeFalsy()
     })
-    test("executes $evalAsync'ed functions added by watch functions", function() {
+    test("executes $evalAsync'ed functions added by watch functions", () => {
       scope.aValue = [1, 2, 3]
       scope.asyncEvaluated = false
       scope.$watch(
-        function(scope) {
+        scope => {
           if (!scope.asyncEvaluated) {
-            scope.$evalAsync(function(scope) {
+            scope.$evalAsync(scope => {
               scope.asyncEvaluated = true
             })
           }
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
       scope.$digest()
       expect(scope.asyncEvaluated).toBe(true)
     })
 
-    test("executes $evalAsync'ed functions even when not dirty", function() {
+    test("executes $evalAsync'ed functions even when not dirty", () => {
       scope.aValue = [1, 2, 3]
       scope.asyncEvaluatedTimes = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           if (scope.asyncEvaluatedTimes < 2) {
-            scope.$evalAsync(function(scope) {
+            scope.$evalAsync(scope => {
               scope.asyncEvaluatedTimes++
             })
           }
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
       scope.$digest()
       expect(scope.asyncEvaluatedTimes).toBe(2)
     })
 
-    test('eventually halts $evalAsyncs added by watches', function() {
+    test('eventually halts $evalAsyncs added by watches', () => {
       scope.aValue = [1, 2, 3]
       scope.$watch(
-        function(scope) {
-          scope.$evalAsync(function(scope) {})
+        scope => {
+          scope.$evalAsync(scope => {})
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
-      expect(function() {
+      expect(() => {
         scope.$digest()
       }).toThrow()
     })
-    test('has a $$phase field whose value is the current digest phase', function() {
+    test('has a $$phase field whose value is the current digest phase', () => {
       scope.aValue = [1, 2, 3]
       scope.phaseInWatchFunction = undefined
       scope.phaseInListenerFunction = undefined
       scope.phaseInApplyFunction = undefined
       scope.$watch(
-        function(scope) {
+        scope => {
           scope.phaseInWatchFunction = scope.$$phase
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.phaseInListenerFunction = scope.$$phase
         }
       )
-      scope.$apply(function(scope) {
+      scope.$apply(scope => {
         scope.phaseInApplyFunction = scope.$$phase
       })
       expect(scope.phaseInWatchFunction).toBe('$digest')
@@ -319,11 +319,11 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
-      scope.$evalAsync(function(scope) {})
+      scope.$evalAsync(scope => {})
       expect(scope.counter).toBe(0)
 
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -333,16 +333,16 @@ describe('Scope', () => {
     test('allows async $apply with $applyAsync', async () => {
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
       scope.$digest()
       expect(scope.counter).toBe(1)
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         scope.aValue = 'abc'
       })
       expect(scope.counter).toBe(1)
@@ -356,11 +356,11 @@ describe('Scope', () => {
       scope.aValue = [1, 2, 3]
       scope.asyncApplied = false
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
-          scope.$applyAsync(function(scope) {
+        (newValue, oldValue, scope) => {
+          scope.$applyAsync(scope => {
             scope.asyncApplied = true
           })
         }
@@ -375,16 +375,16 @@ describe('Scope', () => {
     test('coalesces many calls to $applyAsync', async () => {
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           scope.counter++
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
       scope.$applyAsync(scope => {
         scope.aValue = 'abc'
       })
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         scope.aValue = 'def'
       })
 
@@ -394,16 +394,16 @@ describe('Scope', () => {
     test('cancels and flushes $applyAsync if digested first', async () => {
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           scope.counter++
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         scope.aValue = 'abc'
       })
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         scope.aValue = 'def'
       })
       scope.$digest()
@@ -428,14 +428,14 @@ describe('Scope', () => {
 
     test('does not include $$postDigest in the digest', () => {
       scope.aValue = 'original value'
-      scope.$$postDigest(function() {
+      scope.$$postDigest(() => {
         scope.aValue = 'changed value'
       })
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.watchedValue = newValue
         }
       )
@@ -449,16 +449,16 @@ describe('Scope', () => {
       scope.counter = 0
 
       scope.$watch(
-        function(scope) {
+        scope => {
           throw 'error'
         },
-        function(newValue, oldValue, scope) {}
+        (newValue, oldValue, scope) => {}
       )
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -470,18 +470,18 @@ describe('Scope', () => {
       scope.aValue = 'abc'
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           throw 'Error'
         }
       )
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -492,14 +492,14 @@ describe('Scope', () => {
       scope.aValue = 'abc'
       scope.counter = 0
       scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
-      scope.$evalAsync(function(scope) {
+      scope.$evalAsync(scope => {
         throw 'Error'
       })
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -507,13 +507,13 @@ describe('Scope', () => {
       expect(scope.counter).toBe(1)
     })
     test('catches exceptions in $applyAsync', async () => {
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         throw 'Error'
       })
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         throw 'Error'
       })
-      scope.$applyAsync(function(scope) {
+      scope.$applyAsync(scope => {
         scope.applied = true
       })
 
@@ -521,25 +521,25 @@ describe('Scope', () => {
       expect(scope.applied).toBe(true)
     })
 
-    test('catches exceptions in $$postDigest', function() {
+    test('catches exceptions in $$postDigest', () => {
       let didRun = false
-      scope.$$postDigest(function() {
+      scope.$$postDigest(() => {
         throw 'Error'
       })
-      scope.$$postDigest(function() {
+      scope.$$postDigest(() => {
         didRun = true
       })
       scope.$digest()
       expect(didRun).toBe(true)
     })
 
-    test('allows destroying a $watch with a removal function', function() {
+    test('allows destroying a $watch with a removal function', () => {
       scope.aValue = 'abc'
       scope.counter = 0
 
       let destroyWatch = scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -560,18 +560,18 @@ describe('Scope', () => {
       expect(scope.counter).toEqual(2)
     })
 
-    test('allows destroying a $watch during digest', function() {
+    test('allows destroying a $watch during digest', () => {
       scope.aValue = 'abc'
       let watchCalls = []
-      scope.$watch(function(scope) {
+      scope.$watch(scope => {
         watchCalls.push('first')
         return scope.aValue
       })
-      let destroyWatch = scope.$watch(function(scope) {
+      let destroyWatch = scope.$watch(scope => {
         watchCalls.push('second')
         destroyWatch()
       })
-      scope.$watch(function(scope) {
+      scope.$watch(scope => {
         watchCalls.push('third')
         return scope.aValue
       })
@@ -583,7 +583,7 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           destroyWatch()
         }
       )
@@ -593,7 +593,7 @@ describe('Scope', () => {
       )
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -605,16 +605,16 @@ describe('Scope', () => {
       scope.aValue = 'abc'
       scope.counter = 0
 
-      let destroyWatch1 = scope.$watch(function(scope) {
+      let destroyWatch1 = scope.$watch(scope => {
         destroyWatch1()
         destroyWatch2()
       })
 
       let destroyWatch2 = scope.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -709,7 +709,7 @@ describe('Scope', () => {
     test('calls the listener once when the watch array is empty', () => {
       let gotNewValues, gotOldValues
 
-      scope.$watchGroup([], function(newValues, oldValues, scope) {
+      scope.$watchGroup([], (newValues, oldValues, scope) => {
         gotNewValues = newValues
         gotOldValues = oldValues
       })
@@ -726,7 +726,7 @@ describe('Scope', () => {
 
       let destroyGroup = scope.$watchGroup(
         [scope => scope.aValue, scope => scope.anotherValue],
-        function(newValues, oldValues, scope) {
+        (newValues, oldValues, scope) => {
           counter++
         }
       )
@@ -742,13 +742,12 @@ describe('Scope', () => {
 
     test('does not call the zero-watch listener when deregistered first', () => {
       let counter = 0
-      let destroyGroup = scope.$watchGroup([], function(
-        newValues,
-        oldValues,
-        scope
-      ) {
-        counter++
-      })
+      let destroyGroup = scope.$watchGroup(
+        [],
+        (newValues, oldValues, scope) => {
+          counter++
+        }
+      )
       destroyGroup()
       scope.$digest()
       expect(counter).toEqual(0)
@@ -796,7 +795,7 @@ describe('Scope', () => {
 
       child.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         },
         true
@@ -858,7 +857,7 @@ describe('Scope', () => {
 
       parent.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.aValueWas = newValue
         }
       )
@@ -890,7 +889,7 @@ describe('Scope', () => {
       child.counter = 0
       child.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           child.counter++
         }
       )
@@ -907,12 +906,12 @@ describe('Scope', () => {
       parent.counter = 0
       parent.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
 
-      child2.$apply(function(scope) {})
+      child2.$apply(scope => {})
       expect(parent.counter).toEqual(1)
     })
 
@@ -926,12 +925,12 @@ describe('Scope', () => {
 
       parent.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
 
-      child2.$evalAsync(function(scope) {})
+      child2.$evalAsync(scope => {})
 
       await new Promise(resolve => setTimeout(resolve, 50))
 
@@ -952,10 +951,10 @@ describe('Scope', () => {
       let child = parent.$new(true)
       parent.aValue = 'abc'
       child.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.aValueWas = newValue
         }
       )
@@ -970,7 +969,7 @@ describe('Scope', () => {
       child.aValue = 'abc'
       child.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.aValueWas = newValue
         }
       )
@@ -989,12 +988,12 @@ describe('Scope', () => {
 
       parent.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
 
-      child2.$apply(function(scope) {})
+      child2.$apply(scope => {})
 
       expect(parent.counter).toEqual(1)
     })
@@ -1006,14 +1005,14 @@ describe('Scope', () => {
       parent.aValue = 'abc'
       parent.counter = 0
       parent.$watch(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
-      child2.$evalAsync(function(scope) {})
+      child2.$evalAsync(scope => {})
 
       await new Promise(resolve => setTimeout(resolve, 50))
 
@@ -1023,7 +1022,7 @@ describe('Scope', () => {
     test('executes $evalAsync functions on isolated scopes', async () => {
       let parent = new Scope()
       let child = parent.$new(true)
-      child.$evalAsync(function(scope) {
+      child.$evalAsync(scope => {
         scope.didEvalAsync = true
       })
       await new Promise(resolve => setTimeout(resolve, 50))
@@ -1033,7 +1032,7 @@ describe('Scope', () => {
     test('executes $$postDigest functions on isolated scopes', () => {
       let parent = new Scope()
       let child = parent.$new(true)
-      child.$$postDigest(function() {
+      child.$$postDigest(() => {
         child.didPostDigest = true
       })
       parent.$digest()
@@ -1070,7 +1069,7 @@ describe('Scope', () => {
       child.counter = 0
       child.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         },
         true
@@ -1105,7 +1104,7 @@ describe('Scope', () => {
 
       scope.$watch(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           valueProvided = newValue
           scope.counter++
         }
@@ -1127,10 +1126,10 @@ describe('Scope', () => {
       scope.aValue = 0 / 0
       scope.counter = 0
       scope.$watchCollection(
-        function(scope) {
+        scope => {
           return scope.aValue
         },
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1246,7 +1245,7 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watchCollection(
         scope => scope.arrayLike,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1270,7 +1269,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.arrayLike,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1289,7 +1288,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1311,7 +1310,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1332,7 +1331,7 @@ describe('Scope', () => {
       scope.obj = { a: 1 }
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1350,7 +1349,7 @@ describe('Scope', () => {
       scope.obj = { a: NaN }
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1363,7 +1362,7 @@ describe('Scope', () => {
       scope.obj = { a: 1 }
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1381,7 +1380,7 @@ describe('Scope', () => {
       scope.counter = 0
       scope.$watchCollection(
         scope => scope.obj,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           scope.counter++
         }
       )
@@ -1399,7 +1398,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           oldValueGiven = oldValue
         }
       )
@@ -1416,7 +1415,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           oldValueGiven = oldValue
         }
       )
@@ -1434,7 +1433,7 @@ describe('Scope', () => {
 
       scope.$watchCollection(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           oldValueGiven = oldValue
         }
       )
@@ -1450,7 +1449,7 @@ describe('Scope', () => {
       let oldValueGiven
       scope.$watchCollection(
         scope => scope.aValue,
-        function(newValue, oldValue, scope) {
+        (newValue, oldValue, scope) => {
           oldValueGiven = oldValue
         }
       )
@@ -1588,6 +1587,31 @@ describe('Scope', () => {
       let parentEvent =
         parentListener.mock.calls[parentListener.mock.calls.length - 1][0]
       expect(scopeEvent).toEqual(parentEvent)
+    })
+
+    test('propagates down the scope hierarchy on $broadcast', () => {
+      let scopeListener = jest.fn()
+      let childListener = jest.fn()
+      let isolatedChildListener = jest.fn()
+      scope.$on('someEvent', scopeListener)
+      child.$on('someEvent', childListener)
+      isolatedChild.$on('someEvent', isolatedChildListener)
+      scope.$broadcast('someEvent')
+      expect(scopeListener).toHaveBeenCalled()
+      expect(childListener).toHaveBeenCalled()
+      expect(isolatedChildListener).toHaveBeenCalled()
+    })
+    test('propagates the same event down on $broadcast', () => {
+      let scopeListener = jest.fn()
+      let childListener = jest.fn()
+      scope.$on('someEvent', scopeListener)
+      child.$on('someEvent', childListener)
+      scope.$broadcast('someEvent')
+      let scopeEvent =
+        scopeListener.mock.calls[scopeListener.mock.calls.length - 1][0]
+      let childEvent =
+        childListener.mock.calls[childListener.mock.calls.length - 1][0]
+      expect(scopeEvent).toEqual(childEvent)
     })
   })
 })
