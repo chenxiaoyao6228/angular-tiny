@@ -314,7 +314,7 @@ describe('Scope', () => {
       expect(scope.phaseInListenerFunction).toBe('$digest')
       expect(scope.phaseInApplyFunction).toBe('$apply')
     })
-    test('schedules a digest in $evalAsync', function(done) {
+    test('schedules a digest in $evalAsync', async () => {
       scope.aValue = 'abc'
       scope.counter = 0
       scope.$watch(
@@ -325,13 +325,12 @@ describe('Scope', () => {
       )
       scope.$evalAsync(function(scope) {})
       expect(scope.counter).toBe(0)
-      setTimeout(() => {
-        expect(scope.counter).toBe(1)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(scope.counter).toBe(1)
     })
 
-    test('allows async $apply with $applyAsync', function(done) {
+    test('allows async $apply with $applyAsync', async () => {
       scope.counter = 0
       scope.$watch(
         function(scope) {
@@ -347,13 +346,13 @@ describe('Scope', () => {
         scope.aValue = 'abc'
       })
       expect(scope.counter).toBe(1)
-      setTimeout(() => {
-        expect(scope.counter).toBe(2)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(scope.counter).toBe(2)
     })
 
-    test("never executes $applyAsync'ed function in the same cycle", function(done) {
+    test("never executes $applyAsync'ed function in the same cycle", async () => {
       scope.aValue = [1, 2, 3]
       scope.asyncApplied = false
       scope.$watch(
@@ -368,13 +367,12 @@ describe('Scope', () => {
       )
       scope.$digest()
       expect(scope.asyncApplied).toBe(false)
-      setTimeout(function() {
-        expect(scope.asyncApplied).toBe(true)
-        done()
-      }, 50)
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(scope.asyncApplied).toBe(true)
     })
 
-    test('coalesces many calls to $applyAsync', function(done) {
+    test('coalesces many calls to $applyAsync', async () => {
       scope.counter = 0
       scope.$watch(
         function(scope) {
@@ -389,12 +387,11 @@ describe('Scope', () => {
       scope.$applyAsync(function(scope) {
         scope.aValue = 'def'
       })
-      setTimeout(function() {
-        expect(scope.counter).toBe(2)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(scope.counter).toBe(2)
     })
-    test('cancels and flushes $applyAsync if digested first', function(done) {
+    test('cancels and flushes $applyAsync if digested first', async () => {
       scope.counter = 0
       scope.$watch(
         function(scope) {
@@ -412,10 +409,10 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toBe(2)
       expect(scope.aValue).toEqual('def')
-      setTimeout(function() {
-        expect(scope.counter).toBe(2)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(scope.counter).toBe(2)
     })
     test('runs a $$postDigest function after each digest', () => {
       scope.counter = 0
@@ -491,7 +488,7 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.counter).toBe(1)
     })
-    test('catches exceptions in $evalAsync', done => {
+    test('catches exceptions in $evalAsync', async () => {
       scope.aValue = 'abc'
       scope.counter = 0
       scope.$watch(
@@ -505,12 +502,11 @@ describe('Scope', () => {
       scope.$evalAsync(function(scope) {
         throw 'Error'
       })
-      setTimeout(function() {
-        expect(scope.counter).toBe(1)
-        done()
-      }, 50)
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(scope.counter).toBe(1)
     })
-    test('catches exceptions in $applyAsync', done => {
+    test('catches exceptions in $applyAsync', async () => {
       scope.$applyAsync(function(scope) {
         throw 'Error'
       })
@@ -520,10 +516,9 @@ describe('Scope', () => {
       scope.$applyAsync(function(scope) {
         scope.applied = true
       })
-      setTimeout(function() {
-        expect(scope.applied).toBe(true)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(scope.applied).toBe(true)
     })
 
     test('catches exceptions in $$postDigest', function() {
@@ -921,7 +916,7 @@ describe('Scope', () => {
       expect(parent.counter).toEqual(1)
     })
 
-    test('scheduls a digest from root on $evalAsync', done => {
+    test('scheduls a digest from root on $evalAsync', async () => {
       let parent = new Scope()
       let child = parent.$new()
       let child2 = child.$new()
@@ -938,13 +933,11 @@ describe('Scope', () => {
 
       child2.$evalAsync(function(scope) {})
 
-      setTimeout(function() {
-        expect(parent.counter).toEqual(1)
-        done()
-      }, 50)
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(parent.counter).toEqual(1)
     })
 
-    // isolated Scope
     test('does not have access to parent attributes when isolated', () => {
       let parent = new Scope()
       let child = parent.$new(true)
@@ -1006,7 +999,7 @@ describe('Scope', () => {
       expect(parent.counter).toEqual(1)
     })
 
-    test('schedules a digest from root on $evalAsyn when isolated', done => {
+    test('schedules a digest from root on $evalAsyn when isolated', async () => {
       let parent = new Scope()
       let child = parent.$new(true)
       let child2 = child.$new()
@@ -1021,22 +1014,21 @@ describe('Scope', () => {
         }
       )
       child2.$evalAsync(function(scope) {})
-      setTimeout(function() {
-        expect(parent.counter).toBe(1)
-        done()
-      }, 50)
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(parent.counter).toBe(1)
     })
 
-    test('executes $evalAsync functions on isolated scopes', done => {
+    test('executes $evalAsync functions on isolated scopes', async () => {
       let parent = new Scope()
       let child = parent.$new(true)
       child.$evalAsync(function(scope) {
         scope.didEvalAsync = true
       })
-      setTimeout(function() {
-        expect(child.didEvalAsync).toBe(true)
-        done()
-      }, 50)
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(child.didEvalAsync).toBe(true)
     })
     test('executes $$postDigest functions on isolated scopes', () => {
       let parent = new Scope()
@@ -1464,6 +1456,76 @@ describe('Scope', () => {
       )
       scope.$digest()
       expect(oldValueGiven).toEqual({ a: 1, b: 2 })
+    })
+  })
+
+  describe('events', () => {
+    let parent, scope, child, isolatedChild
+
+    beforeEach(() => {
+      parent = new Scope()
+      scope = parent.$new()
+      child = scope.$new()
+      isolatedChild = scope.$new(true)
+    })
+
+    test('allows registering listeners', () => {
+      let listener1 = function() {}
+      let listener2 = function() {}
+      let listener3 = function() {}
+
+      scope.$on('someEvent', listener1)
+      scope.$on('someEvent', listener2)
+      scope.$on('someOtherEvent', listener3)
+
+      expect(scope.$$listeners).toEqual({
+        someEvent: [listener1, listener2],
+        someOtherEvent: [listener3]
+      })
+    })
+    test('registers different listeners for every scope', () => {
+      let listener1 = () => {}
+      let listener2 = () => {}
+      let listener3 = () => {}
+
+      scope.$on('someEvent', listener1)
+      child.$on('someEvent', listener2)
+      isolatedChild.$on('someEvent', listener3)
+
+      expect(scope.$$listeners).toEqual({ someEvent: [listener1] })
+      expect(child.$$listeners).toEqual({ someEvent: [listener2] })
+      expect(isolatedChild.$$listeners).toEqual({ someEvent: [listener3] })
+    })
+    ;[('$emit', '$broadcast')].forEach(method => {
+      test(`calls the listeners of the matching event on ${method}`, () => {
+        let listener1 = jest.fn()
+        let listener2 = jest.fn()
+        scope.$on('someEvent', listener1)
+        scope.$on('someOtherEvent', listener2)
+        scope[method]('someEvent')
+
+        expect(listener1).toHaveBeenCalled()
+        expect(listener2).not.toHaveBeenCalled()
+      })
+      test(`passes an event object with a name to listeners on ${method}`, () => {
+        let listener = jest.fn()
+        scope.$on('someEvent', listener)
+        scope[method]('someEvent')
+
+        expect(listener).toHaveBeenCalled()
+        expect(listener.mock.calls[0][0].name).toEqual('someEvent')
+      })
+      test(`passes the same event object to each listener on ${method}`, () => {
+        let listener1 = jest.fn()
+        let listener2 = jest.fn()
+        scope.$on('someEvent', listener1)
+        scope.$on('someEvent', listener2)
+        scope[method]('someEvent')
+
+        let event1 = listener1.mock.calls[listener1.mock.calls.length - 1][0]
+        let event2 = listener2.mock.calls[listener2.mock.calls.length - 1][0]
+        expect(event1).toBe(event2)
+      })
     })
   })
 })

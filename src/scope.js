@@ -12,6 +12,7 @@ export default class Scope {
     this.$$applyAsyncId = null
     this.$$children = []
     this.$root = this
+    this.$$listeners = {}
   }
   $new(isolated, parent) {
     let child
@@ -30,6 +31,7 @@ export default class Scope {
     parent.$$children.push(child)
     child.$$watchers = []
     child.$$children = []
+    child.$$listeners = {}
     child.$parent = parent
     return child
   }
@@ -137,7 +139,7 @@ export default class Scope {
           newLength = 0
           _.forOwn(newValue, function(newVal, key) {
             newLength++
-            if (oldValue.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(oldValue, key)) {
               let bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key])
               if (!bothNaN && oldValue[key] !== newVal) {
                 changeCount++
@@ -151,7 +153,7 @@ export default class Scope {
           })
           if (oldLength > newLength) {
             _.forOwn(oldValue, function(oldVal, key) {
-              if (!newValue.hasOwnProperty(key)) {
+              if (!Object.prototype.hasOwnProperty.call(newValue, key)) {
                 oldLength--
                 changeCount++
                 delete oldValue[key]
@@ -322,6 +324,25 @@ export default class Scope {
   }
   $clearPhase() {
     this.$$phase = null
+  }
+  $on(eventName, eventListener) {
+    let listeners = this.$$listeners[eventName]
+
+    if (!listeners) {
+      this.$$listeners[eventName] = listeners = []
+    }
+    listeners.push(eventListener)
+  }
+  $emit(eventName) {
+    this.$$fireEventOnScope(eventName)
+  }
+  $broadcast(eventName) {
+    this.$$fireEventOnScope(eventName)
+  }
+  $$fireEventOnScope(eventName) {
+    let event = { name: eventName }
+    let listeners = this.$$listeners[eventName] || []
+    listeners.forEach(listener => listener(event))
   }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {
