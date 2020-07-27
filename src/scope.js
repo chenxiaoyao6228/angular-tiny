@@ -339,26 +339,32 @@ export default class Scope {
       }
     }
   }
-  $emit(eventName, ...additionalArgs) {
+  $emit(eventName, ...restArg) {
     let scope = this
-    let event = { name: eventName }
+    let event = { name: eventName, targetScope: this }
+
+    let listenerArgs = [event].concat(restArg)
     do {
-      event = scope.$$fireEventOnScope(eventName, additionalArgs)
+      event.currentScope = scope
+      scope.$$fireEventOnScope(eventName, listenerArgs)
       scope = scope.$parent
     } while (scope)
 
+    event.currentScope = null
     return event
   }
-  $broadcast(eventName, ...additionalArgs) {
-    let event = { name: eventName }
+  $broadcast(eventName, ...restArg) {
+    let event = { name: eventName, targetScope: this }
+    let listenerArgs = [event].concat(restArg)
     this.$$everyScope(scope => {
-      scope.$$fireEventOnScope(eventName, additionalArgs)
+      event.currentScope = scope
+      scope.$$fireEventOnScope(eventName, listenerArgs)
       return true
     })
+    event.currentScope = null
     return event
   }
-  $$fireEventOnScope(eventName, additionalArgs) {
-    let event = { name: eventName }
+  $$fireEventOnScope(eventName, listenerArgs) {
     let listeners = this.$$listeners[eventName] || []
     listeners.forEach(
       // 注意listener可能为空
@@ -366,12 +372,11 @@ export default class Scope {
         if (listener === null) {
           listeners.splice(i, 1)
         } else {
-          listener(event, ...additionalArgs)
+          listener.apply(null, listenerArgs)
           i++
         }
       }
     )
-    return event
   }
   $$areEqual(newValue, oldValue, valueEqual) {
     if (valueEqual) {

@@ -21,7 +21,7 @@ describe('Scope', () => {
       scope.$digest()
       expect(listenerFn).toHaveBeenCalled()
     })
-    test('calls the watch funciton with the scope as the argument', () => {
+    test('calls the watch function with the scope as the argument', () => {
       let watchFn = jest.fn()
       let listenerFn = function() {}
       scope.$watch(watchFn, listenerFn)
@@ -1543,6 +1543,7 @@ describe('Scope', () => {
         )
       })
       test(`returns the event object on  ${method}`, () => {
+        scope.$on('someEvent', () => {})
         let returnedEvent = scope[method]('someEvent')
         expect(returnedEvent).toBeDefined()
         expect(returnedEvent.name).toEqual('someEvent')
@@ -1612,6 +1613,91 @@ describe('Scope', () => {
       let childEvent =
         childListener.mock.calls[childListener.mock.calls.length - 1][0]
       expect(scopeEvent).toEqual(childEvent)
+    })
+    test('attaches targetScope on $emit', () => {
+      let scopeListener = jest.fn()
+      let parentListener = jest.fn()
+
+      scope.$on('someEvent', scopeListener)
+      parent.$on('someEvent', parentListener)
+
+      scope.$emit('someEvent')
+
+      let targetScope =
+        scopeListener.mock.calls[scopeListener.mock.calls.length - 1][0]
+          .targetScope
+      expect(targetScope).toEqual(scope)
+      let parentScope =
+        parentListener.mock.calls[parentListener.mock.calls.length - 1][0]
+          .targetScope
+      expect(parentScope).toEqual(scope)
+    })
+
+    test('attaches targetScope on $broadcast', () => {
+      let scopeListener = jest.fn()
+      let childListener = jest.fn()
+
+      scope.$on('someEvent', scopeListener)
+      child.$on('someEvent', childListener)
+
+      scope.$broadcast('someEvent')
+
+      expect(
+        scopeListener.mock.calls[scopeListener.mock.calls.length - 1][0]
+          .targetScope
+      ).toEqual(scope)
+
+      expect(
+        childListener.mock.calls[childListener.mock.calls.length - 1][0]
+          .targetScope
+      ).toEqual(scope)
+    })
+    test('attaches currentScope on $emit', () => {
+      let currentScopeOnScope, currentScopeOnParent
+      let scopeListener = function(event) {
+        currentScopeOnScope = event.currentScope
+      }
+      let parentListener = function(event) {
+        currentScopeOnParent = event.currentScope
+      }
+      scope.$on('someEvent', scopeListener)
+      parent.$on('someEvent', parentListener)
+      scope.$emit('someEvent')
+      expect(currentScopeOnScope).toBe(scope)
+      expect(currentScopeOnParent).toBe(parent)
+    })
+    test('attaches currentScope on $broadcast', () => {
+      let currentScopeOnScope, currentScopeOnChild
+      let scopeListener = function(event) {
+        currentScopeOnScope = event.currentScope
+      }
+      let childListener = function(event) {
+        currentScopeOnChild = event.currentScope
+      }
+      scope.$on('someEvent', scopeListener)
+      child.$on('someEvent', childListener)
+      scope.$broadcast('someEvent')
+      expect(currentScopeOnScope).toBe(scope)
+      expect(currentScopeOnChild).toBe(child)
+    })
+    test('sets currentScope to null after propagation on $emit', () => {
+      let event
+      let scopeListener = function(evt) {
+        event = evt
+      }
+      scope.$on('someEvent', scopeListener)
+      scope.$emit('someEvent')
+      expect(event.currentScope).toBe(null)
+    })
+
+    test('sets currentScope to null after propagation on $broadcast', () => {
+      let event
+      let scopeListener = function(evt) {
+        event = evt
+      }
+      scope.$on('someEvent', scopeListener)
+      scope.$broadcast('someEvent')
+      expect(event.currentScope).toBe(null)
     })
   })
 })
