@@ -1566,6 +1566,14 @@ describe('Scope', () => {
         scope[method]('someEvent')
         expect(nextListener).toHaveBeenCalled()
       })
+      test(`is sets defaultPrevented when preventDefault called on ${method}`, () => {
+        let listener = function(event) {
+          event.preventDefault()
+        }
+        scope.$on('someEvent', listener)
+        let event = scope[method]('someEvent')
+        expect(event.defaultPrevented).toBe(true)
+      })
     })
     test('propagates up the scope hierarchy on $emit', () => {
       let parentListener = jest.fn()

@@ -347,6 +347,9 @@ export default class Scope {
       targetScope: this,
       stopPropagation() {
         propogationStopped = true
+      },
+      preventDefault() {
+        event.defaultPrevented = true
       }
     }
 
@@ -361,7 +364,13 @@ export default class Scope {
     return event
   }
   $broadcast(eventName, ...restArg) {
-    let event = { name: eventName, targetScope: this }
+    let event = {
+      name: eventName,
+      targetScope: this,
+      preventDefault() {
+        event.defaultPrevented = true
+      }
+    }
     let listenerArgs = [event].concat(restArg)
     this.$$everyScope(scope => {
       event.currentScope = scope
