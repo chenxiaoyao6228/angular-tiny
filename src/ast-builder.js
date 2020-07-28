@@ -6,6 +6,7 @@ export default class AST {
   }
   ast(text) {
     this.tokens = this.lexer.lex(text)
+    console.log('this.tokens', this.tokens)
     return this.program()
   }
   program() {

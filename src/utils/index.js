@@ -64,6 +64,10 @@ function forEach(array, operator) {
   return _.forEach(array, operator)
 }
 
+function isString(value) {
+  return _.isString(value)
+}
+
 export default {
   times,
   deepEqual,
@@ -74,5 +78,6 @@ export default {
   isArray,
   isArrayLike,
   isPlainObject,
-  forEach
+  forEach,
+  isString
 }
