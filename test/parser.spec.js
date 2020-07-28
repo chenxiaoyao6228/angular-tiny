@@ -14,4 +14,28 @@ describe('parse', () => {
     let fn = parse('42e3')
     expect(fn()).toBe(42000)
   })
+  it('can parse scientific notation with a float coefficient', () => {
+    let fn = parse('.42e2')
+    expect(fn()).toBe(42)
+  })
+  it('can parse scientific notation with negative exponents', () => {
+    let fn = parse('4200e-2')
+    expect(fn()).toBeCloseTo(42)
+  })
+  it('can parse scientific notation with the + sign', () => {
+    let fn = parse('.42e+2')
+    expect(fn()).toBe(42)
+  })
+  it('can parse upper case scientific notation', () => {
+    let fn = parse('.42E2')
+    expect(fn()).toBe(42)
+  })
+  it('will not parse invalid scientific notation', () => {
+    expect(() => {
+      parse('42e-')
+    }).toThrow()
+    expect(() => {
+      parse('42e-a')
+    }).toThrow()
+  })
 })
