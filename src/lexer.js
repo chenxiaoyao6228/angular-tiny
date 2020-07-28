@@ -7,7 +7,10 @@ export default class Lexer {
     this.tokens = []
     while (this.index < this.text.length) {
       this.ch = this.text.charAt(this.index)
-      if (this.isNumber(this.ch)) {
+      if (
+        this.isNumber(this.ch) ||
+        (this.ch === '.' && this.isNumber(this.peek()))
+      ) {
         this.readNumber()
       } else {
         throw `Unexpected next character ${this.ch}`
@@ -22,7 +25,7 @@ export default class Lexer {
     let number = ''
     while (this.index < this.text.length) {
       let ch = this.text.charAt(this.index)
-      if (this.isNumber(ch)) {
+      if (this.isNumber(ch) || ch === '.') {
         number += ch
       } else {
         break
@@ -33,5 +36,10 @@ export default class Lexer {
       text: number,
       value: Number(number)
     })
+  }
+  peek() {
+    return this.index < this.text.length - 1
+      ? this.text.charAt(this.index + 1)
+      : false
   }
 }
