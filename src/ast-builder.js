@@ -62,11 +62,24 @@ export default class AST {
           computed: false
         }
       } else if (next.text === '(') {
-        primary = { type: AST.CallExpression, callee: primary }
+        primary = {
+          type: AST.CallExpression,
+          callee: primary,
+          arguments: this.parseArguments()
+        }
         this.consume(')')
       }
     }
     return primary
+  }
+  parseArguments() {
+    let args = []
+    if (!this.peek(')')) {
+      do {
+        args.push(this.primary())
+      } while (this.expect(','))
+    }
+    return args
   }
   objectDeclaration() {
     let properties = []

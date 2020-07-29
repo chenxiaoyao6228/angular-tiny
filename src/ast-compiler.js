@@ -7,6 +7,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
+    console.log('ast', JSON.stringify(ast))
     this.state = { body: [], nextId: 0, vars: [] }
     this.traverse(ast)
     let fn = new Function(
@@ -76,7 +77,10 @@ export default class ASTCompiler {
       }
       case AST.CallExpression: {
         let callee = this.traverse(ast.callee)
-        return callee + '&&' + callee + '()'
+        let args = ast.arguments.map(arg => {
+          return this.traverse(arg)
+        })
+        return callee + '&&' + callee + '(' + args.join(',') + ')'
       }
     }
   }

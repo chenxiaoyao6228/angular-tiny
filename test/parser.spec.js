@@ -191,6 +191,39 @@ describe('parse', () => {
           })
         ).toBe(42)
       })
+      it('parses a function call with a single number argument', () => {
+        let fn = parse('aFunction(42)')
+        expect(
+          fn({
+            aFunction: function(n) {
+              return n
+            }
+          })
+        ).toBe(42)
+      })
+      it('parses a function call with a single identifier argument', () => {
+        let fn = parse('aFunction(n)')
+        expect(
+          fn({
+            n: 42,
+            aFunction: function(arg) {
+              return arg
+            }
+          })
+        ).toBe(42)
+      })
+      it('parses a function call with multiple arguments', () => {
+        let fn = parse('aFunction(37, n, argFn())')
+        expect(
+          fn({
+            n: 3,
+            argFn: () => 2,
+            aFunction: function(a1, a2, a3) {
+              return a1 + a2 + a3
+            }
+          })
+        ).toBe(42)
+      })
     })
   })
 })
