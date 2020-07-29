@@ -106,4 +106,10 @@ describe('parse', () => {
       expect(fn()).toEqual([1, 2, 3])
     })
   })
+  describe('parse object', () => {
+    it('will parse an empty object', () => {
+      let fn = parse('{}')
+      expect(fn()).toEqual({})
+    })
+  })
 })

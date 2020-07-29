@@ -24,6 +24,8 @@ export default class ASTCompiler {
           return this.traverse(element)
         })
         return '[' + elements.join(',') + ']'
+      case AST.ObjectExpression:
+        return '{}'
     }
   }
   escape(value) {

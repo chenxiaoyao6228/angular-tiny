@@ -2,6 +2,7 @@ export default class AST {
   static program = 'Program'
   static Literal = 'Literal'
   static ArrayExpression = 'ArrayExpression'
+  static ObjectExpression = 'ObjectExpression'
   constructor(lexer) {
     this.lexer = lexer
     this.constants = {
@@ -23,12 +24,20 @@ export default class AST {
   primary() {
     if (this.expect('[')) {
       return this.arrayDeclaration()
+    } else if (this.expect('{')) {
+      return this.objectDeclaration()
     } else if (
       Object.prototype.hasOwnProperty.call(this.constants, this.tokens[0].text)
     ) {
       return this.constants[this.consume().text]
     } else {
       return this.constant()
+    }
+  }
+  objectDeclaration() {
+    this.consume('}')
+    return {
+      type: AST.ObjectExpression
     }
   }
   arrayDeclaration() {
