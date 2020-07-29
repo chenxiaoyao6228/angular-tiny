@@ -63,16 +63,24 @@ export default class ASTCompiler {
       case AST.MemberExpression: {
         intoId = this.nextId()
         let left = this.traverse(ast.object)
-        this._if(
-          left,
-          this.assign(intoId, this.nonComputedMember(left, ast.property.name))
-        )
+        if (ast.computed) {
+          let right = this.traverse(ast.property)
+          this._if(left, this.assign(intoId, this.computedMember(left, right)))
+        } else {
+          this._if(
+            left,
+            this.assign(intoId, this.nonComputedMember(left, ast.property.name))
+          )
+        }
         return intoId
       }
     }
   }
   nonComputedMember(left, right) {
     return `${left}.${right}`
+  }
+  computedMember(left, right) {
+    return '(' + left + ')[' + right + ']'
   }
   getHasOwnProperty(object, property) {
     return object + '&&(' + this.escape(property) + ' in ' + object + ')'

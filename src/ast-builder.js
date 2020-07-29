@@ -42,11 +42,23 @@ export default class AST {
     } else {
       primary = this.constant()
     }
-    if (this.expect('.')) {
-      primary = {
-        type: AST.MemberExpression,
-        object: primary,
-        property: this.identifier()
+    let next
+    while ((next = this.expect('.', '['))) {
+      if (next.text === '[') {
+        primary = {
+          type: AST.MemberExpression,
+          object: primary,
+          property: this.primary(),
+          computed: true
+        }
+        this.consume(']')
+      } else {
+        primary = {
+          type: AST.MemberExpression,
+          object: primary,
+          property: this.identifier(),
+          computed: false
+        }
       }
     }
     return primary
@@ -87,16 +99,16 @@ export default class AST {
     this.consume(']')
     return { type: AST.ArrayExpression, elements: elements }
   }
-  peek(e) {
+  peek(e1, e2, e3, e4) {
     if (this.tokens.length > 0) {
       let text = this.tokens[0].text
-      if (text === e || !e) {
+      if ([e1, e2, e3, e4].indexOf(text) > -1 || (!e1 && !e2 && !e3 && !e4)) {
         return this.tokens[0]
       }
     }
   }
-  expect(e) {
-    let token = this.peek(e)
+  expect(e1, e2, e3, e4) {
+    let token = this.peek(e1, e2, e3, e4)
     if (token) {
       return this.tokens.shift()
     }
