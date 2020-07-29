@@ -146,5 +146,23 @@ describe('parse', () => {
       let fn = parse('{aKey: 42}.aKey')
       expect(fn()).toBe(42)
     })
+    it('uses locals instead of scope when there is a matching key', () => {
+      let fn = parse('aKey')
+      let scope = { aKey: 42 }
+      let locals = { aKey: 43 }
+      expect(fn(scope, locals)).toEqual(43)
+    })
+    it('does not use locals instead of scope when ono matching key', () => {
+      let fn = parse('aKey')
+      let scope = { aKey: 42 }
+      let locals = { anotherKey: 43 }
+      expect(fn(scope, locals)).toEqual(42)
+    })
+    it('uses locals instead of scope when the first part matches', () => {
+      let fn = parse('aKey.anotherKey')
+      let scope = { aKey: { anotherKey: 42 } }
+      let locals = { aKey: {} }
+      expect(fn(scope, locals)).toBeUndefined()
+    })
   })
 })

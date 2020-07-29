@@ -11,6 +11,7 @@ export default class ASTCompiler {
     this.traverse(ast)
     let fn = new Function(
       's',
+      'l',
       `${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}  
        ${this.state.body.join('')}
       `
@@ -36,7 +37,11 @@ export default class ASTCompiler {
       case AST.Identifier: {
         intoId = this.nextId()
         this._if(
-          's',
+          this.getHasOwnProperty('l', ast.name),
+          this.assign(intoId, this.nonComputedMember('l', ast.name))
+        )
+        this._if(
+          this.not(this.getHasOwnProperty('l', ast.name)) + ` && s`,
           this.assign(intoId, this.nonComputedMember('s', ast.name))
         )
         return intoId
@@ -69,8 +74,17 @@ export default class ASTCompiler {
   nonComputedMember(left, right) {
     return `${left}.${right}`
   }
+  getHasOwnProperty(object, property) {
+    return object + '&&(' + this.escape(property) + ' in ' + object + ')'
+  }
+  not(e) {
+    return `!(${e})`
+  }
   _if(test, consequent) {
-    this.state.body.push(`if(${test}){${consequent}}`)
+    this.state.body.push(`
+      if(${test}){
+        ${consequent}
+      }`)
   }
   nextId() {
     return `v${this.state.nextId++}`
