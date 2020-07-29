@@ -52,6 +52,8 @@ export default class ASTCompiler {
         })
         return '{' + properties.join(',') + '}'
       }
+      case AST.ThisExpression:
+        return 's'
     }
   }
   nonComputedMember(left, right) {

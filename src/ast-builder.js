@@ -5,12 +5,15 @@ export default class AST {
   static ObjectExpression = 'ObjectExpression'
   static Property = 'Property'
   static Identifier = 'Identifier'
+  static ThisExpression = 'ThisExpression'
+
   constructor(lexer) {
     this.lexer = lexer
     this.constants = {
       null: { type: AST.Literal, value: null },
       true: { type: AST.Literal, value: true },
-      false: { type: AST.Literal, value: false }
+      false: { type: AST.Literal, value: false },
+      this: { type: AST.ThisExpression }
     }
   }
   ast(text) {

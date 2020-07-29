@@ -130,5 +130,11 @@ describe('parse', () => {
       let fn = parse('aKey')
       expect(fn()).toBeUndefined()
     })
+    it('will parse this', () => {
+      let fn = parse('this')
+      let scope = {}
+      expect(fn(scope)).toBe(scope)
+      expect(fn()).toBeUndefined()
+    })
   })
 })
