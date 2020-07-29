@@ -68,6 +68,10 @@ function isString(value) {
   return _.isString(value)
 }
 
+function isNull(value) {
+  return _.isNull(value)
+}
+
 export default {
   times,
   deepEqual,
@@ -79,5 +83,6 @@ export default {
   isArrayLike,
   isPlainObject,
   forEach,
-  isString
+  isString,
+  isNull
 }

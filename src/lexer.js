@@ -24,11 +24,33 @@ export default class Lexer {
         this.readNumber()
       } else if (this.ch === "'" || this.ch === '"') {
         this.readString(this.ch)
+      } else if (this.isIdent(this.ch)) {
+        this.readIdent()
+      } else if (this.isWhiteSpae(this.ch)) {
+        this.index++
+      } else if ('[,]'.includes(this.ch)) {
+        this.tokens.push({
+          text: this.ch
+        })
       } else {
         throw `Unexpected next character ${this.ch}`
       }
     }
     return this.tokens
+  }
+  readIdent() {
+    let text = ''
+    while (this.index < this.text.length) {
+      let ch = this.text.charAt(this.index)
+      if (this.isIdent(ch) || this.isNumber(ch)) {
+        text += ch
+      } else {
+        break
+      }
+      this.index++
+    }
+    let token = { text: text }
+    this.tokens.push(token)
   }
   readString(quote) {
     this.index++
@@ -112,5 +134,23 @@ export default class Lexer {
   }
   isNumber(ch) {
     return '0123456789'.includes(ch)
+  }
+  isIdent(ch) {
+    return (
+      (ch >= 'a' && ch <= 'z') ||
+      (ch >= 'A' && ch <= 'Z') ||
+      ch === '_' ||
+      ch === '$'
+    )
+  }
+  isWhiteSpae(ch) {
+    return (
+      ch === ' ' ||
+      ch === '\r' ||
+      ch === '\t' ||
+      ch === '\n' ||
+      ch === '\v' ||
+      ch === '\u00A0'
+    )
   }
 }

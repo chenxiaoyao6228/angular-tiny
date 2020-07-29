@@ -12,17 +12,25 @@ export default class ASTCompiler {
     return new Function(this.state.body.join(''))
   }
   traverse(ast) {
+    let elements
     switch (ast.type) {
       case AST.program:
         this.state.body.push('return ', this.traverse(ast.body), ';')
         break
       case AST.Literal:
         return this.escape(ast.value)
+      case AST.ArrayExpression:
+        elements = ast.elements.map(element => {
+          return this.traverse(element)
+        })
+        return '[' + elements.join(',') + ']'
     }
   }
   escape(value) {
     if (utils.isString(value)) {
       return `'${value.replace(this.stringEscapeRegex, this.stringEscapeFn)}'`
+    } else if (utils.isNull(value)) {
+      return 'null'
     } else {
       return value
     }

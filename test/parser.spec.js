@@ -72,4 +72,34 @@ describe('parse', () => {
       }).toThrow()
     })
   })
+  describe('parse identifier', () => {
+    it('will parse null', () => {
+      let fn = parse('null')
+      expect(fn()).toBe(null)
+    })
+    it('will parse true', () => {
+      let fn = parse('true')
+      expect(fn()).toBe(true)
+    })
+    it('will parse false', () => {
+      let fn = parse('false')
+      expect(fn()).toBe(false)
+    })
+  })
+  describe('parse whitespace', () => {
+    it('ignores whitespace', () => {
+      let fn = parse(' \n42 ')
+      expect(fn()).toEqual(42)
+    })
+  })
+  // describe('parse array', () => {
+  //   it('will parse an empty array', () => {
+  //     let fn = parse('[]')
+  //     expect(fn()).toEqual([])
+  //   })
+  //   it('will parse a non-empty array', () => {
+  //     let fn = parse('[1, "two", [3], true]')
+  //     expect(fn()).toEqual([1, 'two', [3], true])
+  //   })
+  // })
 })
