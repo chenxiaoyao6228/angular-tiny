@@ -7,31 +7,41 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
-    this.state = { body: [] }
+    this.state = { body: [], nextId: 0, vars: [] }
     this.traverse(ast)
-    let fn = new Function('s', this.state.body.join(''))
+    let fn = new Function(
+      's',
+      `${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}  
+       ${this.state.body.join('')}
+      `
+    )
     console.log('fn.toString()', fn.toString())
     return fn
   }
   traverse(ast) {
-    let elements
-    let properties = []
     switch (ast.type) {
       case AST.program:
         this.state.body.push('return ', this.traverse(ast.body), ';')
         break
       case AST.Literal:
         return this.escape(ast.value)
-      case AST.ArrayExpression:
+      case AST.ArrayExpression: {
+        let elements
         elements = ast.elements.map(element => {
           return this.traverse(element)
         })
         return '[' + elements.join(',') + ']'
-      case AST.Identifier:
-        this.state.body.push('var v0;')
-        this._if('s', this.assign('v0', this.nonComputedMember('s', ast.name)))
-        return 'v0'
-      case AST.ObjectExpression:
+      }
+      case AST.Identifier: {
+        let intoId = this.nextId()
+        this._if(
+          's',
+          this.assign(intoId, this.nonComputedMember('s', ast.name))
+        )
+        return intoId
+      }
+      case AST.ObjectExpression: {
+        let properties = []
         properties = ast.properties.map(property => {
           let key =
             property.key.type === AST.Identifier
@@ -41,6 +51,7 @@ export default class ASTCompiler {
           return key + ':' + value
         })
         return '{' + properties.join(',') + '}'
+      }
     }
   }
   nonComputedMember(left, right) {
@@ -48,6 +59,9 @@ export default class ASTCompiler {
   }
   _if(test, consequent) {
     this.state.body.push(`if(${test}){${consequent}}`)
+  }
+  nextId() {
+    return `v${this.state.nextId++}`
   }
   assign(id, value) {
     return `${id}=${value};`
