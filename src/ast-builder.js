@@ -4,6 +4,7 @@ export default class AST {
   static ArrayExpression = 'ArrayExpression'
   static ObjectExpression = 'ObjectExpression'
   static Property = 'Property'
+  static Identifier = 'Identifier'
   constructor(lexer) {
     this.lexer = lexer
     this.constants = {
@@ -40,9 +41,13 @@ export default class AST {
     if (!this.peek('}')) {
       do {
         let property = {
-          type: AST.property
+          type: AST.Property
         }
-        property.key = this.constant()
+        if (this.peek().identifier) {
+          property.key = this.identifier()
+        } else {
+          property.key = this.constant()
+        }
         this.consume(':')
         property.value = this.primary()
         properties.push(property)
@@ -87,6 +92,12 @@ export default class AST {
       throw 'Unexpected. Expecting: ' + e
     }
     return token
+  }
+  identifier() {
+    return {
+      type: AST.Identifier,
+      name: this.consume().text
+    }
   }
   constant() {
     return { type: AST.Literal, value: this.consume().value }

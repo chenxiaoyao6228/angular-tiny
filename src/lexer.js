@@ -50,7 +50,10 @@ export default class Lexer {
       }
       this.index++
     }
-    let token = { text: text }
+    let token = {
+      text: text,
+      identifier: true
+    }
     this.tokens.push(token)
   }
   readString(quote) {
