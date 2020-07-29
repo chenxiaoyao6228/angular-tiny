@@ -92,14 +92,14 @@ describe('parse', () => {
       expect(fn()).toEqual(42)
     })
   })
-  // describe('parse array', () => {
-  //   it('will parse an empty array', () => {
-  //     let fn = parse('[]')
-  //     expect(fn()).toEqual([])
-  //   })
-  //   it('will parse a non-empty array', () => {
-  //     let fn = parse('[1, "two", [3], true]')
-  //     expect(fn()).toEqual([1, 'two', [3], true])
-  //   })
-  // })
+  describe('parse array', () => {
+    it('will parse an empty array', () => {
+      let fn = parse('[]')
+      expect(fn()).toEqual([])
+    })
+    it('will parse a non-empty array', () => {
+      let fn = parse('[1, "two", [3], true]')
+      expect(fn()).toEqual([1, 'two', [3], true])
+    })
+  })
 })

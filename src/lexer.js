@@ -32,6 +32,7 @@ export default class Lexer {
         this.tokens.push({
           text: this.ch
         })
+        this.index++
       } else {
         throw `Unexpected next character ${this.ch}`
       }

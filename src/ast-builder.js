@@ -36,7 +36,7 @@ export default class AST {
     if (!this.peek(']')) {
       do {
         elements.push(this.primary())
-      } while (this.expect(', '))
+      } while (this.expect(','))
     }
     this.consume(']')
     return { type: AST.ArrayExpression, elements: elements }
