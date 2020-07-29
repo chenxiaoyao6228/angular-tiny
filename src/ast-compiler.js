@@ -87,7 +87,9 @@ export default class ASTCompiler {
       }`)
   }
   nextId() {
-    return `v${this.state.nextId++}`
+    let id = `v${this.state.nextId++}`
+    this.state.vars.push(id)
+    return id
   }
   assign(id, value) {
     return `${id}=${value};`
