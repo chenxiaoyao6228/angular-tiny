@@ -6,6 +6,7 @@ export default class AST {
   static Property = 'Property'
   static Identifier = 'Identifier'
   static ThisExpression = 'ThisExpression'
+  static MemberExpression = 'MemberExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -27,19 +28,28 @@ export default class AST {
     }
   }
   primary() {
+    let primary
     if (this.expect('[')) {
-      return this.arrayDeclaration()
+      primary = this.arrayDeclaration()
     } else if (this.expect('{')) {
-      return this.objectDeclaration()
+      primary = this.objectDeclaration()
     } else if (
       Object.prototype.hasOwnProperty.call(this.constants, this.tokens[0].text)
     ) {
-      return this.constants[this.consume().text]
+      primary = this.constants[this.consume().text]
     } else if (this.peek().identifier) {
-      return this.identifier()
+      primary = this.identifier()
     } else {
-      return this.constant()
+      primary = this.constant()
     }
+    if (this.expect('.')) {
+      primary = {
+        type: AST.MemberExpression,
+        object: primary,
+        property: this.identifier()
+      }
+    }
+    return primary
   }
   objectDeclaration() {
     let properties = []

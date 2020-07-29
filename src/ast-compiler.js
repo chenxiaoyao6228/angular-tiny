@@ -19,6 +19,7 @@ export default class ASTCompiler {
     return fn
   }
   traverse(ast) {
+    let intoId
     switch (ast.type) {
       case AST.program:
         this.state.body.push('return ', this.traverse(ast.body), ';')
@@ -33,7 +34,7 @@ export default class ASTCompiler {
         return '[' + elements.join(',') + ']'
       }
       case AST.Identifier: {
-        let intoId = this.nextId()
+        intoId = this.nextId()
         this._if(
           's',
           this.assign(intoId, this.nonComputedMember('s', ast.name))
@@ -54,6 +55,15 @@ export default class ASTCompiler {
       }
       case AST.ThisExpression:
         return 's'
+      case AST.MemberExpression: {
+        intoId = this.nextId()
+        let left = this.traverse(ast.object)
+        this._if(
+          left,
+          this.assign(intoId, this.nonComputedMember(left, ast.property.name))
+        )
+        return intoId
+      }
     }
   }
   nonComputedMember(left, right) {
