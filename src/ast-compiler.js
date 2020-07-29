@@ -9,7 +9,9 @@ export default class ASTCompiler {
     let ast = this.astBuilder.ast(text)
     this.state = { body: [] }
     this.traverse(ast)
-    return new Function(this.state.body.join(''))
+    let fn = new Function('s', this.state.body.join(''))
+    console.log('fn.toString()', fn.toString())
+    return fn
   }
   traverse(ast) {
     let elements
@@ -25,6 +27,10 @@ export default class ASTCompiler {
           return this.traverse(element)
         })
         return '[' + elements.join(',') + ']'
+      case AST.Identifier:
+        this.state.body.push('var v0;')
+        this._if('s', this.assign('v0', this.nonComputedMember('s', ast.name)))
+        return 'v0'
       case AST.ObjectExpression:
         properties = ast.properties.map(property => {
           let key =
@@ -36,6 +42,15 @@ export default class ASTCompiler {
         })
         return '{' + properties.join(',') + '}'
     }
+  }
+  nonComputedMember(left, right) {
+    return `${left}.${right}`
+  }
+  _if(test, consequent) {
+    this.state.body.push(`if(${test}){${consequent}}`)
+  }
+  assign(id, value) {
+    return `${id}=${value};`
   }
   escape(value) {
     if (utils.isString(value)) {

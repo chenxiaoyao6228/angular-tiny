@@ -120,4 +120,15 @@ describe('parse', () => {
       expect(fn()).toEqual({ a: 1, b: [2, 3], c: { d: 4 } })
     })
   })
+  describe('simple attribute lookup', () => {
+    it('looks up an attribute form the scope', () => {
+      let fn = parse('aKey')
+      expect(fn({ aKey: 42 })).toEqual(42)
+      expect(fn({})).toBeUndefined()
+    })
+    it('returns undefined when looking up attribute from undefined', () => {
+      let fn = parse('aKey')
+      expect(fn()).toBeUndefined()
+    })
+  })
 })

@@ -32,6 +32,8 @@ export default class AST {
       Object.prototype.hasOwnProperty.call(this.constants, this.tokens[0].text)
     ) {
       return this.constants[this.consume().text]
+    } else if (this.peek().identifier) {
+      return this.identifier()
     } else {
       return this.constant()
     }
