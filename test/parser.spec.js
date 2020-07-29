@@ -180,5 +180,17 @@ describe('parse', () => {
       let fn = parse('lock[keys["aKey"]]')
       expect(fn({ keys: { aKey: 'theKey' }, lock: { theKey: 42 } })).toEqual(42)
     })
+    describe('functionCalls', () => {
+      it('parses a function call', () => {
+        let fn = parse('aFunction()')
+        expect(
+          fn({
+            aFunction: function() {
+              return 42
+            }
+          })
+        ).toBe(42)
+      })
+    })
   })
 })

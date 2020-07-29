@@ -74,6 +74,10 @@ export default class ASTCompiler {
         }
         return intoId
       }
+      case AST.CallExpression: {
+        let callee = this.traverse(ast.callee)
+        return callee + '&&' + callee + '()'
+      }
     }
   }
   nonComputedMember(left, right) {

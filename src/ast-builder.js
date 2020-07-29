@@ -7,6 +7,7 @@ export default class AST {
   static Identifier = 'Identifier'
   static ThisExpression = 'ThisExpression'
   static MemberExpression = 'MemberExpression'
+  static CallExpression = 'CallExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -19,6 +20,7 @@ export default class AST {
   }
   ast(text) {
     this.tokens = this.lexer.lex(text)
+    console.log('this.tokens', this.tokens)
     return this.program()
   }
   program() {
@@ -43,7 +45,7 @@ export default class AST {
       primary = this.constant()
     }
     let next
-    while ((next = this.expect('.', '['))) {
+    while ((next = this.expect('.', '[', '('))) {
       if (next.text === '[') {
         primary = {
           type: AST.MemberExpression,
@@ -52,13 +54,16 @@ export default class AST {
           computed: true
         }
         this.consume(']')
-      } else {
+      } else if (next.text === '.') {
         primary = {
           type: AST.MemberExpression,
           object: primary,
           property: this.identifier(),
           computed: false
         }
+      } else if (next.text === '(') {
+        primary = { type: AST.CallExpression, callee: primary }
+        this.consume(')')
       }
     }
     return primary
