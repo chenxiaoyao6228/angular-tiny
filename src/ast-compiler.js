@@ -13,6 +13,7 @@ export default class ASTCompiler {
   }
   traverse(ast) {
     let elements
+    let properties = ''
     switch (ast.type) {
       case AST.program:
         this.state.body.push('return ', this.traverse(ast.body), ';')
@@ -25,7 +26,14 @@ export default class ASTCompiler {
         })
         return '[' + elements.join(',') + ']'
       case AST.ObjectExpression:
-        return '{}'
+        ast.properties.forEach((property, index) => {
+          properties +=
+            this.escape(property.key.value) +
+            ':' +
+            this.traverse(property.value) +
+            (index < ast.properties.length - 1 ? ',' : '')
+        })
+        return '{' + properties + '}'
     }
   }
   escape(value) {

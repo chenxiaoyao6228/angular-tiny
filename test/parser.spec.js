@@ -111,5 +111,9 @@ describe('parse', () => {
       let fn = parse('{}')
       expect(fn()).toEqual({})
     })
+    it('will parse a non-empty object', () => {
+      let fn = parse('{ "a key": 1, \'another-key\': 2}')
+      expect(fn()).toEqual({ 'a key': 1, 'another-key': 2 })
+    })
   })
 })

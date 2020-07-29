@@ -3,6 +3,7 @@ export default class AST {
   static Literal = 'Literal'
   static ArrayExpression = 'ArrayExpression'
   static ObjectExpression = 'ObjectExpression'
+  static Property = 'Property'
   constructor(lexer) {
     this.lexer = lexer
     this.constants = {
@@ -35,9 +36,22 @@ export default class AST {
     }
   }
   objectDeclaration() {
+    let properties = []
+    if (!this.peek('}')) {
+      do {
+        let property = {
+          type: AST.property
+        }
+        property.key = this.constant()
+        this.consume(':')
+        property.value = this.primary()
+        properties.push(property)
+      } while (this.expect(','))
+    }
     this.consume('}')
     return {
-      type: AST.ObjectExpression
+      type: AST.ObjectExpression,
+      properties: properties
     }
   }
   arrayDeclaration() {
