@@ -10,15 +10,11 @@ export default class ASTCompiler {
     console.log('ast', JSON.stringify(ast))
     this.state = { body: [], nextId: 0, vars: [] }
     this.traverse(ast)
-    let fn = new Function(
-      's',
-      'l',
-      `${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}  
+    let fnString = `var fn=function(s,l){
+      ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
        ${this.state.body.join('')}
-      `
-    )
-    console.log('fn.toString()', fn.toString())
-    return fn
+      };return fn;`
+    return new Function('ensureSafeMemberName', fnString)(ensureSafeMemberName)
   }
   traverse(ast, context, create) {
     let intoId
@@ -36,6 +32,7 @@ export default class ASTCompiler {
         return '[' + elements.join(',') + ']'
       }
       case AST.Identifier: {
+        ensureSafeMemberName(ast.name)
         intoId = this.nextId()
         this._if(
           this.getHasOwnProperty('l', ast.name),
@@ -86,6 +83,7 @@ export default class ASTCompiler {
 
         if (ast.computed) {
           let right = this.traverse(ast.property)
+          this.addEnsureSafeMemberName(right)
           if (create) {
             this._if(
               this.not(this.computedMember(left, right)),
@@ -98,6 +96,7 @@ export default class ASTCompiler {
             context.computed = true
           }
         } else {
+          ensureSafeMemberName(ast.property.name)
           if (create) {
             this._if(
               this.not(this.nonComputedMember(left, ast.property.name)),
@@ -150,6 +149,9 @@ export default class ASTCompiler {
       }
     }
   }
+  addEnsureSafeMemberName(expr) {
+    this.state.body.push('ensureSafeMemberName(' + expr + ');')
+  }
   nonComputedMember(left, right) {
     return `${left}.${right}`
   }
@@ -187,5 +189,18 @@ export default class ASTCompiler {
   }
   stringEscapeFn(c) {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
+  }
+}
+
+function ensureSafeMemberName(name) {
+  if (
+    name === 'constructor' ||
+    name === '__proto__' ||
+    name === '__defineGetter__' ||
+    name === '__defineSetter__' ||
+    name === '__lookupGetter__' ||
+    name === '__lookupSetter__'
+  ) {
+    throw 'Attempting to access a disallowed field in Angular expressions!'
   }
 }
