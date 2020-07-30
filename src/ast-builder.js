@@ -1,5 +1,5 @@
 export default class AST {
-  static program = 'Program'
+  static Program = 'Program'
   static Literal = 'Literal'
   static ArrayExpression = 'ArrayExpression'
   static ObjectExpression = 'ObjectExpression'
@@ -8,6 +8,7 @@ export default class AST {
   static ThisExpression = 'ThisExpression'
   static MemberExpression = 'MemberExpression'
   static CallExpression = 'CallExpression'
+  static AssignmentExpression = 'AssignmentExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -26,7 +27,7 @@ export default class AST {
   program() {
     return {
       type: AST.program,
-      body: this.primary()
+      body: this.assignment()
     }
   }
   primary() {
@@ -76,7 +77,7 @@ export default class AST {
     let args = []
     if (!this.peek(')')) {
       do {
-        args.push(this.primary())
+        args.push(this.assignment())
       } while (this.expect(','))
     }
     return args
@@ -94,7 +95,7 @@ export default class AST {
           property.key = this.constant()
         }
         this.consume(':')
-        property.value = this.primary()
+        property.value = this.assignment()
         properties.push(property)
       } while (this.expect(','))
     }
@@ -111,7 +112,7 @@ export default class AST {
         if (this.peek(']')) {
           break
         }
-        elements.push(this.primary())
+        elements.push(this.assignment())
       } while (this.expect(','))
     }
     this.consume(']')
@@ -130,6 +131,14 @@ export default class AST {
     if (token) {
       return this.tokens.shift()
     }
+  }
+  assignment() {
+    let left = this.primary()
+    if (this.expect('=')) {
+      let right = this.primary()
+      return { type: AST.AssignmentExpression, left: left, right: right }
+    }
+    return left
   }
   consume(e) {
     let token = this.expect(e)

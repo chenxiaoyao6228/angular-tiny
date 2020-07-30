@@ -245,6 +245,42 @@ describe('parse', () => {
         let fn = parse('aFunction()')
         expect(fn(scope)).toBe(scope)
       })
+      it('parses a simple attribute assignment', () => {
+        let fn = parse('anAttribute = 42')
+        let scope = {}
+        fn(scope)
+        expect(scope.anAttribute).toBe(42)
+      })
+      it('can assign any primary expression', () => {
+        let fn = parse('anAttribute = aFunction()')
+        let scope = { aFunction: () => 42 }
+        fn(scope)
+        expect(scope.anAttribute).toBe(42)
+      })
+      it('can assign a computed object property', () => {
+        let fn = parse('anObject["anAttribute"] = 42')
+        let scope = { anObject: {} }
+        fn(scope)
+        expect(scope.anObject.anAttribute).toBe(42)
+      })
+      it('can assign a non-computed object property', () => {
+        let fn = parse('anObject.anAttribute = 42')
+        let scope = { anObject: {} }
+        fn(scope)
+        expect(scope.anObject.anAttribute).toBe(42)
+      })
+      it('can assign a nested object property', () => {
+        let fn = parse('anArray[0].anAttribute = 42')
+        let scope = { anArray: [{}] }
+        fn(scope)
+        expect(scope.anArray[0].anAttribute).toBe(42)
+      })
+      it('creates the objects in the assignment path that do not exist', () => {
+        let fn = parse('some["nested"].property.path = 42')
+        let scope = {}
+        fn(scope)
+        expect(scope.some.nested.property.path).toBe(42)
+      })
     })
   })
 })

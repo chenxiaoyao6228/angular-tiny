@@ -20,7 +20,7 @@ export default class ASTCompiler {
     console.log('fn.toString()', fn.toString())
     return fn
   }
-  traverse(ast, context) {
+  traverse(ast, context, create) {
     let intoId
     switch (ast.type) {
       case AST.program:
@@ -41,6 +41,16 @@ export default class ASTCompiler {
           this.getHasOwnProperty('l', ast.name),
           this.assign(intoId, this.nonComputedMember('l', ast.name))
         )
+
+        if (create) {
+          this._if(
+            this.not(this.getHasOwnProperty('l', ast.name)) +
+              ' && s && ' +
+              this.not(this.getHasOwnProperty('s', ast.name)),
+            this.assign(this.nonComputedMember('s', ast.name), '{}')
+          )
+        }
+
         this._if(
           this.not(this.getHasOwnProperty('l', ast.name)) + ` && s`,
           this.assign(intoId, this.nonComputedMember('s', ast.name))
@@ -68,7 +78,7 @@ export default class ASTCompiler {
         return 's'
       case AST.MemberExpression: {
         intoId = this.nextId()
-        let left = this.traverse(ast.object)
+        let left = this.traverse(ast.object, undefined, create)
 
         if (context) {
           context.context = left
@@ -76,12 +86,24 @@ export default class ASTCompiler {
 
         if (ast.computed) {
           let right = this.traverse(ast.property)
+          if (create) {
+            this._if(
+              this.not(this.computedMember(left, right)),
+              this.assign(this.computedMember(left, right), '{}')
+            )
+          }
           this._if(left, this.assign(intoId, this.computedMember(left, right)))
           if (context) {
             context.name = right
             context.computed = true
           }
         } else {
+          if (create) {
+            this._if(
+              this.not(this.nonComputedMember(left, ast.property.name)),
+              this.assign(this.nonComputedMember(left, ast.property.name), '{}')
+            )
+          }
           this._if(
             left,
             this.assign(intoId, this.nonComputedMember(left, ast.property.name))
@@ -111,6 +133,20 @@ export default class ASTCompiler {
         }
 
         return callee + '&&' + callee + '(' + args.join(',') + ')'
+      }
+      case AST.AssignmentExpression: {
+        let leftContext = {}
+        this.traverse(ast.left, leftContext, true)
+        let leftExpr
+        if (leftContext.computed) {
+          leftExpr = this.computedMember(leftContext.context, leftContext.name)
+        } else {
+          leftExpr = this.nonComputedMember(
+            leftContext.context,
+            leftContext.name
+          )
+        }
+        return this.assign(leftExpr, this.traverse(ast.right))
       }
     }
   }
