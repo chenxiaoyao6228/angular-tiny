@@ -317,6 +317,24 @@ describe('parse', () => {
           fn({ obj: {} })
         }).toThrow()
       })
+      it('does not allow accessing window as computed property', () => {
+        let fn = parse('anObject["wnd"]')
+        expect(() => {
+          fn({ anObject: { wnd: window } })
+        }).toThrow()
+      })
+      it('does not allow accessing window as non-computed property', () => {
+        let fn = parse('anObject.wnd')
+        expect(() => {
+          fn({ anObject: { wnd: window } })
+        }).toThrow()
+      })
+      it('does not allow passing window as function argument', () => {
+        let fn = parse('aFunction(wnd)')
+        expect(() => {
+          fn({ aFunction: function() {}, wnd: window })
+        }).toThrow()
+      })
     })
   })
 })

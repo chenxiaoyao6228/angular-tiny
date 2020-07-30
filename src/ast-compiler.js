@@ -14,7 +14,10 @@ export default class ASTCompiler {
       ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
        ${this.state.body.join('')}
       };return fn;`
-    return new Function('ensureSafeMemberName', fnString)(ensureSafeMemberName)
+    return new Function('ensureSafeMemberName', 'ensureSafeObject', fnString)(
+      ensureSafeMemberName,
+      ensureSafeObject
+    )
   }
   traverse(ast, context, create) {
     let intoId
@@ -90,7 +93,13 @@ export default class ASTCompiler {
               this.assign(this.computedMember(left, right), '{}')
             )
           }
-          this._if(left, this.assign(intoId, this.computedMember(left, right)))
+          this._if(
+            left,
+            this.assign(
+              intoId,
+              'ensureSafeObject(' + this.computedMember(left, right) + ')'
+            )
+          )
           if (context) {
             context.name = right
             context.computed = true
@@ -105,7 +114,12 @@ export default class ASTCompiler {
           }
           this._if(
             left,
-            this.assign(intoId, this.nonComputedMember(left, ast.property.name))
+            this.assign(
+              intoId,
+              'ensureSafeObject(' +
+                this.nonComputedMember(left, ast.property.name) +
+                ')'
+            )
           )
           if (context) {
             context.name = ast.property.name
@@ -118,7 +132,7 @@ export default class ASTCompiler {
         let callContext = {}
         let callee = this.traverse(ast.callee, callContext)
         let args = ast.arguments.map(arg => {
-          return this.traverse(arg)
+          return 'ensureSafeObject(' + this.traverse(arg) + ')'
         })
         if (callContext.name) {
           if (callContext.computed) {
@@ -203,4 +217,13 @@ function ensureSafeMemberName(name) {
   ) {
     throw 'Attempting to access a disallowed field in Angular expressions!'
   }
+}
+
+function ensureSafeObject(obj) {
+  if (obj) {
+    if (obj.document && obj.location && obj.alert && obj.setInterval) {
+      throw 'Referencing window in Angular expressions is disallowed!'
+    }
+  }
+  return obj
 }
