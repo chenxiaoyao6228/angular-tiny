@@ -224,6 +224,27 @@ describe('parse', () => {
           })
         ).toBe(42)
       })
+      it('calls methods accessed as computed properties', () => {
+        let scope = {
+          anObject: {
+            aMember: 42,
+            aFunction: function() {
+              return this.aMember
+            }
+          }
+        }
+        let fn = parse('anObject["aFunction"]()')
+        expect(fn(scope)).toBe(42)
+      })
+      it('binds bare functions to the scope', () => {
+        let scope = {
+          aFunction: function() {
+            return this
+          }
+        }
+        let fn = parse('aFunction()')
+        expect(fn(scope)).toBe(scope)
+      })
     })
   })
 })

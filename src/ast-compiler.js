@@ -20,7 +20,7 @@ export default class ASTCompiler {
     console.log('fn.toString()', fn.toString())
     return fn
   }
-  traverse(ast) {
+  traverse(ast, context) {
     let intoId
     switch (ast.type) {
       case AST.program:
@@ -45,6 +45,11 @@ export default class ASTCompiler {
           this.not(this.getHasOwnProperty('l', ast.name)) + ` && s`,
           this.assign(intoId, this.nonComputedMember('s', ast.name))
         )
+        if (context) {
+          context.context = this.getHasOwnProperty('l', ast.name) + '?l:s'
+          context.name = ast.name
+          context.computed = false
+        }
         return intoId
       }
       case AST.ObjectExpression: {
@@ -64,22 +69,47 @@ export default class ASTCompiler {
       case AST.MemberExpression: {
         intoId = this.nextId()
         let left = this.traverse(ast.object)
+
+        if (context) {
+          context.context = left
+        }
+
         if (ast.computed) {
           let right = this.traverse(ast.property)
           this._if(left, this.assign(intoId, this.computedMember(left, right)))
+          if (context) {
+            context.name = right
+            context.computed = true
+          }
         } else {
           this._if(
             left,
             this.assign(intoId, this.nonComputedMember(left, ast.property.name))
           )
+          if (context) {
+            context.name = ast.property.name
+            context.computed = false
+          }
         }
         return intoId
       }
       case AST.CallExpression: {
-        let callee = this.traverse(ast.callee)
+        let callContext = {}
+        let callee = this.traverse(ast.callee, callContext)
         let args = ast.arguments.map(arg => {
           return this.traverse(arg)
         })
+        if (callContext.name) {
+          if (callContext.computed) {
+            callee = this.computedMember(callContext.context, callContext.name)
+          } else {
+            callee = this.nonComputedMember(
+              callContext.context,
+              callContext.name
+            )
+          }
+        }
+
         return callee + '&&' + callee + '(' + args.join(',') + ')'
       }
     }
