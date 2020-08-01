@@ -365,6 +365,12 @@ describe('parse', () => {
           fn({ el: document.documentElement })
         }).toThrow()
       })
+      it('does not allow calling the aliased function constructor', () => {
+        let fn = parse('fnConstructor("return window;")')
+        expect(() => {
+          fn({ fnConstructor: function() {}.constructor })
+        }).toThrow()
+      })
     })
   })
 })
