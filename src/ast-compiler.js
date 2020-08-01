@@ -60,6 +60,7 @@ export default class ASTCompiler {
           context.name = ast.name
           context.computed = false
         }
+        this.addEnsureSafObjet(intoId)
         return intoId
       }
       case AST.ObjectExpression: {

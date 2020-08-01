@@ -353,6 +353,12 @@ describe('parse', () => {
           fn({ anObject: window })
         }).toThrow()
       })
+      it('does not allow referencing window', () => {
+        let fn = parse('wnd')
+        expect(() => {
+          fn({ wnd: window })
+        }).toThrow()
+      })
     })
   })
 })
