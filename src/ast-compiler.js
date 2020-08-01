@@ -18,8 +18,9 @@ export default class ASTCompiler {
       'ensureSafeMemberName',
       'ensureSafeObject',
       'ensureSafeFunction',
+      'ifDefined',
       fnString
-    )(ensureSafeMemberName, ensureSafeObject, ensureSafeFunction)
+    )(ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined)
   }
   traverse(ast, context, create) {
     let intoId
@@ -171,7 +172,12 @@ export default class ASTCompiler {
         )
       }
       case AST.UnaryExpression:
-        return ast.operator + '(' + this.traverse(ast.argument) + ')'
+        return (
+          ast.operator +
+          '(' +
+          this.ifDefined(this.traverse(ast.argument), 0) +
+          ')'
+        )
     }
   }
   addEnsureSafeFunction = function(expr) {
@@ -221,6 +227,9 @@ export default class ASTCompiler {
   stringEscapeFn(c) {
     return '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)
   }
+  ifDefined(value, defaultValue) {
+    return 'ifDefined(' + value + ',' + this.escape(defaultValue) + ')'
+  }
 }
 
 function ensureSafeMemberName(name) {
@@ -267,4 +276,8 @@ function ensureSafeFunction(obj) {
     }
   }
   return obj
+}
+
+function ifDefined(value, defaultValue) {
+  return typeof value === 'undefined' ? defaultValue : value
 }
