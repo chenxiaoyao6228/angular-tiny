@@ -146,7 +146,9 @@ export default class ASTCompiler {
           }
         }
 
-        return callee + '&&' + callee + '(' + args.join(',') + ')'
+        return (
+          callee + '&&ensureSafeObject(' + callee + '(' + args.join(',') + '))'
+        )
       }
       case AST.AssignmentExpression: {
         let leftContext = {}

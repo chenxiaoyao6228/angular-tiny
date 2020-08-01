@@ -22,6 +22,8 @@ export default class AST {
   ast(text) {
     this.tokens = this.lexer.lex(text)
     console.log('this.tokens', this.tokens)
+    // eslint-disable-next-line
+     debugger 
     return this.program()
   }
   program() {

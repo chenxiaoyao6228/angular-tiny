@@ -341,6 +341,12 @@ describe('parse', () => {
           fn({ wnd: window })
         }).toThrow()
       })
+      it('does not allow functions to return window', () => {
+        let fn = parse('getWind()')
+        expect(() => {
+          fn({ getWind: () => window })
+        }).toThrow()
+      })
     })
   })
 })
