@@ -8,6 +8,10 @@ let ESCAPES = {
   '"': '"'
 }
 
+let OPERATORS = {
+  '+': true
+}
+
 export default class Lexer {
   constructor() {}
   lex(text) {
@@ -34,7 +38,13 @@ export default class Lexer {
         })
         this.index++
       } else {
-        throw `Unexpected next character ${this.ch}`
+        let op = OPERATORS[this.ch]
+        if (op) {
+          this.tokens.push({ text: this.ch })
+          this.index++
+        } else {
+          throw `Unexpected next character ${this.ch}`
+        }
       }
     }
     return this.tokens

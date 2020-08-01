@@ -9,6 +9,7 @@ export default class AST {
   static MemberExpression = 'MemberExpression'
   static CallExpression = 'CallExpression'
   static AssignmentExpression = 'AssignmentExpression'
+  static UnaryExpression = 'UnaryExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -22,14 +23,32 @@ export default class AST {
   ast(text) {
     this.tokens = this.lexer.lex(text)
     console.log('this.tokens', this.tokens)
-    // eslint-disable-next-line
-     debugger 
     return this.program()
   }
+  // 下面的方法名按照优先级从高到低的顺序进行排列
   program() {
     return {
       type: AST.program,
       body: this.assignment()
+    }
+  }
+  assignment() {
+    let left = this.unary()
+    if (this.expect('=')) {
+      let right = this.unary()
+      return { type: AST.AssignmentExpression, left: left, right: right }
+    }
+    return left
+  }
+  unary() {
+    if (this.expect('+')) {
+      return {
+        type: AST.UnaryExpression,
+        operator: '+',
+        argument: this.primary()
+      }
+    } else {
+      return this.primary()
     }
   }
   primary() {
@@ -120,6 +139,12 @@ export default class AST {
     this.consume(']')
     return { type: AST.ArrayExpression, elements: elements }
   }
+  identifier() {
+    return {
+      type: AST.Identifier,
+      name: this.consume().text
+    }
+  }
   peek(e1, e2, e3, e4) {
     if (this.tokens.length > 0) {
       let text = this.tokens[0].text
@@ -134,26 +159,12 @@ export default class AST {
       return this.tokens.shift()
     }
   }
-  assignment() {
-    let left = this.primary()
-    if (this.expect('=')) {
-      let right = this.primary()
-      return { type: AST.AssignmentExpression, left: left, right: right }
-    }
-    return left
-  }
   consume(e) {
     let token = this.expect(e)
     if (!token) {
       throw 'Unexpected. Expecting: ' + e
     }
     return token
-  }
-  identifier() {
-    return {
-      type: AST.Identifier,
-      name: this.consume().text
-    }
   }
   constant() {
     return { type: AST.Literal, value: this.consume().value }

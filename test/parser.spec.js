@@ -391,4 +391,10 @@ describe('parse', () => {
       }).toThrow()
     })
   })
+  describe('Operator expressions', () => {
+    it('parses an unary', () => {
+      expect(parse('+42')()).toEqual(42)
+      expect(parse('+a')({ a: 42 })).toEqual(42)
+    })
+  })
 })

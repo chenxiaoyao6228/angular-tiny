@@ -170,6 +170,8 @@ export default class ASTCompiler {
           'ensureSafeObject(' + this.traverse(ast.right) + ')'
         )
       }
+      case AST.UnaryExpression:
+        return ast.operator + '(' + this.traverse(ast.argument) + ')'
     }
   }
   addEnsureSafeFunction = function(expr) {
