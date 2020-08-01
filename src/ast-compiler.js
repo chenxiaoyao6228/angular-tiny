@@ -14,10 +14,12 @@ export default class ASTCompiler {
       ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
        ${this.state.body.join('')}
       };return fn;`
-    return new Function('ensureSafeMemberName', 'ensureSafeObject', fnString)(
-      ensureSafeMemberName,
-      ensureSafeObject
-    )
+    return new Function(
+      'ensureSafeMemberName',
+      'ensureSafeObject',
+      'ensureSafeFunction',
+      fnString
+    )(ensureSafeMemberName, ensureSafeObject, ensureSafeFunction)
   }
   traverse(ast, context, create) {
     let intoId
@@ -146,7 +148,7 @@ export default class ASTCompiler {
             )
           }
         }
-
+        this.addEnsureSafeFunction(callee)
         return (
           callee + '&&ensureSafeObject(' + callee + '(' + args.join(',') + '))'
         )
@@ -169,6 +171,9 @@ export default class ASTCompiler {
         )
       }
     }
+  }
+  addEnsureSafeFunction = function(expr) {
+    this.state.body.push('ensureSafeFunction(' + expr + ');')
   }
   addEnsureSafObjet(expr) {
     this.state.body.push('ensureSafeObject(' + expr + ');')
@@ -242,6 +247,21 @@ function ensureSafeObject(obj) {
       throw 'Referencing Function in Angular expressions is disallowed'
     } else if (obj.getOwnPropertyNames || obj.getOwnPropertyDescriptor) {
       throw 'Referencing Object in Angular expressions is disallowed!'
+    }
+  }
+  return obj
+}
+
+let CALL = Function.prototype.call
+let APPLY = Function.prototype.apply
+let BIND = Function.prototype.bind
+function ensureSafeFunction(obj) {
+  if (obj) {
+    if (obj.constructor === obj) {
+      throw 'Referencing Function in Angular expressions is disallowed!'
+    } else if (obj === CALL || obj === APPLY || obj === BIND) {
+      throw 'Referencing call, apply, or bind in Angular expressions ' +
+        'is disallowed!'
     }
   }
   return obj

@@ -378,5 +378,17 @@ describe('parse', () => {
         }).toThrow()
       })
     })
+    it('does not allow calling call', () => {
+      let fn = parse('fun.call(obj)')
+      expect(() => {
+        fn({ fun: function() {}, obj: {} })
+      }).toThrow()
+    })
+    it('does not allow calling apply', () => {
+      let fn = parse('fun.apply(obj)')
+      expect(() => {
+        fn({ fun: function() {}, obj: {} })
+      }).toThrow()
+    })
   })
 })
