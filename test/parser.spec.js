@@ -359,6 +359,12 @@ describe('parse', () => {
           fn({ wnd: window })
         }).toThrow()
       })
+      it('does not allow calling functions on DOM elements', () => {
+        let fn = parse('el.setAttribute("evil", "true")')
+        expect(() => {
+          fn({ el: document.documentElement })
+        }).toThrow()
+      })
     })
   })
 })
