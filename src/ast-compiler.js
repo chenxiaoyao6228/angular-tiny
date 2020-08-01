@@ -7,7 +7,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
-    console.log('ast', JSON.stringify(ast))
+    // console.log('ast', JSON.stringify(ast))
     this.state = { body: [], nextId: 0, vars: [] }
     this.traverse(ast)
     let fnString = `var fn=function(s,l){

@@ -9,7 +9,8 @@ let ESCAPES = {
 }
 
 let OPERATORS = {
-  '+': true
+  '+': true,
+  '!': true
 }
 
 export default class Lexer {

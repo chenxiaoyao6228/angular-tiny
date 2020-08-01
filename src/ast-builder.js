@@ -22,7 +22,7 @@ export default class AST {
   }
   ast(text) {
     this.tokens = this.lexer.lex(text)
-    console.log('this.tokens', this.tokens)
+    // console.log('this.tokens', this.tokens)
     return this.program()
   }
   // 下面的方法名按照优先级从高到低的顺序进行排列
@@ -41,11 +41,12 @@ export default class AST {
     return left
   }
   unary() {
-    if (this.expect('+')) {
+    let token
+    if ((token = this.expect('+', '!'))) {
       return {
         type: AST.UnaryExpression,
-        operator: '+',
-        argument: this.primary()
+        operator: token.text,
+        argument: this.unary()
       }
     } else {
       return this.primary()
