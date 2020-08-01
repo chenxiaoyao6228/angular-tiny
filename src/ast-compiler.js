@@ -240,6 +240,8 @@ function ensureSafeObject(obj) {
       throw 'Referencing DOM nodes in Angular expressions is disallowed!'
     } else if (obj.constructor === obj) {
       throw 'Referencing Function in Angular expressions is disallowed'
+    } else if (obj.getOwnPropertyNames || obj.getOwnPropertyDescriptor) {
+      throw 'Referencing Object in Angular expressions is disallowed!'
     }
   }
   return obj

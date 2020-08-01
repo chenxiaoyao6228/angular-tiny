@@ -371,6 +371,12 @@ describe('parse', () => {
           fn({ fnConstructor: function() {}.constructor })
         }).toThrow()
       })
+      it('does not allow calling functions on Object', () => {
+        let fn = parse('obj.create({})')
+        expect(() => {
+          fn({ obj: Object })
+        }).toThrow()
+      })
     })
   })
 })
