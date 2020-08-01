@@ -135,6 +135,7 @@ export default class ASTCompiler {
           return 'ensureSafeObject(' + this.traverse(arg) + ')'
         })
         if (callContext.name) {
+          this.addEnsureSafObjet(callContext.context)
           if (callContext.computed) {
             callee = this.computedMember(callContext.context, callContext.name)
           } else {
@@ -162,6 +163,9 @@ export default class ASTCompiler {
         return this.assign(leftExpr, this.traverse(ast.right))
       }
     }
+  }
+  addEnsureSafObjet(expr) {
+    this.state.body.push('ensureSafeObject(' + expr + ');')
   }
   addEnsureSafeMemberName(expr) {
     this.state.body.push('ensureSafeMemberName(' + expr + ');')
