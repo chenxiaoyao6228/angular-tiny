@@ -347,6 +347,12 @@ describe('parse', () => {
           fn({ getWind: () => window })
         }).toThrow()
       })
+      it('does not allow assigning window', () => {
+        let fn = parse('wnd = anObject')
+        expect(() => {
+          fn({ anObject: window })
+        }).toThrow()
+      })
     })
   })
 })

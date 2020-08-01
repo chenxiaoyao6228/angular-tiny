@@ -162,7 +162,10 @@ export default class ASTCompiler {
             leftContext.name
           )
         }
-        return this.assign(leftExpr, this.traverse(ast.right))
+        return this.assign(
+          leftExpr,
+          'ensureSafeObject(' + this.traverse(ast.right) + ')'
+        )
       }
     }
   }
