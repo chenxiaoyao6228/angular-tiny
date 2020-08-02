@@ -179,15 +179,27 @@ export default class ASTCompiler {
           ')'
         )
       case AST.BinaryExpression: {
-        return (
-          '(' +
-          this.traverse(ast.left) +
-          ')' +
-          ast.operator +
-          '(' +
-          this.traverse(ast.right) +
-          ')'
-        )
+        if (ast.operator === '+' || ast.operator === '-') {
+          return (
+            '(' +
+            this.ifDefined(this.traverse(ast.left), 0) +
+            ')' +
+            ast.operator +
+            '(' +
+            this.ifDefined(this.traverse(ast.right), 0) +
+            ')'
+          )
+        } else {
+          return (
+            '(' +
+            this.traverse(ast.left) +
+            ')' +
+            ast.operator +
+            '(' +
+            this.traverse(ast.right) +
+            ')'
+          )
+        }
       }
     }
   }

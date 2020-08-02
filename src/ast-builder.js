@@ -34,13 +34,26 @@ export default class AST {
     }
   }
   assignment() {
-    let left = this.multiplicative()
+    let left = this.additive()
     if (this.expect('=')) {
-      let right = this.multiplicative()
+      let right = this.additive()
       return {
         type: AST.AssignmentExpression,
         left: left,
         right: right
+      }
+    }
+    return left
+  }
+  additive() {
+    let left = this.multiplicative()
+    let token
+    while ((token = this.expect('+')) || (token = this.expect('-'))) {
+      left = {
+        type: AST.BinaryExpression,
+        left: left,
+        operator: token.text,
+        right: this.multiplicative()
       }
     }
     return left
