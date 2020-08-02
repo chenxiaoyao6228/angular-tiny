@@ -72,6 +72,14 @@ function isNull(value) {
   return _.isNull(value)
 }
 
+function initial(value) {
+  return _.initial(value)
+}
+
+function last(value) {
+  return _.last(value)
+}
+
 export default {
   times,
   deepEqual,
@@ -84,5 +92,7 @@ export default {
   isPlainObject,
   forEach,
   isString,
-  isNull
+  isNull,
+  initial,
+  last
 }

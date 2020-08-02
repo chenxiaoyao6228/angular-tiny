@@ -1,5 +1,6 @@
 import AST from './ast-builder'
 import utils from './utils'
+import _ from 'lodash'
 export default class ASTCompiler {
   static stringEscapeRegex = /[^ a-zA-Z0-9]/g
   constructor(astBuilder) {
@@ -25,9 +26,17 @@ export default class ASTCompiler {
   traverse(ast, context, create) {
     let intoId
     switch (ast.type) {
-      case AST.Program:
-        this.state.body.push('return ', this.traverse(ast.body), ';')
+      case AST.Program: {
+        utils.initial(ast.body).forEach(statement => {
+          this.state.body.push(this.traverse(statement), ';')
+        })
+        this.state.body.push(
+          'return ',
+          this.traverse(utils.last(ast.body)),
+          ';'
+        )
         break
+      }
       case AST.Literal:
         return this.escape(ast.value)
       case AST.ArrayExpression: {

@@ -30,9 +30,15 @@ export default class AST {
   }
   // 下面的方法名按照优先级从高到低的顺序进行排列
   program() {
-    return {
-      type: AST.Program,
-      body: this.assignment()
+    let body = []
+    // eslint-disable-next-line
+    while (true) {
+      if (this.tokens.length) {
+        body.push(this.assignment())
+      }
+      if (!this.expect(';')) {
+        return { type: AST.Program, body: body }
+      }
     }
   }
   assignment() {
