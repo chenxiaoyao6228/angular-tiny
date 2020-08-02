@@ -10,6 +10,7 @@ export default class AST {
   static CallExpression = 'CallExpression'
   static AssignmentExpression = 'AssignmentExpression'
   static UnaryExpression = 'UnaryExpression'
+  static BinaryExpression = 'BinaryExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -33,10 +34,28 @@ export default class AST {
     }
   }
   assignment() {
-    let left = this.unary()
+    let left = this.multiplicative()
     if (this.expect('=')) {
+      let right = this.multiplicative()
+      return {
+        type: AST.AssignmentExpression,
+        left: left,
+        right: right
+      }
+    }
+    return left
+  }
+  multiplicative() {
+    let left = this.unary()
+    let token
+    while ((token = this.expect('*', '/', '%'))) {
       let right = this.unary()
-      return { type: AST.AssignmentExpression, left: left, right: right }
+      left = {
+        type: AST.BinaryExpression,
+        left: left,
+        operator: token.text,
+        right: right
+      }
     }
     return left
   }
@@ -52,6 +71,7 @@ export default class AST {
       return this.primary()
     }
   }
+
   primary() {
     let primary
     if (this.expect('[')) {
@@ -95,6 +115,7 @@ export default class AST {
     }
     return primary
   }
+
   parseArguments() {
     let args = []
     if (!this.peek(')')) {

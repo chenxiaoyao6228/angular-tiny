@@ -178,6 +178,17 @@ export default class ASTCompiler {
           this.ifDefined(this.traverse(ast.argument), 0) +
           ')'
         )
+      case AST.BinaryExpression: {
+        return (
+          '(' +
+          this.traverse(ast.left) +
+          ')' +
+          ast.operator +
+          '(' +
+          this.traverse(ast.right) +
+          ')'
+        )
+      }
     }
   }
   addEnsureSafeFunction = function(expr) {
