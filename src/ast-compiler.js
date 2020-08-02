@@ -201,6 +201,14 @@ export default class ASTCompiler {
           )
         }
       }
+      case AST.LogicalExpression:
+        intoId = this.nextId()
+        this.state.body.push(this.assign(intoId, this.traverse(ast.left)))
+        this._if(
+          ast.operator === '&&' ? intoId : this.not(intoId),
+          this.assign(intoId, this.traverse(ast.right))
+        )
+        return intoId
     }
   }
   addEnsureSafeFunction = function(expr) {

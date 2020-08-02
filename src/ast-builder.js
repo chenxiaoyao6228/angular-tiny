@@ -11,6 +11,7 @@ export default class AST {
   static AssignmentExpression = 'AssignmentExpression'
   static UnaryExpression = 'UnaryExpression'
   static BinaryExpression = 'BinaryExpression'
+  static LogicalExpression = 'LogicalExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -34,13 +35,39 @@ export default class AST {
     }
   }
   assignment() {
-    let left = this.equality()
+    let left = this.logicalOR()
     if (this.expect('=')) {
-      let right = this.equality()
+      let right = this.logicalOR()
       return {
         type: AST.AssignmentExpression,
         left: left,
         right: right
+      }
+    }
+    return left
+  }
+  logicalOR() {
+    let left = this.logicalAND()
+    let token
+    while ((token = this.expect('||'))) {
+      left = {
+        type: AST.LogicalExpression,
+        left: left,
+        operator: token.text,
+        right: this.logicalAND()
+      }
+    }
+    return left
+  }
+  logicalAND() {
+    let left = this.equality()
+    let token
+    while ((token = this.expect('&&'))) {
+      left = {
+        type: AST.LogicalExpression,
+        left: left,
+        operator: token.text,
+        right: this.equality()
       }
     }
     return left
@@ -84,6 +111,7 @@ export default class AST {
     }
     return left
   }
+
   multiplicative() {
     let left = this.unary()
     let token

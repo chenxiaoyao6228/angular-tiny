@@ -463,5 +463,50 @@ describe('parse', () => {
     it('parses relational on a higher precedence than equality', () => {
       expect(parse('2 == "2" > 2 === "2"')()).toBe(false)
     })
+    it('parses logical AND', () => {
+      expect(parse('true && true')()).toBe(true)
+      expect(parse('true && false')()).toBe(false)
+    })
+    it('parses logical OR', () => {
+      expect(parse('true || true')()).toBe(true)
+      expect(parse('true || false')()).toBe(true)
+      expect(parse('false || false')()).toBe(false)
+    })
+    it('parses multiple ANDs', () => {
+      expect(parse('true && true && true')()).toBe(true)
+      expect(parse('true && true && false')()).toBe(false)
+    })
+    it('parses multiple ORs', () => {
+      expect(parse('true || true || true')()).toBe(true)
+      expect(parse('true || true || false')()).toBe(true)
+      expect(parse('false || false || true')()).toBe(true)
+      expect(parse('false || false || false')()).toBe(false)
+    })
+    it('short-circuits AND', () => {
+      let invoked
+      let scope = {
+        fn: function() {
+          invoked = true
+        }
+      }
+      parse('false && fn()')(scope)
+      expect(invoked).toBeUndefined()
+    })
+    it('short-circuits OR', () => {
+      let invoked
+      let scope = {
+        fn: function() {
+          invoked = true
+        }
+      }
+      parse('true || fn()')(scope)
+      expect(invoked).toBeUndefined()
+    })
+    it('parses AND with a higher precedence than OR', () => {
+      expect(parse('false && true || true')()).toBe(true)
+    })
+    it('parses OR with a lower precedence than equality', () => {
+      expect(parse('1 === 2 || 2 === 2')()).toBeTruthy()
+    })
   })
 })
