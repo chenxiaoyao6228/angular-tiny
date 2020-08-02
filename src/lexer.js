@@ -10,7 +10,8 @@ let ESCAPES = {
 
 let OPERATORS = {
   '+': true,
-  '!': true
+  '!': true,
+  '-': true
 }
 
 export default class Lexer {
@@ -70,9 +71,11 @@ export default class Lexer {
   readString(quote) {
     this.index++
     let string = ''
+    let rawString = quote
     let escape = false
     while (this.index < this.text.length) {
       let ch = this.text.charAt(this.index)
+      rawString += ch
       if (escape) {
         if (ch === 'u') {
           let hex = this.text.substring(this.index + 1, this.index + 5)
@@ -93,8 +96,8 @@ export default class Lexer {
       } else if (ch === quote) {
         this.index++
         this.tokens.push({
-          text: string,
-          value: string
+          value: string,
+          text: rawString
         })
         return
       } else if (ch === '\\') {
