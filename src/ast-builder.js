@@ -12,6 +12,7 @@ export default class AST {
   static UnaryExpression = 'UnaryExpression'
   static BinaryExpression = 'BinaryExpression'
   static LogicalExpression = 'LogicalExpression'
+  static ConditionalExpression = 'ConditionalExpression'
 
   constructor(lexer) {
     this.lexer = lexer
@@ -30,14 +31,14 @@ export default class AST {
   // 下面的方法名按照优先级从高到低的顺序进行排列
   program() {
     return {
-      type: AST.program,
+      type: AST.Program,
       body: this.assignment()
     }
   }
   assignment() {
-    let left = this.logicalOR()
+    let left = this.ternary()
     if (this.expect('=')) {
-      let right = this.logicalOR()
+      let right = this.ternary()
       return {
         type: AST.AssignmentExpression,
         left: left,
@@ -45,6 +46,22 @@ export default class AST {
       }
     }
     return left
+  }
+  ternary() {
+    let test = this.logicalOR()
+    if (this.expect('?')) {
+      let consequent = this.assignment()
+      if (this.consume(':')) {
+        let alternate = this.assignment()
+        return {
+          type: AST.ConditionalExpression,
+          test: test,
+          consequent: consequent,
+          alternate: alternate
+        }
+      }
+    }
+    return test
   }
   logicalOR() {
     let left = this.logicalAND()

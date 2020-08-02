@@ -48,7 +48,7 @@ export default class Lexer {
         this.readIdent()
       } else if (this.isWhiteSpae(this.ch)) {
         this.index++
-      } else if ('[,]{:}.()'.includes(this.ch)) {
+      } else if ('[,]{:}.()?'.includes(this.ch)) {
         this.tokens.push({
           text: this.ch
         })

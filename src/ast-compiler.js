@@ -25,7 +25,7 @@ export default class ASTCompiler {
   traverse(ast, context, create) {
     let intoId
     switch (ast.type) {
-      case AST.program:
+      case AST.Program:
         this.state.body.push('return ', this.traverse(ast.body), ';')
         break
       case AST.Literal:
@@ -209,6 +209,17 @@ export default class ASTCompiler {
           this.assign(intoId, this.traverse(ast.right))
         )
         return intoId
+      case AST.ConditionalExpression: {
+        intoId = this.nextId()
+        let testId = this.nextId()
+        this.state.body.push(this.assign(testId, this.traverse(ast.test)))
+        this._if(testId, this.assign(intoId, this.traverse(ast.consequent)))
+        this._if(
+          this.not(testId),
+          this.assign(intoId, this.traverse(ast.alternate))
+        )
+        return intoId
+      }
     }
   }
   addEnsureSafeFunction = function(expr) {
