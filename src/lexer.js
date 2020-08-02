@@ -14,7 +14,16 @@ let OPERATORS = {
   '-': true,
   '*': true,
   '/': true,
-  '%': true
+  '%': true,
+  '==': true,
+  '!=': true,
+  '===': true,
+  '!==': true,
+  '<': true,
+  '>': true,
+  '<=': true,
+  '>=': true,
+  '=': true
 }
 
 export default class Lexer {
@@ -37,16 +46,22 @@ export default class Lexer {
         this.readIdent()
       } else if (this.isWhiteSpae(this.ch)) {
         this.index++
-      } else if ('[,]{:}.()='.includes(this.ch)) {
+      } else if ('[,]{:}.()'.includes(this.ch)) {
         this.tokens.push({
           text: this.ch
         })
         this.index++
       } else {
-        let op = OPERATORS[this.ch]
-        if (op) {
-          this.tokens.push({ text: this.ch })
-          this.index++
+        let ch = this.ch
+        let ch2 = this.ch + this.peek()
+        let ch3 = this.ch + this.peek() + this.peek(2)
+        let op = OPERATORS[ch]
+        let op2 = OPERATORS[ch2]
+        let op3 = OPERATORS[ch3]
+        if (op || op2 || op3) {
+          let token = op3 ? ch3 : op2 ? ch2 : ch
+          this.tokens.push({ text: token })
+          this.index += token.length
         } else {
           throw `Unexpected next character ${this.ch}`
         }
@@ -145,9 +160,10 @@ export default class Lexer {
     }
     this.tokens.push({ text: number, value: Number(number) })
   }
-  peek() {
-    return this.index < this.text.length - 1
-      ? this.text.charAt(this.index + 1)
+  peek(n) {
+    n = n || 1
+    return this.index + n < this.text.length
+      ? this.text.charAt(this.index + n)
       : false
   }
   isExpOperator(ch) {

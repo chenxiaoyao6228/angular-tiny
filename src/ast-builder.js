@@ -34,13 +34,39 @@ export default class AST {
     }
   }
   assignment() {
-    let left = this.additive()
+    let left = this.equality()
     if (this.expect('=')) {
-      let right = this.additive()
+      let right = this.equality()
       return {
         type: AST.AssignmentExpression,
         left: left,
         right: right
+      }
+    }
+    return left
+  }
+  equality() {
+    let left = this.relational()
+    let token
+    while ((token = this.expect('==', '!=', '===', '!=='))) {
+      left = {
+        type: AST.BinaryExpression,
+        left: left,
+        operator: token.text,
+        right: this.relational()
+      }
+    }
+    return left
+  }
+  relational() {
+    let left = this.additive()
+    let token
+    while ((token = this.expect('<', '>', '<=', '>='))) {
+      left = {
+        type: AST.BinaryExpression,
+        left: left,
+        operator: token.text,
+        right: this.additive()
       }
     }
     return left
