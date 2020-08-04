@@ -753,5 +753,19 @@ describe('parse', () => {
         })
       ).toEqual([{ name: { first: 'Jane' }, role: 'moderator' }])
     })
+    it('ignores undefined values in expectation object', () => {
+      let fn = parse('arr | filter:{name: thisIsUndefined}')
+      expect(
+        fn({
+          arr: [
+            { name: 'Joe', role: 'admin' },
+            { name: 'Jane', role: 'moderator' }
+          ]
+        })
+      ).toEqual([
+        { name: 'Joe', role: 'admin' },
+        { name: 'Jane', role: 'moderator' }
+      ])
+    })
   })
 })

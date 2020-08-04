@@ -23,6 +23,9 @@ const deepCompare = (actual, expected, comparator) => {
   if (_.isObject(actual)) {
     if (_.isObject(expected)) {
       return _.every(_.toPlainObject(expected), (expectedVal, expectedKey) => {
+        if (_.isUndefined(expectedVal)) {
+          return true
+        }
         return deepCompare(actual[expectedKey], expectedVal, comparator)
       })
     } else {
