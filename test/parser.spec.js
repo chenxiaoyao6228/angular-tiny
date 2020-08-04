@@ -563,5 +563,11 @@ describe('parse', () => {
       let fn = parse('aString | upcase')
       expect(fn({ aString: 'Hello' })).toEqual('HELLO')
     })
+    it('can parse filter chain expressions', () => {
+      register('upcase', () => s => s.toUpperCase())
+      register('exclamate', () => s => s + '!')
+      let fn = parse('"hello" | upcase | exclamate')
+      expect(fn()).toEqual('HELLO!')
+    })
   })
 })

@@ -25,7 +25,7 @@ export default class AST {
   }
   ast(text) {
     this.tokens = this.lexer.lex(text)
-    // console.log('this.tokens', this.tokens)
+    console.log('this.tokens', this.tokens)
     return this.program()
   }
   // 下面的方法名按照优先级从高到低的顺序进行排列
@@ -43,7 +43,7 @@ export default class AST {
   }
   filter() {
     let left = this.assignment()
-    if (this.expect('|')) {
+    while (this.expect('|')) {
       left = {
         type: AST.CallExpression,
         callee: this.identifier(),
