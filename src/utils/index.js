@@ -80,6 +80,13 @@ function last(value) {
   return _.last(value)
 }
 
+function isEmpty(obj) {
+  return (
+    [Object, Array].includes((obj || {}).constructor) &&
+    !Object.entries(obj || {}).length
+  )
+}
+
 export default {
   times,
   deepEqual,
@@ -94,5 +101,6 @@ export default {
   isString,
   isNull,
   initial,
-  last
+  last,
+  isEmpty
 }

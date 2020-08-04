@@ -1,6 +1,7 @@
 import AST from './ast-builder'
 import utils from './utils'
 import _ from 'lodash'
+import { filter } from './filter.js'
 export default class ASTCompiler {
   static stringEscapeRegex = /[^ a-zA-Z0-9]/g
   constructor(astBuilder) {
@@ -9,19 +10,36 @@ export default class ASTCompiler {
   compile(text) {
     let ast = this.astBuilder.ast(text)
     // console.log('ast', JSON.stringify(ast))
-    this.state = { body: [], nextId: 0, vars: [] }
+    this.state = {
+      body: [],
+      nextId: 0,
+      vars: [],
+      filters: {}
+    }
     this.traverse(ast)
-    let fnString = `var fn=function(s,l){
+    let fnString = `
+      ${this.filterPrefix()}
+      var fn=function(s,l){
       ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
-       ${this.state.body.join('')}
+      ${this.state.body.join('')}
       };return fn;`
-    return new Function(
+    // console.log('fnString', fnString)
+    let fn = new Function(
       'ensureSafeMemberName',
       'ensureSafeObject',
       'ensureSafeFunction',
       'ifDefined',
+      'filter',
       fnString
-    )(ensureSafeMemberName, ensureSafeObject, ensureSafeFunction, ifDefined)
+    )(
+      ensureSafeMemberName,
+      ensureSafeObject,
+      ensureSafeFunction,
+      ifDefined,
+      filter
+    )
+    // console.log('fn.toString()', fn.toString())
+    return fn
   }
   traverse(ast, context, create) {
     let intoId
@@ -142,26 +160,42 @@ export default class ASTCompiler {
         return intoId
       }
       case AST.CallExpression: {
-        let callContext = {}
-        let callee = this.traverse(ast.callee, callContext)
-        let args = ast.arguments.map(arg => {
-          return 'ensureSafeObject(' + this.traverse(arg) + ')'
-        })
-        if (callContext.name) {
-          this.addEnsureSafObjet(callContext.context)
-          if (callContext.computed) {
-            callee = this.computedMember(callContext.context, callContext.name)
-          } else {
-            callee = this.nonComputedMember(
-              callContext.context,
-              callContext.name
-            )
+        let callContext, callee, args
+        if (ast.filter) {
+          callee = this.filter(ast.callee.name)
+          args = Array.from(ast.arguments).map(arg => this.traverse(arg))
+          return callee + '(' + args + ')'
+        } else {
+          callContext = {}
+          callee = this.traverse(ast.callee, callContext)
+          args = Array.from(ast.arguments).map(arg => {
+            return 'ensureSafeObject(' + this.traverse(arg) + ')'
+          })
+          if (callContext.name) {
+            this.addEnsureSafObjet(callContext.context)
+            if (callContext.computed) {
+              callee = this.computedMember(
+                callContext.context,
+                callContext.name
+              )
+            } else {
+              callee = this.nonComputedMember(
+                callContext.context,
+                callContext.name
+              )
+            }
           }
+          this.addEnsureSafeFunction(callee)
+          return (
+            callee +
+            '&&ensureSafeObject(' +
+            callee +
+            '(' +
+            args.join(',') +
+            '))'
+          )
         }
-        this.addEnsureSafeFunction(callee)
-        return (
-          callee + '&&ensureSafeObject(' + callee + '(' + args.join(',') + '))'
-        )
+        // break
       }
       case AST.AssignmentExpression: {
         let leftContext = {}
@@ -231,6 +265,29 @@ export default class ASTCompiler {
       }
     }
   }
+  filter(name) {
+    if (!Object.prototype.hasOwnProperty.call(this.state.filters, name)) {
+      this.state.filters[name] = this.nextId(true)
+    }
+    return this.state.filters[name]
+  }
+  filterPrefix() {
+    // eslint-disable-next-line
+     debugger 
+    if (utils.isEmpty(this.state.filters)) {
+      return ''
+    } else {
+      let that = this
+      let parts = _.map(
+        this.state.filters,
+        (varName, filterName) => {
+          return varName + '=' + 'filter(' + that.escape(filterName) + ')'
+        },
+        this
+      )
+      return 'var ' + parts.join(',') + ';'
+    }
+  }
   addEnsureSafeFunction = function(expr) {
     this.state.body.push('ensureSafeFunction(' + expr + ');')
   }
@@ -258,9 +315,11 @@ export default class ASTCompiler {
         ${consequent}
       }`)
   }
-  nextId() {
+  nextId(skip) {
     let id = `v${this.state.nextId++}`
-    this.state.vars.push(id)
+    if (!skip) {
+      this.state.vars.push(id)
+    }
     return id
   }
   assign(id, value) {

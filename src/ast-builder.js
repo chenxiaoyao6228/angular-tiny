@@ -34,12 +34,24 @@ export default class AST {
     // eslint-disable-next-line
     while (true) {
       if (this.tokens.length) {
-        body.push(this.assignment())
+        body.push(this.filter())
       }
       if (!this.expect(';')) {
         return { type: AST.Program, body: body }
       }
     }
+  }
+  filter() {
+    let left = this.assignment()
+    if (this.expect('|')) {
+      left = {
+        type: AST.CallExpression,
+        callee: this.identifier(),
+        arguments: [left],
+        filter: true
+      }
+    }
+    return left
   }
   assignment() {
     let left = this.ternary()
@@ -165,7 +177,7 @@ export default class AST {
   primary() {
     let primary
     if (this.expect('(')) {
-      primary = this.assignment()
+      primary = this.filter()
       this.consume(')')
     } else if (this.expect('[')) {
       primary = this.arrayDeclaration()

@@ -558,5 +558,10 @@ describe('parse', () => {
       expect(filter('my')).toEqual(myFilter)
       expect(filter('myOther')).toEqual(myOtherFilter)
     })
+    it('can parse filter expressions', () => {
+      register('upcase', () => str => str.toUpperCase())
+      let fn = parse('aString | upcase')
+      expect(fn({ aString: 'Hello' })).toEqual('HELLO')
+    })
   })
 })
