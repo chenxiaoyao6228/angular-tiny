@@ -19,7 +19,7 @@ const filter = name => filters[name]
 const deepCompare = (actual, expected, comparator) => {
   if (_.isObject(actual)) {
     return _.some(actual, value => {
-      return comparator(value, expected)
+      return deepCompare(value, expected, comparator)
     })
   } else {
     return comparator(actual, expected)
