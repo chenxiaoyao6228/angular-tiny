@@ -272,8 +272,6 @@ export default class ASTCompiler {
     return this.state.filters[name]
   }
   filterPrefix() {
-    // eslint-disable-next-line
-     debugger 
     if (utils.isEmpty(this.state.filters)) {
       return ''
     } else {

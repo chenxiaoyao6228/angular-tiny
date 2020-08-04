@@ -17,6 +17,9 @@ const register = (name, factory) => {
 const filter = name => filters[name]
 
 const deepCompare = (actual, expected, comparator) => {
+  if (_.isString(expected) && _.startsWith(expected, '!')) {
+    return !deepCompare(actual, expected.substring(1), comparator)
+  }
   if (_.isObject(actual)) {
     return _.some(actual, value => {
       return deepCompare(value, expected, comparator)
