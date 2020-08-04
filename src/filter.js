@@ -2,7 +2,7 @@ import _ from 'lodash'
 import utils from './utils'
 let filters = {}
 
-function register(name, factory) {
+const register = (name, factory) => {
   if (utils.isObject(name)) {
     Object.keys(name).map(n => {
       return register(n, name[n])
@@ -14,8 +14,10 @@ function register(name, factory) {
   }
 }
 
-function filter(name) {
-  return filters[name]
-}
+const filter = name => filters[name]
+
+const filterFilter = () => (array, filterExpr) => array.filter(filterExpr)
+
+register('filter', filterFilter)
 
 export { register, filter }

@@ -87,6 +87,10 @@ function isEmpty(obj) {
   )
 }
 
+function repeat(s, times) {
+  return _.repeat(s, times)
+}
+
 export default {
   times,
   deepEqual,
@@ -102,5 +106,6 @@ export default {
   isNull,
   initial,
   last,
-  isEmpty
+  isEmpty,
+  repeat
 }

@@ -1,5 +1,6 @@
 import parse from '../src/parser.js'
 import { filter, register } from '../src/filter.js'
+import utils from '../src/utils'
 
 describe('parse', () => {
   describe('parse Number', () => {
@@ -568,6 +569,39 @@ describe('parse', () => {
       register('exclamate', () => s => s + '!')
       let fn = parse('"hello" | upcase | exclamate')
       expect(fn()).toEqual('HELLO!')
+    })
+    it('can pass an additional argument to filters', () => {
+      register('repeat', () => {
+        return function(s, times) {
+          return utils.repeat(s, times)
+        }
+      })
+      let fn = parse('"hello" | repeat:3')
+      expect(fn()).toEqual('hellohellohello')
+    })
+    it('can pass several additional arguments to filters', () => {
+      register('surround', () => {
+        return function(s, left, right) {
+          return left + s + right
+        }
+      })
+      let fn = parse('"hello" | surround:"*":"!"')
+      expect(fn()).toEqual('*hello!')
+    })
+  })
+  describe('filter filter', () => {
+    it('is available', () => {
+      expect(filter('filter')).toBeDefined()
+    })
+
+    it('can filter an array with a predicate function', () => {
+      let fn = parse('[1, 2, 3, 4] | filter:isOdd')
+      let scope = {
+        isOdd: function(n) {
+          return n % 2 !== 0
+        }
+      }
+      expect(fn(scope)).toEqual([1, 3])
     })
   })
 })
