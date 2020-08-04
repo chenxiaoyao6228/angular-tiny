@@ -612,5 +612,9 @@ describe('parse', () => {
       let fn = parse('arr | filter:"o"')
       expect(fn({ arr: ['quick', 'brown', 'fox'] })).toEqual(['brown', 'fox'])
     })
+    it('filters an array of strings ignoring case', () => {
+      let fn = parse('arr | filter:"o"')
+      expect(fn({ arr: ['quick', 'BROWN', 'fox'] })).toEqual(['BROWN', 'fox'])
+    })
   })
 })

@@ -16,7 +16,8 @@ const register = (name, factory) => {
 
 const filter = name => filters[name]
 
-const createPredicateFn = expression => item => item.indexOf(expression) !== -1
+const createPredicateFn = expression => item =>
+  item.toLowerCase().indexOf(expression.toLowerCase()) !== -1
 
 const filterFilter = () => (array, filterExpr) => {
   let predicateFn
