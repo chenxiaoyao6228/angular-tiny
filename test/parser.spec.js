@@ -652,5 +652,44 @@ describe('parse', () => {
         fn({ arr: [[{ name: 'John' }, { name: 'Mary' }], [{ name: 'Jane' }]] })
       ).toEqual([[{ name: 'John' }, { name: 'Mary' }]])
     })
+    it('filters with a number', () => {
+      let fn = parse('arr | filter:42')
+      expect(
+        fn({
+          arr: [
+            { name: 'Mary', age: 42 },
+            { name: 'John', age: 43 },
+            { name: 'Jane', age: 44 }
+          ]
+        })
+      ).toEqual([{ name: 'Mary', age: 42 }])
+    })
+    it('filters with a boolean value', () => {
+      let fn = parse('arr | filter:true')
+      expect(
+        fn({
+          arr: [
+            { name: 'Mary', admin: true },
+            { name: 'John', admin: true },
+            { name: 'Jane', admin: false }
+          ]
+        })
+      ).toEqual([
+        { name: 'Mary', admin: true },
+        { name: 'John', admin: true }
+      ])
+    })
+    it('filters with a substring numeric value', () => {
+      let fn = parse('arr | filter:42')
+      expect(fn({ arr: ['contains 42'] })).toEqual(['contains 42'])
+    })
+    it('filters matching null', () => {
+      let fn = parse('arr | filter:null')
+      expect(fn({ arr: [null, 'not null'] })).toEqual([null])
+    })
+    it('does not match undefined values', () => {
+      let fn = parse('arr | filter:"undefined"')
+      expect(fn({ arr: [undefined, 'undefined'] })).toEqual(['undefined'])
+    })
   })
 })
