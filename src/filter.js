@@ -16,8 +16,26 @@ const register = (name, factory) => {
 
 const filter = name => filters[name]
 
-const createPredicateFn = expression => item =>
-  item.toLowerCase().indexOf(expression.toLowerCase()) !== -1
+const deepCompare = (actual, expected, comparator) => {
+  if (_.isObject(actual)) {
+    return _.some(actual, value => {
+      return comparator(value, expected)
+    })
+  } else {
+    return comparator(actual, expected)
+  }
+}
+
+const createPredicateFn = expression => {
+  function comparator(actual, expected) {
+    actual = actual.toLowerCase()
+    expected = expected.toLowerCase()
+    return actual.indexOf(expected) !== -1
+  }
+  return function predicateFn(item) {
+    return deepCompare(item, expression, comparator)
+  }
+}
 
 const filterFilter = () => (array, filterExpr) => {
   let predicateFn
