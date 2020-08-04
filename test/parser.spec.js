@@ -1,4 +1,5 @@
 import parse from '../src/parser.js'
+import { filter, register } from '../src/filter.js'
 
 describe('parse', () => {
   describe('parse Number', () => {
@@ -535,6 +536,27 @@ describe('parse', () => {
     })
     it('returns the value of the last statement', () => {
       expect(parse('a = 1; b = 2; a + b')({})).toBe(3)
+    })
+  })
+  describe('filter', () => {
+    it('can be registered and obtained', () => {
+      let myFilter = function() {}
+      let myFilterFactory = function() {
+        return myFilter
+      }
+      register('my', myFilterFactory)
+      expect(filter('my')).toBe(myFilter)
+    })
+    it('allows registering multiple filters with an object', () => {
+      let myFilter = () => {}
+      let myOtherFilter = () => {}
+      register({
+        my: () => myFilter,
+        myOther: () => myOtherFilter
+      })
+
+      expect(filter('my')).toEqual(myFilter)
+      expect(filter('myOther')).toEqual(myOtherFilter)
     })
   })
 })

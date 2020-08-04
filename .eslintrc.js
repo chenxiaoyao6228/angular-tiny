@@ -21,7 +21,9 @@ module.exports = {
     test: true,
     __dirname: true,
     expect: true,
-    jest: true
+    jest: true,
+    filter: false,
+    register: false
   },
   "rules": {
     "prettier/prettier": "error",
