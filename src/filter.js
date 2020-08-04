@@ -21,9 +21,15 @@ const deepCompare = (actual, expected, comparator) => {
     return !deepCompare(actual, expected.substring(1), comparator)
   }
   if (_.isObject(actual)) {
-    return _.some(actual, value => {
-      return deepCompare(value, expected, comparator)
-    })
+    if (_.isObject(expected)) {
+      return _.every(_.toPlainObject(expected), (expectedVal, expectedKey) => {
+        return deepCompare(actual[expectedKey], expectedVal, comparator)
+      })
+    } else {
+      return _.some(actual, value => {
+        return deepCompare(value, expected, comparator)
+      })
+    }
   } else {
     return comparator(actual, expected)
   }
@@ -54,7 +60,8 @@ const filterFilter = () => (array, filterExpr) => {
     _.isString(filterExpr) ||
     _.isNumber(filterExpr) ||
     _.isBoolean(filterExpr) ||
-    _.isNull(filterExpr)
+    _.isNull(filterExpr) ||
+    _.isObject(filterExpr)
   ) {
     predicateFn = createPredicateFn(filterExpr)
   } else {
