@@ -1,5 +1,6 @@
 import utils from './utils'
 import _ from 'lodash'
+import parse from './parser'
 export default class Scope {
   constructor() {
     this.$$watchers = []
@@ -37,7 +38,7 @@ export default class Scope {
   }
   $watch(watchFn, listenerFn, valueEq) {
     let watcher = {
-      watchFn: watchFn,
+      watchFn: parse(watchFn),
       listenerFn: listenerFn || function() {},
       valueEq: !!valueEq,
       oldValue: this.$$initWatch

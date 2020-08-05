@@ -622,6 +622,15 @@ describe('Scope', () => {
 
       expect(scope.counter).toEqual(0)
     })
+    it('accepts expressions for watch functions', () => {
+      let theValue
+      scope.aValue = 42
+      scope.$watch('aValue', (newValue, oldValue, scope) => {
+        theValue = newValue
+      })
+      scope.$digest()
+      expect(theValue).toEqual(42)
+    })
   })
 
   describe('$watchGroup', () => {
