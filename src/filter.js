@@ -36,7 +36,9 @@ const deepCompare = (actual, expected, comparator, matchAnyProperty) => {
         if (_.isUndefined(expectedVal)) {
           return true
         }
-        return deepCompare(actual[expectedKey], expectedVal, comparator)
+        let isWildcard = expectedKey === '$'
+        let actualVal = isWildcard ? actual : actual[expectedKey]
+        return deepCompare(actualVal, expectedVal, comparator, isWildcard)
       })
     } else if (matchAnyProperty) {
       return _.some(actual, value => {
@@ -51,6 +53,7 @@ const deepCompare = (actual, expected, comparator, matchAnyProperty) => {
 }
 
 const createPredicateFn = expression => {
+  let shouldMatchPrimitives = _.isObject(expression) && '$' in expression
   function comparator(actual, expected) {
     if (_.isUndefined(actual)) {
       return false
@@ -63,6 +66,9 @@ const createPredicateFn = expression => {
     return actual.indexOf(expected) !== -1
   }
   return function predicateFn(item) {
+    if (shouldMatchPrimitives && !_.isObject(item)) {
+      return deepCompare(item, expression.$, comparator)
+    }
     return deepCompare(item, expression, comparator, true)
   }
 }
