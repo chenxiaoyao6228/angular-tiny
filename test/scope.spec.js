@@ -1465,6 +1465,15 @@ describe('Scope', () => {
       scope.$digest()
       expect(oldValueGiven).toEqual({ a: 1, b: 2 })
     })
+    it('accepts expressions for watch functions', () => {
+      let theValue
+      scope.aColl = [1, 2, 3]
+      scope.$watchCollection('aColl', (newValue, oldValue, scope) => {
+        theValue = newValue
+      })
+      scope.$digest()
+      expect(theValue).toEqual([1, 2, 3])
+    })
   })
 
   describe('events', () => {

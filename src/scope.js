@@ -104,6 +104,7 @@ export default class Scope {
     let trackVeryOldValue = listenerFn.length > 1
     let changeCount = 0
     let firstRun = true
+    watchFn = parse(watchFn)
 
     let internalWatchFn = scope => {
       let newLength
