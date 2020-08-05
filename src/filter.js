@@ -64,18 +64,21 @@ const deepCompare = (
   }
 }
 
-const createPredicateFn = expression => {
+const createPredicateFn = (expression, comparator) => {
   let shouldMatchPrimitives = _.isObject(expression) && '$' in expression
-  function comparator(actual, expected) {
-    if (_.isUndefined(actual)) {
-      return false
+
+  if (!_.isFunction(comparator)) {
+    comparator = function comparator(actual, expected) {
+      if (_.isUndefined(actual)) {
+        return false
+      }
+      if (_.isNull(actual) || _.isNull(expected)) {
+        return actual === expected
+      }
+      actual = ('' + actual).toLowerCase()
+      expected = ('' + expected).toLowerCase()
+      return actual.indexOf(expected) !== -1
     }
-    if (_.isNull(actual) || _.isNull(expected)) {
-      return actual === expected
-    }
-    actual = ('' + actual).toLowerCase()
-    expected = ('' + expected).toLowerCase()
-    return actual.indexOf(expected) !== -1
   }
   return function predicateFn(item) {
     if (shouldMatchPrimitives && !_.isObject(item)) {
@@ -85,7 +88,7 @@ const createPredicateFn = expression => {
   }
 }
 
-const filterFilter = () => (array, filterExpr) => {
+const filterFilter = () => (array, filterExpr, comparator) => {
   let predicateFn
   if (_.isFunction(filterExpr)) {
     predicateFn = filterExpr
@@ -96,7 +99,7 @@ const filterFilter = () => (array, filterExpr) => {
     _.isNull(filterExpr) ||
     _.isObject(filterExpr)
   ) {
-    predicateFn = createPredicateFn(filterExpr)
+    predicateFn = createPredicateFn(filterExpr, comparator)
   } else {
     return array
   }
