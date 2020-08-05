@@ -16,7 +16,13 @@ const register = (name, factory) => {
 
 const filter = name => filters[name]
 
-const deepCompare = (actual, expected, comparator, matchAnyProperty) => {
+const deepCompare = (
+  actual,
+  expected,
+  comparator,
+  matchAnyProperty,
+  inWildcard
+) => {
   if (_.isString(expected) && _.startsWith(expected, '!')) {
     return !deepCompare(
       actual,
@@ -31,14 +37,20 @@ const deepCompare = (actual, expected, comparator, matchAnyProperty) => {
     })
   }
   if (_.isObject(actual)) {
-    if (_.isObject(expected)) {
+    if (_.isObject(expected) && !inWildcard) {
       return _.every(_.toPlainObject(expected), (expectedVal, expectedKey) => {
         if (_.isUndefined(expectedVal)) {
           return true
         }
         let isWildcard = expectedKey === '$'
         let actualVal = isWildcard ? actual : actual[expectedKey]
-        return deepCompare(actualVal, expectedVal, comparator, isWildcard)
+        return deepCompare(
+          actualVal,
+          expectedVal,
+          comparator,
+          isWildcard,
+          isWildcard
+        )
       })
     } else if (matchAnyProperty) {
       return _.some(actual, value => {

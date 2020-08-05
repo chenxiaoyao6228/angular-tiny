@@ -856,5 +856,17 @@ describe('parse', () => {
       let fn = parse('arr | filter:{$: "o"}')
       expect(fn({ arr: ['Joe', 'Jane', 'Mary'] })).toEqual(['Joe'])
     })
+    it('filters with a nested wildcard property', () => {
+      let fn = parse('arr | filter:{$: {$: "o"}}')
+      expect(
+        fn({
+          arr: [
+            { name: { first: 'Joe' }, role: 'admin' },
+            { name: { first: 'Jane' }, role: 'moderator' },
+            { name: { first: 'Mary' }, role: 'admin' }
+          ]
+        })
+      ).toEqual([{ name: { first: 'Joe' }, role: 'admin' }])
+    })
   })
 })
