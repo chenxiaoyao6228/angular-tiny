@@ -16,13 +16,18 @@ const register = (name, factory) => {
 
 const filter = name => filters[name]
 
-const deepCompare = (actual, expected, comparator) => {
+const deepCompare = (actual, expected, comparator, matchAnyProperty) => {
   if (_.isString(expected) && _.startsWith(expected, '!')) {
-    return !deepCompare(actual, expected.substring(1), comparator)
+    return !deepCompare(
+      actual,
+      expected.substring(1),
+      comparator,
+      matchAnyProperty
+    )
   }
   if (_.isArray(actual)) {
     return _.some(actual, actualItem => {
-      return deepCompare(actualItem, expected, comparator)
+      return deepCompare(actualItem, expected, comparator, matchAnyProperty)
     })
   }
   if (_.isObject(actual)) {
@@ -33,10 +38,12 @@ const deepCompare = (actual, expected, comparator) => {
         }
         return deepCompare(actual[expectedKey], expectedVal, comparator)
       })
-    } else {
+    } else if (matchAnyProperty) {
       return _.some(actual, value => {
-        return deepCompare(value, expected, comparator)
+        return deepCompare(value, expected, comparator, matchAnyProperty)
       })
+    } else {
+      return comparator(actual, expected)
     }
   } else {
     return comparator(actual, expected)
@@ -56,7 +63,7 @@ const createPredicateFn = expression => {
     return actual.indexOf(expected) !== -1
   }
   return function predicateFn(item) {
-    return deepCompare(item, expression, comparator)
+    return deepCompare(item, expression, comparator, true)
   }
 }
 

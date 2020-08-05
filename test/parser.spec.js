@@ -790,5 +790,22 @@ describe('parse', () => {
         }
       ])
     })
+    it('filters with nested objects on the same level only', () => {
+      let items = [
+        { user: 'Bob' },
+        { user: { name: 'Bob' } },
+        { user: { name: { first: 'Bob', last: 'Fox' } } }
+      ]
+      let fn = parse('arr | filter:{user: {name: "Bob"}}')
+      expect(
+        fn({
+          arr: [
+            { user: 'Bob' },
+            { user: { name: 'Bob' } },
+            { user: { name: { first: 'Bob', last: 'Fox' } } }
+          ]
+        })
+      ).toEqual([{ user: { name: 'Bob' } }])
+    })
   })
 })
