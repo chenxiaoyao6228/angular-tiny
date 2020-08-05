@@ -879,5 +879,11 @@ describe('parse', () => {
         })
       ).toEqual(['o'])
     })
+    it('allows using an equality comparator', () => {
+      let fn = parse('arr | filter:{name: "Jo"}:true')
+      expect(fn({ arr: [{ name: 'Jo' }, { name: 'Joe' }] })).toEqual([
+        { name: 'Jo' }
+      ])
+    })
   })
 })

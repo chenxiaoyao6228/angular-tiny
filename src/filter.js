@@ -66,8 +66,9 @@ const deepCompare = (
 
 const createPredicateFn = (expression, comparator) => {
   let shouldMatchPrimitives = _.isObject(expression) && '$' in expression
-
-  if (!_.isFunction(comparator)) {
+  if (comparator === true) {
+    comparator = _.isEqual
+  } else if (!_.isFunction(comparator)) {
     comparator = function comparator(actual, expected) {
       if (_.isUndefined(actual)) {
         return false
