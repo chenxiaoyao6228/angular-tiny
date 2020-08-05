@@ -14,9 +14,17 @@ class Parser {
 }
 
 const parse = expr => {
-  let lexer = new Lexer()
-  let parser = new Parser(lexer)
-  return parser.parse(expr)
+  switch (typeof expr) {
+    case 'string': {
+      let lexer = new Lexer()
+      let parser = new Parser(lexer)
+      return parser.parse(expr)
+    }
+    case 'function':
+      return expr
+    default:
+      return () => {}
+  }
 }
 
 export default parse

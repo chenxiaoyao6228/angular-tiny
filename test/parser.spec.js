@@ -885,5 +885,12 @@ describe('parse', () => {
         { name: 'Jo' }
       ])
     })
+    it('returns the function itself when gives one', () => {
+      let fn = function() {}
+      expect(parse(fn)).toEqual(fn)
+    })
+    it('still returns a function when given no arguments', () => {
+      expect(parse()).toEqual(expect.any(Function))
+    })
   })
 })
