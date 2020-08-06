@@ -1,5 +1,6 @@
 import Scope from '../src/scope.js'
 import utils from '../src/utils'
+import parse from '../src/parser'
 
 describe('Scope', () => {
   test('can be constructed and used as an Object', () => {
@@ -205,6 +206,9 @@ describe('Scope', () => {
         return scope.aValue + arg
       }, 2)
       expect(result).toBe(44)
+    })
+    it('accepts expressions in $eval', () => {
+      expect(scope.$eval('42')).toBe(42)
     })
     // $apply
     test("executes $apply'ed function and starts the digest", () => {
@@ -414,6 +418,21 @@ describe('Scope', () => {
 
       expect(scope.counter).toBe(2)
     })
+
+    it('accepts expressions in $apply', () => {
+      scope.aFunction = () => 42
+      expect(scope.$apply('aFunction()')).toBe(42)
+    })
+    it('accepts expressions in $evalAsync', async () => {
+      let called
+      scope.aFunction = function() {
+        called = true
+      }
+      scope.$evalAsync('aFunction()')
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(called).toBe(true)
+    })
+    // postDigest
     test('runs a $$postDigest function after each digest', () => {
       scope.counter = 0
       scope.$$postDigest(() => scope.counter++)

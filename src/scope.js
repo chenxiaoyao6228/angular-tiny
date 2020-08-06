@@ -275,7 +275,7 @@ export default class Scope {
     this.$$postDigestQueue.push(fn)
   }
   $eval(expression, locals) {
-    return expression.apply(null, [this, locals])
+    return parse(expression)(this, locals)
   }
   $evalAsync(expression) {
     if (!this.$$phase && !this.$$asyncQueue.length) {
@@ -294,7 +294,7 @@ export default class Scope {
   $apply(expression) {
     try {
       this.$beginPhase('$apply')
-      expression.apply(null, [this])
+      return parse(expression)(this)
     } finally {
       this.$clearPhase()
       this.$root.$digest()
