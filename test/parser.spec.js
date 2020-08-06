@@ -892,5 +892,33 @@ describe('parse', () => {
     it('still returns a function when given no arguments', () => {
       expect(parse()).toEqual(expect.any(Function))
     })
+    it('marks integers literal', () => {
+      let fn = parse('42')
+      expect(fn.literal).toEqual(true)
+    })
+    it('marks strings literal', () => {
+      let fn = parse('"abc"')
+      expect(fn.literal).toEqual(true)
+    })
+    it('marks booleans literal', () => {
+      let fn = parse('true')
+      expect(fn.literal).toEqual(true)
+    })
+    it('marks arrays literal', () => {
+      let fn = parse('[1, 2, aVariable]')
+      expect(fn.literal).toBe(true)
+    })
+    it('marks objects literal', () => {
+      let fn = parse('{a: 1, b: aVariable}')
+      expect(fn.literal).toBe(true)
+    })
+    it('marks unary expressions non-literal', () => {
+      let fn = parse('!false')
+      expect(fn.literal).toBe(false)
+    })
+    it('marks binary expressions non-literal', () => {
+      let fn = parse('1 + 2')
+      expect(fn.literal).toBe(false)
+    })
   })
 })

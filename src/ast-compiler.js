@@ -9,7 +9,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
-    console.log('ast', JSON.stringify(ast))
+    // console.log('ast', JSON.stringify(ast))
     this.state = {
       body: [],
       nextId: 0,
@@ -23,7 +23,7 @@ export default class ASTCompiler {
       ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
       ${this.state.body.join('')}
       };return fn;`
-    console.log('fnString', fnString)
+    // console.log('fnString', fnString)
     let fn = new Function(
       'ensureSafeMemberName',
       'ensureSafeObject',
@@ -38,7 +38,8 @@ export default class ASTCompiler {
       ifDefined,
       filter
     )
-    console.log('fn.toString()', fn.toString())
+    fn.literal = isLiteral(ast)
+    // console.log('fn.toString()', fn.toString())
     return fn
   }
   traverse(ast, context, create) {
@@ -388,4 +389,14 @@ function ensureSafeFunction(obj) {
 
 function ifDefined(value, defaultValue) {
   return typeof value === 'undefined' ? defaultValue : value
+}
+
+function isLiteral(ast) {
+  return (
+    ast.body.length === 0 ||
+    (ast.body.length === 1 &&
+      (ast.body[0].type === AST.Literal ||
+        ast.body[0].type === AST.ObjectExpression ||
+        ast.body[0].type === AST.ArrayExpression))
+  )
 }
