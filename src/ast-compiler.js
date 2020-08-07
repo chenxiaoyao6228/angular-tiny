@@ -412,10 +412,21 @@ function markConstantExpression(ast) {
         markConstantExpression(expr)
         allConstants = allConstants && expr.constant
       })
-      ast.constant = allConstants
+      ast.constant = allConstants // 每个节点都定义一个constant
       break
     case AST.Literal:
       ast.constant = true
+      break
+    case AST.Identifier:
+      ast.constant = false
+      break
+    case AST.ArrayExpression:
+      allConstants = true
+      ast.elements.forEach(element => {
+        markConstantExpression(element)
+        allConstants = allConstants && element.constant
+      })
+      ast.constant = allConstants
       break
   }
 }
