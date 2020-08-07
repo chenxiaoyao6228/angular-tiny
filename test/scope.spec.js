@@ -1812,5 +1812,18 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.$$watchers.length).toBe(0)
     })
+    it('does not remove one-time-watches until value stays defined', () => {
+      scope.aValue = 42
+      scope.$watch('::aValue', () => {})
+      let unwatchDeleter = scope.$watch('aValue', () => {
+        delete scope.aValue
+      })
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(2)
+      scope.aValue = 42
+      unwatchDeleter()
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
   })
 })

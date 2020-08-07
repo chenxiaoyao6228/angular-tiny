@@ -30,15 +30,21 @@ const constantWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
 }
 
 const oneTimeWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
+  let lastValue
   let unwatch = scope.$watch(
     () => watchFn(scope),
     (newValue, oldValue, scope) => {
+      lastValue = newValue
       if (utils.isFunction(listenerFn)) {
         // eslint-disable-next-line
         listenerFn(arguments)
       }
       if (!utils.isUndefined(newValue)) {
-        unwatch()
+        scope.$$postDigest(() => {
+          if (!utils.isUndefined(lastValue)) {
+            unwatch()
+          }
+        })
       }
     },
     valueEq
