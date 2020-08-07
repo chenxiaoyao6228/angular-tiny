@@ -455,5 +455,10 @@ function markConstantExpression(ast) {
       })
       ast.constant = allConstants
       break
+    case AST.AssignmentExpression:
+      markConstantExpression(ast.left)
+      markConstantExpression(ast.right)
+      ast.constant = ast.left.constant && ast.right.constant
+      break
   }
 }

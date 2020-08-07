@@ -974,5 +974,11 @@ describe('parse', () => {
       expect(parse('[1, 2, 3] | aFilter:42').constant).toBe(true)
       expect(parse('[1, 2, 3] | aFilter:a').constant).toBe(false)
     })
+    it('marks assignments constant when both sides are', () => {
+      expect(parse('1 = 2').constant).toBe(true)
+      expect(parse('a = 2').constant).toBe(false)
+      expect(parse('1 = b').constant).toBe(false)
+      expect(parse('a = b').constant).toBe(false)
+    })
   })
 })
