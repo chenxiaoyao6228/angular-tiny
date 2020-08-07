@@ -951,5 +951,10 @@ describe('parse', () => {
     it('marks this as non-constant', () => {
       expect(parse('this').constant).toBe(false)
     })
+    it('marks non-computed lookup constant when object is constant', () => {
+      let fn = parse('{a: 1}.a')
+      expect(fn.constant).toBe(true)
+      expect(parse('obj.a').constant).toBe(false)
+    })
   })
 })

@@ -439,11 +439,9 @@ function markConstantExpression(ast) {
     case AST.ThisExpression:
       ast.constant = false
       break
+    case AST.MemberExpression:
+      markConstantExpression(ast.object)
+      ast.constant = ast.object.constant
+      break
   }
-}
-
-let a = {
-  type: '',
-  key: 'xx',
-  value: 'yy'
 }
