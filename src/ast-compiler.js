@@ -460,5 +460,9 @@ function markConstantExpression(ast) {
       markConstantExpression(ast.right)
       ast.constant = ast.left.constant && ast.right.constant
       break
+    case AST.UnaryExpression:
+      markConstantExpression(ast.argument)
+      ast.constant = ast.argument.constant
+      break
   }
 }

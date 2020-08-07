@@ -980,5 +980,9 @@ describe('parse', () => {
       expect(parse('1 = b').constant).toBe(false)
       expect(parse('a = b').constant).toBe(false)
     })
+    it('marks unaries constant when arguments are constant', () => {
+      expect(parse('+42').constant).toBe(true)
+      expect(parse('+a').constant).toBe(false)
+    })
   })
 })
