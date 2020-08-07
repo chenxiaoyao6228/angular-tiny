@@ -52,6 +52,31 @@ const oneTimeWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
   return unwatch
 }
 
+const oneTimeLiteralWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
+  function isAllDefined(val) {
+    return !_.some(val, utils.isUndefined)
+  }
+
+  let unwatch = scope.$watch(
+    () => watchFn(scope),
+    (newValue, oldValue, scope) => {
+      if (utils.isFunction(listenerFn)) {
+        // eslint-disable-next-line
+        listenerFn(arguments)
+      }
+      if (isAllDefined(newValue)) {
+        scope.$$postDigest(() => {
+          if (isAllDefined(newValue)) {
+            unwatch()
+          }
+        })
+      }
+    },
+    valueEq
+  )
+  return unwatch
+}
+
 const parse = expr => {
   switch (typeof expr) {
     case 'string': {
@@ -66,7 +91,9 @@ const parse = expr => {
       if (parseFn.constant) {
         parseFn.$$watchDelegate = constantWatchDelegate
       } else if (oneTime) {
-        parseFn.$$watchDelegate = oneTimeWatchDelegate
+        parseFn.$$watchDelegate = parseFn.literal
+          ? oneTimeLiteralWatchDelegate
+          : oneTimeWatchDelegate
       }
       return parseFn
     }

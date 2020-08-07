@@ -97,6 +97,10 @@ function repeat(s, times) {
   return _.repeat(s, times)
 }
 
+function some(value, predicate) {
+  return _.some(value, predicate)
+}
+
 export default {
   times,
   deepEqual,
@@ -115,5 +119,6 @@ export default {
   isEmpty,
   isFunction,
   isUndefined,
-  repeat
+  repeat,
+  some
 }

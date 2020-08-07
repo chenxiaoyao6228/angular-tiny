@@ -1825,5 +1825,21 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.$$watchers.length).toBe(0)
     })
+    it('does not remove one-time watches before all array items defined', () => {
+      scope.$watch('::[1, 2, aValue]', () => {}, true)
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 3
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time watches before all object vals defined', () => {
+      scope.$watch('::{a: 1, b: aValue}', () => {}, true)
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 3
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
   })
 })
