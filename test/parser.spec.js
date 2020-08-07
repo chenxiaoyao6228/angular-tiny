@@ -956,5 +956,11 @@ describe('parse', () => {
       expect(fn.constant).toBe(true)
       expect(parse('obj.a').constant).toBe(false)
     })
+    it('marks computed lookup constant when object and key are', () => {
+      expect(parse('{a: 1}["a"]').constant).toBe(true)
+      expect(parse('obj["a"]').constant).toBe(false)
+      expect(parse('{a: 1}[something]').constant).toBe(false)
+      expect(parse('obj[something]').constant).toBe(false)
+    })
   })
 })

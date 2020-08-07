@@ -9,8 +9,8 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
+    console.log('ast', JSON.stringify(ast))
     markConstantExpression(ast)
-    // console.log('ast', JSON.stringify(ast))
     this.state = {
       body: [],
       nextId: 0,
@@ -441,7 +441,11 @@ function markConstantExpression(ast) {
       break
     case AST.MemberExpression:
       markConstantExpression(ast.object)
-      ast.constant = ast.object.constant
+      if (ast.computed) {
+        markConstantExpression(ast.property)
+      }
+      ast.constant =
+        ast.object.constant && (!ast.computed || ast.property.constant)
       break
   }
 }
