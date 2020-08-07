@@ -89,6 +89,9 @@ function isEmpty(obj) {
 function isFunction(fn) {
   return _.isFunction(fn)
 }
+function isUndefined(val) {
+  return _.isUndefined(val)
+}
 
 function repeat(s, times) {
   return _.repeat(s, times)
@@ -111,5 +114,6 @@ export default {
   last,
   isEmpty,
   isFunction,
+  isUndefined,
   repeat
 }

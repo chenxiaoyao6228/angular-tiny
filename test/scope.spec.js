@@ -1798,5 +1798,19 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.$$watchers.length).toBe(0)
     })
+    it('removes one-time watches after first invocation', () => {
+      scope.aValue = 42
+      scope.$watch('::aValue', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time-watches until value is defined', () => {
+      scope.$watch('::aValue', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 42
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
   })
 })
