@@ -447,5 +447,8 @@ function markConstantExpression(ast) {
       ast.constant =
         ast.object.constant && (!ast.computed || ast.property.constant)
       break
+    case AST.CallExpression:
+      ast.constant = false
+      break
   }
 }
