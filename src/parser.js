@@ -1,7 +1,7 @@
 import Lexer from './lexer.js'
 import AST from './ast-builder.js'
 import ASTCompiler from './ast-compiler.js'
-
+import utils from '../src/utils'
 class Parser {
   constructor(lexer) {
     this.lexer = lexer
@@ -13,12 +13,31 @@ class Parser {
   }
 }
 
+const constantWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
+  let unwatch = scope.$watch(
+    () => watchFn(scope),
+    (newValue, oldValue, scope) => {
+      if (utils.isFunction(listenerFn)) {
+        // eslint-disable-next-line
+        listenerFn(arguments)
+      }
+      unwatch()
+    },
+    valueEq
+  )
+  return unwatch
+}
+
 const parse = expr => {
   switch (typeof expr) {
     case 'string': {
       let lexer = new Lexer()
       let parser = new Parser(lexer)
-      return parser.parse(expr)
+      let parseFn = parser.parse(expr)
+      if (parseFn.constant) {
+        parseFn.$$watchDelegate = constantWatchDelegate
+      }
+      return parseFn
     }
     case 'function':
       return expr

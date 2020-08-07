@@ -56,14 +56,6 @@ describe('parse', () => {
         parse('"abc\'')
       }).toThrow()
     })
-    // it('can parse a string with single quotes inside', () => {
-    //   let fn = parse("'a'b'")
-    //   expect(fn()).toEqual("a'b")
-    // })
-    // it('can parse a string with double quotes inside', () => {
-    //     let fn = parse('"a"b"')
-    //     expect(fn()).toEqual('a"b')
-    // })
     it('will parse a string with unicode escapes', () => {
       let fn = parse('"\\u00A0"')
       expect(fn()).toEqual('\u00A0')

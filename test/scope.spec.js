@@ -1793,5 +1793,10 @@ describe('Scope', () => {
       scope.$emit('myEvent')
       expect(listener).not.toHaveBeenCalled()
     })
+    it('removes constant watches after first invocation', () => {
+      scope.$watch('[1, 2, 3]', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
   })
 })

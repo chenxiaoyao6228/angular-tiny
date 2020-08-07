@@ -37,8 +37,14 @@ export default class Scope {
     return child
   }
   $watch(watchFn, listenerFn, valueEq) {
+    watchFn = parse(watchFn)
+
+    if (watchFn.$$watchDelegate) {
+      return watchFn.$$watchDelegate(this, listenerFn, valueEq, watchFn)
+    }
+
     let watcher = {
-      watchFn: parse(watchFn),
+      watchFn: watchFn,
       listenerFn: listenerFn || function() {},
       valueEq: !!valueEq,
       oldValue: this.$$initWatch

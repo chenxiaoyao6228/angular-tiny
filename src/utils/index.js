@@ -86,6 +86,9 @@ function isEmpty(obj) {
     !Object.entries(obj || {}).length
   )
 }
+function isFunction(fn) {
+  return _.isFunction(fn)
+}
 
 function repeat(s, times) {
   return _.repeat(s, times)
@@ -107,5 +110,6 @@ export default {
   initial,
   last,
   isEmpty,
+  isFunction,
   repeat
 }

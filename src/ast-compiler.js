@@ -9,7 +9,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
-    console.log('ast', JSON.stringify(ast))
+    // console.log('ast', JSON.stringify(ast))
     markConstantExpression(ast)
     this.state = {
       body: [],
