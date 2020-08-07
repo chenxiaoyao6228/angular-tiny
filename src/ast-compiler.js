@@ -9,6 +9,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
+    markConstantExpression(ast)
     // console.log('ast', JSON.stringify(ast))
     this.state = {
       body: [],
@@ -39,6 +40,7 @@ export default class ASTCompiler {
       filter
     )
     fn.literal = isLiteral(ast)
+    fn.constant = ast.constant
     // console.log('fn.toString()', fn.toString())
     return fn
   }
@@ -399,4 +401,21 @@ function isLiteral(ast) {
         ast.body[0].type === AST.ObjectExpression ||
         ast.body[0].type === AST.ArrayExpression))
   )
+}
+
+function markConstantExpression(ast) {
+  let allConstants
+  switch (ast.type) {
+    case AST.Program:
+      allConstants = true
+      ast.body.forEach(expr => {
+        markConstantExpression(expr)
+        allConstants = allConstants && expr.constant
+      })
+      ast.constant = allConstants
+      break
+    case AST.Literal:
+      ast.constant = true
+      break
+  }
 }

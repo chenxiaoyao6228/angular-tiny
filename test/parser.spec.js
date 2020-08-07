@@ -920,5 +920,17 @@ describe('parse', () => {
       let fn = parse('1 + 2')
       expect(fn.literal).toBe(false)
     })
+    it('marks integers constant', () => {
+      let fn = parse('42')
+      expect(fn.constant).toEqual(true)
+    })
+    it('marks strings constant', () => {
+      let fn = parse('"abc"')
+      expect(fn.constant).toEqual(true)
+    })
+    it('marks booleans constant', () => {
+      let fn = parse('true')
+      expect(fn.constant).toEqual(true)
+    })
   })
 })
