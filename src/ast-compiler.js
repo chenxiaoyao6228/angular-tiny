@@ -470,5 +470,12 @@ function markConstantExpression(ast) {
       markConstantExpression(ast.right)
       ast.constant = ast.left.constant && ast.right.constant
       break
+    case AST.ConditionalExpression:
+      markConstantExpression(ast.test)
+      markConstantExpression(ast.consequent)
+      markConstantExpression(ast.alternate)
+      ast.constant =
+        ast.test.constant && ast.consequent.constant && ast.alternate.constant
+      break
   }
 }
