@@ -942,5 +942,11 @@ describe('parse', () => {
       expect(parse('[1, 2, a]').constant).toBe(false)
       expect(parse('[1, [2, [a]]]').constant).toBe(false)
     })
+    it('marks objects constant when values are constant', () => {
+      expect(parse('{a: 1, b: 2}').constant).toBe(true)
+      expect(parse('{a: 1, b: {c: 3}}').constant).toBe(true)
+      expect(parse('{a: 1, b: something}').constant).toBe(false)
+      expect(parse('{a: 1, b: {c: something}}').constant).toBe(false)
+    })
   })
 })

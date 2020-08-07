@@ -428,5 +428,19 @@ function markConstantExpression(ast) {
       })
       ast.constant = allConstants
       break
+    case AST.ObjectExpression:
+      allConstants = true
+      ast.properties.forEach(prop => {
+        markConstantExpression(prop.value)
+        allConstants = allConstants && prop.value.constant
+      })
+      ast.constant = allConstants
+      break
   }
+}
+
+let a = {
+  type: '',
+  key: 'xx',
+  value: 'yy'
 }
