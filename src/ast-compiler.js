@@ -448,7 +448,12 @@ function markConstantExpression(ast) {
         ast.object.constant && (!ast.computed || ast.property.constant)
       break
     case AST.CallExpression:
-      ast.constant = false
+      allConstants = ast.filter ? true : false
+      ast.arguments.forEach(arg => {
+        markConstantExpression(arg)
+        allConstants = allConstants && arg.constant
+      })
+      ast.constant = allConstants
       break
   }
 }
