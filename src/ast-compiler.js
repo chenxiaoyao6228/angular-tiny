@@ -464,5 +464,11 @@ function markConstantExpression(ast) {
       markConstantExpression(ast.argument)
       ast.constant = ast.argument.constant
       break
+    case AST.BinaryExpression:
+    case AST.LogicalExpression:
+      markConstantExpression(ast.left)
+      markConstantExpression(ast.right)
+      ast.constant = ast.left.constant && ast.right.constant
+      break
   }
 }
