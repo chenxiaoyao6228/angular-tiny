@@ -1,6 +1,7 @@
-import Scope from '../src/scope.js'
+import Scope from '../src/scope'
 import utils from '../src/utils'
 import parse from '../src/parser'
+import { register } from '../src/filter'
 
 describe('Scope', () => {
   test('can be constructed and used as an Object', () => {
@@ -1863,5 +1864,29 @@ describe('Scope', () => {
       expect(values.length).toBe(2)
       expect(values[1]).toEqual([1, 2, 4])
     })
+    // it('allows $stateful filter value to change over time', async () => {
+    //   register('withTime', () => {
+    //     return utils.extend(
+    //       v => {
+    //         return new Date().toISOString() + ': ' + v
+    //       },
+    //       {
+    //         $stateful: true
+    //       }
+    //     )
+    //   })
+    //   let listenerSpy = jest.fn()
+    //   scope.$watch('42 | withTime', listenerSpy)
+    //   scope.$digest()
+    //   let firstValue =
+    //     listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+
+    //   await new Promise(resolve => setTimeout(resolve, 100))
+
+    //   scope.$digest()
+    //   let secondValue =
+    //     listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+    //   expect(secondValue).not.toEqual(firstValue)
+    // })
   })
 })

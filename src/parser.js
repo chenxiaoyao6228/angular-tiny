@@ -2,7 +2,6 @@ import Lexer from './lexer.js'
 import AST from './ast-builder.js'
 import ASTCompiler from './ast-compiler.js'
 import utils from '../src/utils'
-import _ from 'lodash'
 class Parser {
   constructor(lexer) {
     this.lexer = lexer
@@ -54,7 +53,7 @@ const oneTimeWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
 
 const oneTimeLiteralWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
   function isAllDefined(val) {
-    return !_.some(val, utils.isUndefined)
+    return !utils.some(val, utils.isUndefined)
   }
 
   let unwatch = scope.$watch(
@@ -79,7 +78,7 @@ const oneTimeLiteralWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
 
 function inputsWatchDelegate(scope, listenerFn, valueEq, watchFn) {
   let inputExpressions = watchFn.inputs
-  let oldValues = _.times(inputExpressions.length, () => () => {})
+  let oldValues = utils.times(inputExpressions.length, () => () => {})
   let lastResult
   return scope.$watch(
     () => {

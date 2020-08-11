@@ -1,5 +1,5 @@
-import utils from './utils'
 import _ from 'lodash'
+import utils from './utils'
 import parse from './parser'
 export default class Scope {
   constructor() {
@@ -145,10 +145,10 @@ export default class Scope {
             oldLength = 0
           }
           newLength = 0
-          _.forOwn(newValue, (newVal, key) => {
+          utils.forOwn(newValue, (newVal, key) => {
             newLength++
             if (Object.prototype.hasOwnProperty.call(oldValue, key)) {
-              let bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key])
+              let bothNaN = utils.isNaN(newVal) && utils.isNaN(oldValue[key])
               if (!bothNaN && oldValue[key] !== newVal) {
                 changeCount++
                 oldValue[key] = newVal
@@ -160,7 +160,7 @@ export default class Scope {
             }
           })
           if (oldLength > newLength) {
-            _.forOwn(oldValue, (oldVal, key) => {
+            utils.forOwn(oldValue, (oldVal, key) => {
               if (!Object.prototype.hasOwnProperty.call(newValue, key)) {
                 oldLength--
                 changeCount++

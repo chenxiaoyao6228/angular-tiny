@@ -1,6 +1,5 @@
 import AST from './ast-builder'
 import utils from './utils'
-import _ from 'lodash'
 import { filter } from './filter.js'
 export default class ASTCompiler {
   static stringEscapeRegex = /[^ a-zA-Z0-9]/g
@@ -307,7 +306,7 @@ export default class ASTCompiler {
       return ''
     } else {
       let that = this
-      let parts = _.map(
+      let parts = utils.map(
         this.state.filters,
         (varName, filterName) => {
           return varName + '=' + 'filter(' + that.escape(filterName) + ')'

@@ -1,9 +1,9 @@
 import _ from 'lodash'
 
 function times(n, iterator) {
-  let accum = Array(Math.max(0, n))
-  for (let i = 0; i < n; i++) accum[i] = iterator.call(null, i)
-  return accum
+  let accumulator = Array(Math.max(0, n))
+  for (let i = 0; i < n; i++) accumulator[i] = iterator.call(null, i)
+  return accumulator
 }
 
 function deepEqual(a, b) {
@@ -41,7 +41,7 @@ function isArray(obj) {
 }
 
 function isArrayLike(obj) {
-  if (_.isNull(obj) || _.isUndefined(obj)) {
+  if (isNull(obj) || isUndefined(obj)) {
     return false
   }
   let length = obj.length
@@ -60,8 +60,12 @@ function isPlainObject(obj) {
   return false
 }
 
-function forEach(array, operator) {
-  return _.forEach(array, operator)
+function forEach(value, operator) {
+  if (isArrayLike(value)) {
+    return Array.from(value).forEach(operator)
+  } else if (isObject(value)) {
+    return Object.entries(value).forEach(operator)
+  }
 }
 
 function isString(value) {
@@ -69,7 +73,7 @@ function isString(value) {
 }
 
 function isNull(value) {
-  return _.isNull(value)
+  return value === null
 }
 
 function initial(value) {
@@ -77,7 +81,7 @@ function initial(value) {
 }
 
 function last(value) {
-  return _.last(value)
+  return value.slice(-1)[0]
 }
 
 function isEmpty(obj) {
@@ -90,15 +94,55 @@ function isFunction(fn) {
   return _.isFunction(fn)
 }
 function isUndefined(val) {
-  return _.isUndefined(val)
+  return val === undefined
+}
+function isNumber(val) {
+  return _.isNumber(val)
+}
+function isBoolean(val) {
+  return _.isBoolean(val)
 }
 
 function repeat(s, times) {
-  return _.repeat(s, times)
+  return s.repeat(times)
 }
 
 function some(value, predicate) {
-  return _.some(value, predicate)
+  if (isArrayLike(value)) {
+    return Array.from(value).some(predicate)
+  } else {
+    return _.some(value, predicate)
+  }
+}
+
+function every(value, predicate) {
+  if (isArrayLike(value)) {
+    return Array.from(value).every(predicate)
+  } else {
+    return _.every(value, predicate)
+  }
+}
+
+function extend(...args) {
+  return _.extend(...args)
+}
+function toPlainObject(val) {
+  return _.toPlainObject(val)
+}
+
+function forOwn(val, predicate) {
+  return _.forOwn(val, predicate)
+}
+function isNaN(val) {
+  return Number.isNaN(val)
+}
+
+function isEqual(a, b) {
+  return _.isEqual(a, b)
+}
+
+function map(val, operator) {
+  return _.map(val, operator)
 }
 
 export default {
@@ -114,11 +158,20 @@ export default {
   forEach,
   isString,
   isNull,
+  isEqual,
   initial,
   last,
   isEmpty,
+  isNaN,
   isFunction,
   isUndefined,
+  isNumber,
+  isBoolean,
   repeat,
-  some
+  some,
+  every,
+  extend,
+  toPlainObject,
+  forOwn,
+  map
 }

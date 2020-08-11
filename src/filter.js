@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import utils from './utils'
 let filters = {}
 
@@ -23,7 +22,7 @@ const deepCompare = (
   matchAnyProperty,
   inWildcard
 ) => {
-  if (_.isString(expected) && _.startsWith(expected, '!')) {
+  if (utils.isString(expected) && expected.startsWith('!')) {
     return !deepCompare(
       actual,
       expected.substring(1),
@@ -31,29 +30,32 @@ const deepCompare = (
       matchAnyProperty
     )
   }
-  if (_.isArray(actual)) {
-    return _.some(actual, actualItem => {
+  if (utils.isArray(actual)) {
+    return actual.some(actualItem => {
       return deepCompare(actualItem, expected, comparator, matchAnyProperty)
     })
   }
-  if (_.isObject(actual)) {
-    if (_.isObject(expected) && !inWildcard) {
-      return _.every(_.toPlainObject(expected), (expectedVal, expectedKey) => {
-        if (_.isUndefined(expectedVal)) {
-          return true
+  if (utils.isObject(actual)) {
+    if (utils.isObject(expected) && !inWildcard) {
+      return utils.every(
+        utils.toPlainObject(expected),
+        (expectedVal, expectedKey) => {
+          if (utils.isUndefined(expectedVal)) {
+            return true
+          }
+          let isWildcard = expectedKey === '$'
+          let actualVal = isWildcard ? actual : actual[expectedKey]
+          return deepCompare(
+            actualVal,
+            expectedVal,
+            comparator,
+            isWildcard,
+            isWildcard
+          )
         }
-        let isWildcard = expectedKey === '$'
-        let actualVal = isWildcard ? actual : actual[expectedKey]
-        return deepCompare(
-          actualVal,
-          expectedVal,
-          comparator,
-          isWildcard,
-          isWildcard
-        )
-      })
+      )
     } else if (matchAnyProperty) {
-      return _.some(actual, value => {
+      return utils.some(actual, value => {
         return deepCompare(value, expected, comparator, matchAnyProperty)
       })
     } else {
@@ -65,15 +67,15 @@ const deepCompare = (
 }
 
 const createPredicateFn = (expression, comparator) => {
-  let shouldMatchPrimitives = _.isObject(expression) && '$' in expression
+  let shouldMatchPrimitives = utils.isObject(expression) && '$' in expression
   if (comparator === true) {
-    comparator = _.isEqual
-  } else if (!_.isFunction(comparator)) {
+    comparator = utils.isEqual
+  } else if (!utils.isFunction(comparator)) {
     comparator = function comparator(actual, expected) {
-      if (_.isUndefined(actual)) {
+      if (utils.isUndefined(actual)) {
         return false
       }
-      if (_.isNull(actual) || _.isNull(expected)) {
+      if (utils.isNull(actual) || utils.isNull(expected)) {
         return actual === expected
       }
       actual = ('' + actual).toLowerCase()
@@ -82,7 +84,7 @@ const createPredicateFn = (expression, comparator) => {
     }
   }
   return function predicateFn(item) {
-    if (shouldMatchPrimitives && !_.isObject(item)) {
+    if (shouldMatchPrimitives && !utils.isObject(item)) {
       return deepCompare(item, expression.$, comparator)
     }
     return deepCompare(item, expression, comparator, true)
@@ -91,14 +93,14 @@ const createPredicateFn = (expression, comparator) => {
 
 const filterFilter = () => (array, filterExpr, comparator) => {
   let predicateFn
-  if (_.isFunction(filterExpr)) {
+  if (utils.isFunction(filterExpr)) {
     predicateFn = filterExpr
   } else if (
-    _.isString(filterExpr) ||
-    _.isNumber(filterExpr) ||
-    _.isBoolean(filterExpr) ||
-    _.isNull(filterExpr) ||
-    _.isObject(filterExpr)
+    utils.isString(filterExpr) ||
+    utils.isNumber(filterExpr) ||
+    utils.isBoolean(filterExpr) ||
+    utils.isNull(filterExpr) ||
+    utils.isObject(filterExpr)
   ) {
     predicateFn = createPredicateFn(filterExpr, comparator)
   } else {

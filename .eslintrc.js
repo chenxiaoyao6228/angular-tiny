@@ -9,7 +9,12 @@ module.exports = {
     "prettier",
     "jest"
   ],
-  "extends": ["eslint:recommended", "plugin:prettier/recommended", "plugin:jest/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended",
+    "plugin:you-dont-need-lodash-underscore/compatible"
+  ],
   "env": {
     "es6": true,
     "browser": true,
