@@ -1841,5 +1841,27 @@ describe('Scope', () => {
       scope.$digest()
       expect(scope.$$watchers.length).toBe(0)
     })
+    it('does not e-evaluate an array if its contents do not change ', () => {
+      let values = []
+
+      scope.a = 1
+      scope.b = 2
+      scope.c = 3
+
+      scope.$watch('[a,b,c]', value => {
+        values.push(value)
+      })
+
+      scope.$digest()
+      expect(values.length).toEqual(1)
+      expect(values[0]).toEqual([1, 2, 3])
+
+      scope.$digest()
+      expect(values.length).toBe(1)
+      scope.c = 4
+      scope.$digest()
+      expect(values.length).toBe(2)
+      expect(values[1]).toEqual([1, 2, 4])
+    })
   })
 })

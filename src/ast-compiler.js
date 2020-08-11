@@ -10,20 +10,36 @@ export default class ASTCompiler {
   compile(text) {
     let ast = this.astBuilder.ast(text)
     // console.log('ast', JSON.stringify(ast))
-    markConstantExpression(ast)
+    markConstantAndWatchExpressions(ast)
     this.state = {
-      body: [],
+      fn: {
+        body: [],
+        vars: []
+      },
       nextId: 0,
-      vars: [],
-      filters: {}
+      filters: {},
+      inputs: []
     }
+
+    this.stage = 'inputs'
+    utils.forEach(getInputs(ast.body), (input, idx) => {
+      let inputKey = 'fn' + idx
+      this.state[inputKey] = { body: [], vars: [] }
+      this.state.computing = inputKey
+      this.state[inputKey].body.push('return ' + this.traverse(input) + ';')
+      this.state.inputs.push(inputKey)
+    })
+    this.stage = 'main'
+    this.state.computing = 'fn'
     this.traverse(ast)
     let fnString = `
       ${this.filterPrefix()}
       var fn=function(s,l){
-      ${this.state.vars.length ? `var ${this.state.vars.join(',')};` : ''}
-      ${this.state.body.join('')}
-      };return fn;`
+      ${this.state.fn.vars.length ? `var ${this.state.fn.vars.join(',')};` : ''}
+      ${this.state.fn.body.join('')}
+      };
+      ${this.watchFns()}
+      return fn;`
     // console.log('fnString', fnString)
     let fn = new Function(
       'ensureSafeMemberName',
@@ -48,10 +64,14 @@ export default class ASTCompiler {
     let intoId
     switch (ast.type) {
       case AST.Program: {
-        utils.initial(ast.body).forEach(statement => {
-          this.state.body.push(this.traverse(statement), ';')
-        })
-        this.state.body.push(
+        utils.forEach(
+          utils.initial(ast.body),
+          stmt => {
+            this.state[this.state.computing].body.push(this.traverse(stmt), ';')
+          },
+          this
+        )
+        this.state[this.state.computing].body.push(
           'return ',
           this.traverse(utils.last(ast.body)),
           ';'
@@ -70,30 +90,34 @@ export default class ASTCompiler {
       case AST.Identifier: {
         ensureSafeMemberName(ast.name)
         intoId = this.nextId()
+        let localsCheck
+        if (this.stage === 'inputs') {
+          localsCheck = 'false'
+        } else {
+          localsCheck = this.getHasOwnProperty('l', ast.name)
+        }
         this._if(
-          this.getHasOwnProperty('l', ast.name),
+          localsCheck,
           this.assign(intoId, this.nonComputedMember('l', ast.name))
         )
-
         if (create) {
           this._if(
-            this.not(this.getHasOwnProperty('l', ast.name)) +
+            this.not(localsCheck) +
               ' && s && ' +
               this.not(this.getHasOwnProperty('s', ast.name)),
             this.assign(this.nonComputedMember('s', ast.name), '{}')
           )
         }
-
         this._if(
-          this.not(this.getHasOwnProperty('l', ast.name)) + ` && s`,
+          this.not(localsCheck) + ' && s',
           this.assign(intoId, this.nonComputedMember('s', ast.name))
         )
         if (context) {
-          context.context = this.getHasOwnProperty('l', ast.name) + '?l:s'
+          context.context = localsCheck + '?l:s'
           context.name = ast.name
           context.computed = false
         }
-        this.addEnsureSafObjet(intoId)
+        this.addEnsureSafeObject(intoId)
         return intoId
       }
       case AST.ObjectExpression: {
@@ -175,7 +199,7 @@ export default class ASTCompiler {
             return 'ensureSafeObject(' + this.traverse(arg) + ')'
           })
           if (callContext.name) {
-            this.addEnsureSafObjet(callContext.context)
+            this.addEnsureSafeObject(callContext.context)
             if (callContext.computed) {
               callee = this.computedMember(
                 callContext.context,
@@ -249,7 +273,9 @@ export default class ASTCompiler {
       }
       case AST.LogicalExpression:
         intoId = this.nextId()
-        this.state.body.push(this.assign(intoId, this.traverse(ast.left)))
+        this.state[this.state.computing].body.push(
+          this.assign(intoId, this.traverse(ast.left))
+        )
         this._if(
           ast.operator === '&&' ? intoId : this.not(intoId),
           this.assign(intoId, this.traverse(ast.right))
@@ -258,7 +284,9 @@ export default class ASTCompiler {
       case AST.ConditionalExpression: {
         intoId = this.nextId()
         let testId = this.nextId()
-        this.state.body.push(this.assign(testId, this.traverse(ast.test)))
+        this.state[this.state.computing].body.push(
+          this.assign(testId, this.traverse(ast.test))
+        )
         this._if(testId, this.assign(intoId, this.traverse(ast.consequent)))
         this._if(
           this.not(testId),
@@ -290,13 +318,19 @@ export default class ASTCompiler {
     }
   }
   addEnsureSafeFunction = function(expr) {
-    this.state.body.push('ensureSafeFunction(' + expr + ');')
+    this.state[this.state.computing].body.push(
+      'ensureSafeFunction(' + expr + ');'
+    )
   }
-  addEnsureSafObjet(expr) {
-    this.state.body.push('ensureSafeObject(' + expr + ');')
+  addEnsureSafeObject(expr) {
+    this.state[this.state.computing].body.push(
+      'ensureSafeObject(' + expr + ');'
+    )
   }
   addEnsureSafeMemberName(expr) {
-    this.state.body.push('ensureSafeMemberName(' + expr + ');')
+    this.state[this.state.computing].body.push(
+      'ensureSafeMemberName(' + expr + ');'
+    )
   }
   nonComputedMember(left, right) {
     return `${left}.${right}`
@@ -311,7 +345,7 @@ export default class ASTCompiler {
     return `!(${e})`
   }
   _if(test, consequent) {
-    this.state.body.push(`
+    this.state[this.state.computing].body.push(`
       if(${test}){
         ${consequent}
       }`)
@@ -319,7 +353,7 @@ export default class ASTCompiler {
   nextId(skip) {
     let id = `v${this.state.nextId++}`
     if (!skip) {
-      this.state.vars.push(id)
+      this.state[this.state.computing].vars.push(id)
     }
     return id
   }
@@ -340,6 +374,35 @@ export default class ASTCompiler {
   }
   ifDefined(value, defaultValue) {
     return 'ifDefined(' + value + ',' + this.escape(defaultValue) + ')'
+  }
+  watchFns() {
+    let result = []
+    utils.forEach(this.state.inputs, inputName => {
+      result.push(
+        'var ',
+        inputName,
+        '=function(s) {',
+        this.state[inputName].vars.length
+          ? 'var ' + this.state[inputName].vars.join(',') + ';'
+          : '',
+        this.state[inputName].body.join(''),
+        '};'
+      )
+    })
+    if (result.length) {
+      result.push('fn.inputs = [', this.state.inputs.join(','), '];')
+    }
+    return result.join('')
+  }
+}
+
+function getInputs(ast) {
+  if (ast.length !== 1) {
+    return
+  }
+  let candidate = ast[0].toWatch
+  if (candidate.length !== 1 || candidate[0] !== ast[0]) {
+    return candidate
   }
 }
 
@@ -403,79 +466,108 @@ function isLiteral(ast) {
   )
 }
 
-function markConstantExpression(ast) {
+function markConstantAndWatchExpressions(ast) {
   let allConstants
+  let argsToWatch
   switch (ast.type) {
     case AST.Program:
       allConstants = true
       ast.body.forEach(expr => {
-        markConstantExpression(expr)
+        markConstantAndWatchExpressions(expr)
         allConstants = allConstants && expr.constant
       })
       ast.constant = allConstants // 每个节点都定义一个constant
       break
     case AST.Literal:
       ast.constant = true
+      ast.toWatch = []
       break
     case AST.Identifier:
       ast.constant = false
+      ast.toWatch = [ast]
       break
     case AST.ArrayExpression:
       allConstants = true
+      argsToWatch = []
       ast.elements.forEach(element => {
-        markConstantExpression(element)
+        markConstantAndWatchExpressions(element)
         allConstants = allConstants && element.constant
+        if (!element.constant) {
+          argsToWatch.push.apply(argsToWatch, element.toWatch)
+        }
       })
       ast.constant = allConstants
+      ast.toWatch = argsToWatch
       break
     case AST.ObjectExpression:
       allConstants = true
-      ast.properties.forEach(prop => {
-        markConstantExpression(prop.value)
-        allConstants = allConstants && prop.value.constant
+      argsToWatch = []
+      ast.properties.forEach(property => {
+        markConstantAndWatchExpressions(property.value)
+        allConstants = allConstants && property.value.constant
+        if (!property.value.constant) {
+          argsToWatch.push.apply(argsToWatch, property.value.toWatch)
+        }
       })
       ast.constant = allConstants
+      ast.toWatch = argsToWatch
       break
     case AST.ThisExpression:
       ast.constant = false
+      ast.toWatch = []
       break
     case AST.MemberExpression:
-      markConstantExpression(ast.object)
+      markConstantAndWatchExpressions(ast.object)
       if (ast.computed) {
-        markConstantExpression(ast.property)
+        markConstantAndWatchExpressions(ast.property)
       }
       ast.constant =
         ast.object.constant && (!ast.computed || ast.property.constant)
+      ast.toWatch = [ast]
       break
     case AST.CallExpression:
       allConstants = ast.filter ? true : false
+      argsToWatch = []
       ast.arguments.forEach(arg => {
-        markConstantExpression(arg)
+        markConstantAndWatchExpressions(arg)
         allConstants = allConstants && arg.constant
+        if (!arg.constant) {
+          argsToWatch.push.apply(argsToWatch, arg.toWatch)
+        }
       })
       ast.constant = allConstants
+      ast.toWatch = ast.filter ? argsToWatch : [ast]
       break
     case AST.AssignmentExpression:
-      markConstantExpression(ast.left)
-      markConstantExpression(ast.right)
+      markConstantAndWatchExpressions(ast.left)
+      markConstantAndWatchExpressions(ast.right)
       ast.constant = ast.left.constant && ast.right.constant
+      ast.toWatch = [ast]
       break
     case AST.UnaryExpression:
-      markConstantExpression(ast.argument)
+      markConstantAndWatchExpressions(ast.argument)
       ast.constant = ast.argument.constant
+      ast.toWatch = ast.argument.toWatch
       break
     case AST.BinaryExpression:
-    case AST.LogicalExpression:
-      markConstantExpression(ast.left)
-      markConstantExpression(ast.right)
+      markConstantAndWatchExpressions(ast.left)
+      markConstantAndWatchExpressions(ast.right)
       ast.constant = ast.left.constant && ast.right.constant
+      ast.toWatch = ast.left.toWatch.concat(ast.right.toWatch)
+      break
+    case AST.LogicalExpression:
+      markConstantAndWatchExpressions(ast.left)
+      markConstantAndWatchExpressions(ast.right)
+      ast.constant = ast.left.constant && ast.right.constant
+      ast.toWatch = [ast]
       break
     case AST.ConditionalExpression:
-      markConstantExpression(ast.test)
-      markConstantExpression(ast.consequent)
-      markConstantExpression(ast.alternate)
+      markConstantAndWatchExpressions(ast.test)
+      markConstantAndWatchExpressions(ast.consequent)
+      markConstantAndWatchExpressions(ast.alternate)
       ast.constant =
         ast.test.constant && ast.consequent.constant && ast.alternate.constant
+      ast.toWatch = [ast]
       break
   }
 }

@@ -77,6 +77,40 @@ const oneTimeLiteralWatchDelegate = (scope, listenerFn, valueEq, watchFn) => {
   return unwatch
 }
 
+function inputsWatchDelegate(scope, listenerFn, valueEq, watchFn) {
+  let inputExpressions = watchFn.inputs
+  let oldValues = _.times(inputExpressions.length, () => () => {})
+  let lastResult
+  return scope.$watch(
+    () => {
+      let changed = false
+      utils.forEach(inputExpressions, (inputExpr, i) => {
+        let newValue = inputExpr(scope)
+        if (changed || !expressionInputDirtyCheck(newValue, oldValues[i])) {
+          changed = true
+          oldValues[i] = newValue
+        }
+      })
+      if (changed) {
+        lastResult = watchFn(scope)
+      }
+      return lastResult
+    },
+    listenerFn,
+    valueEq
+  )
+}
+
+function expressionInputDirtyCheck(newValue, oldValue) {
+  return (
+    newValue === oldValue ||
+    (typeof newValue === 'number' &&
+      typeof oldValue === 'number' &&
+      isNaN(newValue) &&
+      isNaN(oldValue))
+  )
+}
+
 const parse = expr => {
   switch (typeof expr) {
     case 'string': {
@@ -94,6 +128,8 @@ const parse = expr => {
         parseFn.$$watchDelegate = parseFn.literal
           ? oneTimeLiteralWatchDelegate
           : oneTimeWatchDelegate
+      } else if (parseFn.inputs) {
+        parseFn.$$watchDelegate = inputsWatchDelegate
       }
       return parseFn
     }
