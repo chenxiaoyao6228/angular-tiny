@@ -524,8 +524,9 @@ function markConstantAndWatchExpressions(ast) {
         ast.object.constant && (!ast.computed || ast.property.constant)
       ast.toWatch = [ast]
       break
-    case AST.CallExpression:
-      allConstants = ast.filter ? true : false
+    case AST.CallExpression: {
+      let stateless = ast.filter && !filter(ast.callee.name).$stateful
+      allConstants = stateless ? true : false
       argsToWatch = []
       ast.arguments.forEach(arg => {
         markConstantAndWatchExpressions(arg)
@@ -535,8 +536,9 @@ function markConstantAndWatchExpressions(ast) {
         }
       })
       ast.constant = allConstants
-      ast.toWatch = ast.filter ? argsToWatch : [ast]
+      ast.toWatch = stateless ? argsToWatch : [ast]
       break
+    }
     case AST.AssignmentExpression:
       markConstantAndWatchExpressions(ast.left)
       markConstantAndWatchExpressions(ast.right)

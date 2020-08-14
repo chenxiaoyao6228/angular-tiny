@@ -1864,29 +1864,29 @@ describe('Scope', () => {
       expect(values.length).toBe(2)
       expect(values[1]).toEqual([1, 2, 4])
     })
-    // it('allows $stateful filter value to change over time', async () => {
-    //   register('withTime', () => {
-    //     return utils.extend(
-    //       v => {
-    //         return new Date().toISOString() + ': ' + v
-    //       },
-    //       {
-    //         $stateful: true
-    //       }
-    //     )
-    //   })
-    //   let listenerSpy = jest.fn()
-    //   scope.$watch('42 | withTime', listenerSpy)
-    //   scope.$digest()
-    //   let firstValue =
-    //     listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+    it('allows $stateful filter value to change over time', async () => {
+      register('withTime', () => {
+        return utils.extend(
+          v => {
+            return new Date().toISOString() + ': ' + v
+          },
+          {
+            $stateful: true
+          }
+        )
+      })
+      let listenerSpy = jest.fn()
+      scope.$watch('42 | withTime', listenerSpy)
+      scope.$digest()
+      let firstValue =
+        listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
 
-    //   await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 100))
 
-    //   scope.$digest()
-    //   let secondValue =
-    //     listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
-    //   expect(secondValue).not.toEqual(firstValue)
-    // })
+      scope.$digest()
+      let secondValue =
+        listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+      expect(secondValue).not.toEqual(firstValue)
+    })
   })
 })
