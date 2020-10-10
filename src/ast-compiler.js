@@ -8,6 +8,7 @@ export default class ASTCompiler {
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
+    let extra = ''
     // console.log('ast', JSON.stringify(ast))
     markConstantAndWatchExpressions(ast)
     this.state = {
@@ -17,6 +18,7 @@ export default class ASTCompiler {
       },
       nextId: 0,
       filters: {},
+      assign: { body: [], vars: [] },
       inputs: []
     }
 
@@ -28,6 +30,22 @@ export default class ASTCompiler {
       this.state[inputKey].body.push('return ' + this.traverse(input) + ';')
       this.state.inputs.push(inputKey)
     })
+
+    this.stage = 'assign'
+
+    let assignable = assignableAST(ast)
+    // console.log('assignable', assignable)
+    if (assignable) {
+      this.state.computing = 'assign'
+      this.state.assign.body.push(this.traverse(assignable))
+      extra =
+        'fn.assign = function(s,v,l){ \n' +
+        (this.state.assign.vars.length
+          ? 'var ' + this.state.assign.vars.join(',') + ';'
+          : '') +
+        this.state.assign.body.join('') +
+        '};'
+    }
     this.stage = 'main'
     this.state.computing = 'fn'
     this.traverse(ast)
@@ -38,6 +56,7 @@ export default class ASTCompiler {
       ${this.state.fn.body.join('')}
       };
       ${this.watchFns()}
+      ${extra}
       return fn;`
     // console.log('fnString', fnString)
     let fn = new Function(
@@ -293,6 +312,8 @@ export default class ASTCompiler {
         )
         return intoId
       }
+      case AST.NGValueParameter:
+        return 'v'
     }
   }
   filter(name) {
@@ -332,7 +353,7 @@ export default class ASTCompiler {
     )
   }
   nonComputedMember(left, right) {
-    return `${left}.${right}`
+    return `(${left}).${right}`
   }
   computedMember(left, right) {
     return '(' + left + ')[' + right + ']'
@@ -570,5 +591,17 @@ function markConstantAndWatchExpressions(ast) {
         ast.test.constant && ast.consequent.constant && ast.alternate.constant
       ast.toWatch = [ast]
       break
+  }
+}
+function isAssignable(ast) {
+  return ast.type === AST.Identifier || ast.type == AST.MemberExpression
+}
+function assignableAST(ast) {
+  if (ast.body.length == 1 && isAssignable(ast.body[0])) {
+    return {
+      type: AST.AssignmentExpression,
+      left: ast.body[0],
+      right: { type: AST.NGValueParameter }
+    }
   }
 }

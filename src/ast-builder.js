@@ -13,6 +13,7 @@ export default class AST {
   static BinaryExpression = 'BinaryExpression'
   static LogicalExpression = 'LogicalExpression'
   static ConditionalExpression = 'ConditionalExpression'
+  static NGValueParameter = 'NGValueParameter'
 
   constructor(lexer) {
     this.lexer = lexer

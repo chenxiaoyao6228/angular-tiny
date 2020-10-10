@@ -1888,5 +1888,22 @@ describe('Scope', () => {
         listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
       expect(secondValue).not.toEqual(firstValue)
     })
+    test('allows calling assign on identifier expressions ', () => {
+      let fn = parse('anAttribute')
+      expect(fn.assign).toBeDefined()
+
+      let scope = {}
+      fn.assign(scope, 42)
+
+      expect(scope.anAttribute).toEqual(42)
+    })
+    test('allows calling assign on member inputExpressions', () => {
+      let fn = parse('anObject.anAttribute')
+      expect(fn.assign).toBeDefined()
+
+      let scope = {}
+      fn.assign(scope, 42)
+      expect(scope.anObject).toEqual({ anAttribute: 42 })
+    })
   })
 })
