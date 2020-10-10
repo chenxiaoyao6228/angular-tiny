@@ -1,4 +1,5 @@
 module.exports = {
+  "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 8,
     "sourceType": "module",
@@ -8,7 +9,12 @@ module.exports = {
     "prettier",
     "jest"
   ],
-  "extends": ["eslint:recommended", "plugin:prettier/recommended", "plugin:jest/recommended"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended",
+    "plugin:you-dont-need-lodash-underscore/compatible"
+  ],
   "env": {
     "es6": true,
     "browser": true,
@@ -20,7 +26,9 @@ module.exports = {
     test: true,
     __dirname: true,
     expect: true,
-    jest: true
+    jest: true,
+    filter: false,
+    register: false
   },
   "rules": {
     "prettier/prettier": "error",

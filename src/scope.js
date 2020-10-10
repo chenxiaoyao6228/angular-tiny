@@ -1,5 +1,6 @@
-import utils from './utils'
 import _ from 'lodash'
+import utils from './utils'
+import parse from './parser'
 export default class Scope {
   constructor() {
     this.$$watchers = []
@@ -36,6 +37,12 @@ export default class Scope {
     return child
   }
   $watch(watchFn, listenerFn, valueEq) {
+    watchFn = parse(watchFn)
+
+    if (watchFn.$$watchDelegate) {
+      return watchFn.$$watchDelegate(this, listenerFn, valueEq, watchFn)
+    }
+
     let watcher = {
       watchFn: watchFn,
       listenerFn: listenerFn || function() {},
@@ -103,6 +110,7 @@ export default class Scope {
     let trackVeryOldValue = listenerFn.length > 1
     let changeCount = 0
     let firstRun = true
+    watchFn = parse(watchFn)
 
     let internalWatchFn = scope => {
       let newLength
@@ -137,10 +145,10 @@ export default class Scope {
             oldLength = 0
           }
           newLength = 0
-          _.forOwn(newValue, (newVal, key) => {
+          utils.forOwn(newValue, (newVal, key) => {
             newLength++
             if (Object.prototype.hasOwnProperty.call(oldValue, key)) {
-              let bothNaN = _.isNaN(newVal) && _.isNaN(oldValue[key])
+              let bothNaN = utils.isNaN(newVal) && utils.isNaN(oldValue[key])
               if (!bothNaN && oldValue[key] !== newVal) {
                 changeCount++
                 oldValue[key] = newVal
@@ -152,7 +160,7 @@ export default class Scope {
             }
           })
           if (oldLength > newLength) {
-            _.forOwn(oldValue, (oldVal, key) => {
+            utils.forOwn(oldValue, (oldVal, key) => {
               if (!Object.prototype.hasOwnProperty.call(newValue, key)) {
                 oldLength--
                 changeCount++
@@ -273,7 +281,7 @@ export default class Scope {
     this.$$postDigestQueue.push(fn)
   }
   $eval(expression, locals) {
-    return expression.apply(null, [this, locals])
+    return parse(expression)(this, locals)
   }
   $evalAsync(expression) {
     if (!this.$$phase && !this.$$asyncQueue.length) {
@@ -292,7 +300,7 @@ export default class Scope {
   $apply(expression) {
     try {
       this.$beginPhase('$apply')
-      expression.apply(null, [this])
+      return parse(expression)(this)
     } finally {
       this.$clearPhase()
       this.$root.$digest()

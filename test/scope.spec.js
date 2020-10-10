@@ -1,5 +1,7 @@
-import Scope from '../src/scope.js'
+import Scope from '../src/scope'
 import utils from '../src/utils'
+import parse from '../src/parser'
+import { register } from '../src/filter'
 
 describe('Scope', () => {
   test('can be constructed and used as an Object', () => {
@@ -205,6 +207,9 @@ describe('Scope', () => {
         return scope.aValue + arg
       }, 2)
       expect(result).toBe(44)
+    })
+    it('accepts expressions in $eval', () => {
+      expect(scope.$eval('42')).toBe(42)
     })
     // $apply
     test("executes $apply'ed function and starts the digest", () => {
@@ -414,6 +419,21 @@ describe('Scope', () => {
 
       expect(scope.counter).toBe(2)
     })
+
+    it('accepts expressions in $apply', () => {
+      scope.aFunction = () => 42
+      expect(scope.$apply('aFunction()')).toBe(42)
+    })
+    it('accepts expressions in $evalAsync', async () => {
+      let called
+      scope.aFunction = function() {
+        called = true
+      }
+      scope.$evalAsync('aFunction()')
+      await new Promise(resolve => setTimeout(resolve, 50))
+      expect(called).toBe(true)
+    })
+    // postDigest
     test('runs a $$postDigest function after each digest', () => {
       scope.counter = 0
       scope.$$postDigest(() => scope.counter++)
@@ -621,6 +641,15 @@ describe('Scope', () => {
       scope.$digest()
 
       expect(scope.counter).toEqual(0)
+    })
+    it('accepts expressions for watch functions', () => {
+      let theValue
+      scope.aValue = 42
+      scope.$watch('aValue', (newValue, oldValue, scope) => {
+        theValue = newValue
+      })
+      scope.$digest()
+      expect(theValue).toEqual(42)
     })
   })
 
@@ -1456,6 +1485,15 @@ describe('Scope', () => {
       scope.$digest()
       expect(oldValueGiven).toEqual({ a: 1, b: 2 })
     })
+    it('accepts expressions for watch functions', () => {
+      let theValue
+      scope.aColl = [1, 2, 3]
+      scope.$watchCollection('aColl', (newValue, oldValue, scope) => {
+        theValue = newValue
+      })
+      scope.$digest()
+      expect(theValue).toEqual([1, 2, 3])
+    })
   })
 
   describe('events', () => {
@@ -1755,6 +1793,117 @@ describe('Scope', () => {
       scope.$destroy()
       scope.$emit('myEvent')
       expect(listener).not.toHaveBeenCalled()
+    })
+    it('removes constant watches after first invocation', () => {
+      scope.$watch('[1, 2, 3]', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('removes one-time watches after first invocation', () => {
+      scope.aValue = 42
+      scope.$watch('::aValue', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time-watches until value is defined', () => {
+      scope.$watch('::aValue', () => {})
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 42
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time-watches until value stays defined', () => {
+      scope.aValue = 42
+      scope.$watch('::aValue', () => {})
+      let unwatchDeleter = scope.$watch('aValue', () => {
+        delete scope.aValue
+      })
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(2)
+      scope.aValue = 42
+      unwatchDeleter()
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time watches before all array items defined', () => {
+      scope.$watch('::[1, 2, aValue]', () => {}, true)
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 3
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not remove one-time watches before all object vals defined', () => {
+      scope.$watch('::{a: 1, b: aValue}', () => {}, true)
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(1)
+      scope.aValue = 3
+      scope.$digest()
+      expect(scope.$$watchers.length).toBe(0)
+    })
+    it('does not e-evaluate an array if its contents do not change ', () => {
+      let values = []
+
+      scope.a = 1
+      scope.b = 2
+      scope.c = 3
+
+      scope.$watch('[a,b,c]', value => {
+        values.push(value)
+      })
+
+      scope.$digest()
+      expect(values.length).toEqual(1)
+      expect(values[0]).toEqual([1, 2, 3])
+
+      scope.$digest()
+      expect(values.length).toBe(1)
+      scope.c = 4
+      scope.$digest()
+      expect(values.length).toBe(2)
+      expect(values[1]).toEqual([1, 2, 4])
+    })
+    it('allows $stateful filter value to change over time', async () => {
+      register('withTime', () => {
+        return utils.extend(
+          v => {
+            return new Date().toISOString() + ': ' + v
+          },
+          {
+            $stateful: true
+          }
+        )
+      })
+      let listenerSpy = jest.fn()
+      scope.$watch('42 | withTime', listenerSpy)
+      scope.$digest()
+      let firstValue =
+        listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      scope.$digest()
+      let secondValue =
+        listenerSpy.mock.calls[listenerSpy.mock.calls.length - 1][0]
+      expect(secondValue).not.toEqual(firstValue)
+    })
+    test('allows calling assign on identifier expressions ', () => {
+      let fn = parse('anAttribute')
+      expect(fn.assign).toBeDefined()
+
+      let scope = {}
+      fn.assign(scope, 42)
+
+      expect(scope.anAttribute).toEqual(42)
+    })
+    test('allows calling assign on member inputExpressions', () => {
+      let fn = parse('anObject.anAttribute')
+      expect(fn.assign).toBeDefined()
+
+      let scope = {}
+      fn.assign(scope, 42)
+      expect(scope.anObject).toEqual({ anAttribute: 42 })
     })
   })
 })
