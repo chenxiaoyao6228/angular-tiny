@@ -23,4 +23,19 @@ describe('setupModuleLoader', () => {
     setupModuleLoader(window)
     expect(window.angular.module).toEqual(module)
   })
+
+  describe('modules', () => {
+    beforeEach(() => {
+      setupModuleLoader(window)
+    })
+    it('allows registering a module', () => {
+      let myModule = window.angular.module('myModule', [])
+      expect(myModule).toBeDefined()
+      expect(myModule.name).toEqual('myModule')
+    })
+    it('attaches the requires array to the required module', () => {
+      let myModule = window.angular.module('myModule', ['myOtherModule'])
+      expect(myModule.requires).toEqual(['myOtherModule'])
+    })
+  })
 })
