@@ -1,6 +1,7 @@
 import utils from './utils/'
 export function createInjector(modulesToLoad) {
   let cache = {}
+  let loadedModules = {}
 
   let $provide = {
     constant: function(key, value) {
@@ -11,8 +12,12 @@ export function createInjector(modulesToLoad) {
     }
   }
 
-  utils.forEach(modulesToLoad, moduleName => {
+  utils.forEach(modulesToLoad, function loadModule(moduleName) {
+    if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
+    loadedModules[moduleName] = true
     let module = window.angular.module(moduleName)
+    // 递归过程,先注入依赖
+    utils.forEach(module.requires, loadModule)
     utils.forEach(module._invokeQueue, invokeArgs => {
       let method = invokeArgs[0]
       let args = invokeArgs[1]
