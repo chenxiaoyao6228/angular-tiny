@@ -11,9 +11,14 @@ export function createInjector(modulesToLoad) {
       cache[key] = value
     }
   }
-
   function invoke(fn) {
-    let args = fn.$inject.map(item => cache[item])
+    let args = fn.$inject.map(token => {
+      if (utils.isString(token)) {
+        return cache[token]
+      } else {
+        throw `Incorrect injection token! Expected a string, got ${token}`
+      }
+    })
     return fn.apply(null, args)
   }
 

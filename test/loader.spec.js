@@ -139,5 +139,17 @@ describe('setupModuleLoader', () => {
       fn.$inject = ['a', 'b']
       expect(injector.invoke(fn)).toEqual(3)
     })
+    it('does not accept non-strings as injection tokens', () => {
+      let module = angular.module('myModule', [])
+      module.constant('a', 1)
+      let injector = createInjector(['myModule'])
+      let fn = function(one, two) {
+        return one + two
+      }
+      fn.$inject = ['a', 2]
+      expect(() => {
+        injector.invoke(fn)
+      }).toThrow()
+    })
   })
 })
