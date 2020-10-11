@@ -17,4 +17,10 @@ describe('setupModuleLoader', () => {
     setupModuleLoader(window)
     expect(window.angular.module).toBeDefined()
   })
+  it('expose module function just once', () => {
+    setupModuleLoader(window)
+    let module = window.angular.module
+    setupModuleLoader(window)
+    expect(window.angular.module).toEqual(module)
+  })
 })

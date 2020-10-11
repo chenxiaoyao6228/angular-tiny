@@ -3,4 +3,6 @@ export function setupModuleLoader(window) {
     return obj[name] || (obj[name] = factory())
   }
   let angular = ensure(window, 'angular', Object)
+
+  ensure(angular, 'module', () => () => {})
 }
