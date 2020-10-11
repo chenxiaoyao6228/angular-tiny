@@ -1,4 +1,5 @@
 import { setupModuleLoader } from '../src/loader'
+import { createInjector } from '../src/injector'
 describe('setupModuleLoader', () => {
   beforeEach(() => {
     delete window.angular
@@ -52,6 +53,41 @@ describe('setupModuleLoader', () => {
       expect(() => {
         window.angular.module('hasOwnProperty', [])
       }).toThrow()
+    })
+  })
+
+  describe('injector', () => {
+    beforeEach(() => {
+      delete window.angular
+      setupModuleLoader(window)
+    })
+    it('it can be created', () => {
+      let injector = createInjector()
+      expect(injector).toBeDefined()
+    })
+    it('has a constant that has been registered to a module', () => {
+      let module = window.angular.module('myModule', [])
+      module.constant('aConstant', 42)
+      let injector = createInjector(['myModule'])
+      expect(injector.has('aConstant')).toEqual(true)
+    })
+    it('does not have a non-registered constant', () => {
+      let module = window.angular.module('myModule', [])
+      let injector = createInjector(['myModule'])
+      expect(injector.has('aConstant')).toEqual(false)
+    })
+    it('does not allow a constant called hasOwnProperty', () => {
+      let module = window.angular.module('myModule', [])
+      module.constant('hasOwnProperty', () => false)
+      expect(() => {
+        createInjector(['myModule'])
+      }).toThrow()
+    })
+    it('can return a registered constant', () => {
+      let module = window.angular.module('myModule', [])
+      module.constant('aConstant', 42)
+      let injector = createInjector(['myModule'])
+      expect(injector.get('aConstant')).toBe(42)
     })
   })
 })
