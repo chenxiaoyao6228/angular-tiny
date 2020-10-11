@@ -11,7 +11,7 @@ export function createInjector(modulesToLoad) {
       cache[key] = value
     }
   }
-  function invoke(fn) {
+  function invoke(fn, self) {
     let args = fn.$inject.map(token => {
       if (utils.isString(token)) {
         return cache[token]
@@ -19,7 +19,7 @@ export function createInjector(modulesToLoad) {
         throw `Incorrect injection token! Expected a string, got ${token}`
       }
     })
-    return fn.apply(null, args)
+    return fn.apply(self, args)
   }
 
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
