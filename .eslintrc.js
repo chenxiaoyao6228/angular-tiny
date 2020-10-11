@@ -28,7 +28,8 @@ module.exports = {
     expect: true,
     jest: true,
     filter: false,
-    register: false
+    register: false,
+    angular: true
   },
   "rules": {
     "prettier/prettier": "error",
