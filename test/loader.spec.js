@@ -127,5 +127,17 @@ describe('setupModuleLoader', () => {
       angular.module('myOtherModule', ['myModule'])
       createInjector(['myModule'])
     })
+    it('invokes an annotated function with dependency injection', () => {
+      let module = angular.module('myModule', [])
+      module.constant('a', 1)
+      module.constant('b', 2)
+      let injector = createInjector(['myModule'])
+
+      let fn = function(one, two) {
+        return one + two
+      }
+      fn.$inject = ['a', 'b']
+      expect(injector.invoke(fn)).toEqual(3)
+    })
   })
 })

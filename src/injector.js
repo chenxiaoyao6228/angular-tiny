@@ -12,6 +12,11 @@ export function createInjector(modulesToLoad) {
     }
   }
 
+  function invoke(fn) {
+    let args = fn.$inject.map(item => cache[item])
+    return fn.apply(null, args)
+  }
+
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
     if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
     loadedModules[moduleName] = true
@@ -30,6 +35,7 @@ export function createInjector(modulesToLoad) {
     },
     get: function(key) {
       return cache[key]
-    }
+    },
+    invoke: invoke
   }
 }
