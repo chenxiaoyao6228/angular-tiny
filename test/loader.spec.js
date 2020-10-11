@@ -37,5 +37,21 @@ describe('setupModuleLoader', () => {
       let myModule = window.angular.module('myModule', ['myOtherModule'])
       expect(myModule.requires).toEqual(['myOtherModule'])
     })
+    it('allows getting a module', () => {
+      let myModule = window.angular.module('myModule', [])
+      let gotModule = window.angular.module('myModule')
+      expect(gotModule).toBeDefined()
+      expect(gotModule).toEqual(myModule)
+    })
+    it('throws when trying to get a nonexistent module', () => {
+      expect(() => {
+        window.angular.module('myModule')
+      }).toThrow()
+    })
+    it('does not allow a module to be called hasOwnProperty', () => {
+      expect(() => {
+        window.angular.module('hasOwnProperty', [])
+      }).toThrow()
+    })
   })
 })
