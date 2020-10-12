@@ -1,7 +1,7 @@
 import utils from './utils/'
 
 let FN_ARGS = /^function\s*[^(]*\(\s*([^)]*)\)/m
-let FN_ARG = /^\s*(\S+)\s*$/
+let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
 let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
 
 export function createInjector(modulesToLoad) {
@@ -42,7 +42,7 @@ export function createInjector(modulesToLoad) {
       if (!argDeclaration[1]) return []
       return argDeclaration[1]
         .split(',')
-        .map(argName => argName.match(FN_ARG)[1])
+        .map(argName => argName.match(FN_ARG)[2])
     }
   }
 

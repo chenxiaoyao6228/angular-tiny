@@ -216,6 +216,17 @@ describe('setupModuleLoader', () => {
         ) {}
         expect(injector.annotate(fn)).toEqual(['a', 'c'])
       })
+      it('strips surrounding underscores from argument names when parsing', () => {
+        let injector = createInjector([])
+        let fn = function(a, _b_, c_, _d, an_argument) {}
+        expect(injector.annotate(fn)).toEqual([
+          'a',
+          'b',
+          'c_',
+          '_d',
+          'an_argument'
+        ])
+      })
     })
   })
 })
