@@ -35,6 +35,13 @@ export function createInjector(modulesToLoad, strictDi) {
     return fn.apply(self, args)
   }
 
+  function instantiate(Type, locals) {
+    let UnwrappedType = utils.isArray(Type) ? utils.last(Type) : Type
+    let instance = Object.create(UnwrappedType.prototype)
+    invoke(Type, instance, locals)
+    return instance
+  }
+
   function annotate(fn) {
     if (utils.isArray(fn)) {
       return fn.slice(0, -1)
@@ -75,6 +82,7 @@ export function createInjector(modulesToLoad, strictDi) {
       return cache[key]
     },
     invoke: invoke,
-    annotate: annotate
+    annotate: annotate,
+    instantiate
   }
 }
