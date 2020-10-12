@@ -175,5 +175,18 @@ describe('setupModuleLoader', () => {
       fn.$inject = ['a', 'b']
       expect(injector.invoke(fn, undefined, { b: 3 })).toBe(4)
     })
+    describe('annotate', () => {
+      it('returns the $inject annotation of a function when it has one', () => {
+        let injector = createInjector([])
+        let fn = function() {}
+        fn.$inject = ['a', 'b']
+        expect(injector.annotate(fn)).toEqual(['a', 'b'])
+      })
+      it('returns the array-style annotations of a function', () => {
+        let injector = createInjector([])
+        let fn = ['a', 'b', function() {}]
+        expect(injector.annotate(fn)).toEqual(['a', 'b'])
+      })
+    })
   })
 })

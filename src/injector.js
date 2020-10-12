@@ -26,6 +26,10 @@ export function createInjector(modulesToLoad) {
     return fn.apply(self, args)
   }
 
+  function annotate(fn) {
+    return utils.isArray(fn) ? fn.slice(0, -1) : fn.$inject
+  }
+
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
     if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
     loadedModules[moduleName] = true
@@ -45,6 +49,7 @@ export function createInjector(modulesToLoad) {
     get: function(key) {
       return cache[key]
     },
-    invoke: invoke
+    invoke: invoke,
+    annotate: annotate
   }
 }
