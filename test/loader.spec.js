@@ -227,6 +227,13 @@ describe('setupModuleLoader', () => {
           'an_argument'
         ])
       })
+      it('throws when using a non-annotated fn in strict mode', () => {
+        let injector = createInjector([], true)
+        let fn = function(a, b, c) {}
+        expect(() => {
+          injector.annotate(fn)
+        }).toThrow()
+      })
     })
   })
 })

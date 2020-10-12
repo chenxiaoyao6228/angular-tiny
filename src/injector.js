@@ -4,9 +4,10 @@ let FN_ARGS = /^function\s*[^(]*\(\s*([^)]*)\)/m
 let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
 let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
 
-export function createInjector(modulesToLoad) {
+export function createInjector(modulesToLoad, strictDi) {
   let cache = {}
   let loadedModules = {}
+  strictDi = strictDi === true
 
   let $provide = {
     constant: function(key, value) {
@@ -37,6 +38,11 @@ export function createInjector(modulesToLoad) {
     } else if (fn.$inject) {
       return fn.$inject
     } else {
+      if (strictDi) {
+        throw 'fn is not using explicit annotation and ' +
+          'cannot be invoked in strict mode'
+      }
+
       let source = fn.toString().replace(STRIP_COMMENTS, '')
       let argDeclaration = source.match(FN_ARGS)
       if (!argDeclaration[1]) return []
