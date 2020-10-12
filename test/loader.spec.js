@@ -319,6 +319,17 @@ describe('setupModuleLoader', () => {
         let instance = injector.instantiate(Type, { b: 3 })
         expect(instance.result).toBe(4)
       })
+      it('allows registering a provider and uses its $get', () => {
+        let module = angular.module('myModule', [])
+        module.provider('a', {
+          $get: function() {
+            return 42
+          }
+        })
+        let injector = createInjector(['myModule'])
+        expect(injector.has('a')).toBe(true)
+        expect(injector.get('a')).toBe(42)
+      })
     })
   })
 })

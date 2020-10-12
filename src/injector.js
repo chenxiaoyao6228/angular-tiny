@@ -10,11 +10,14 @@ export function createInjector(modulesToLoad, strictDi) {
   strictDi = strictDi === true
 
   let $provide = {
-    constant: function(key, value) {
+    constant: (key, value) => {
       if (key === 'hasOwnProperty') {
         throw 'hasOwnProperty is not a valid constant name'
       }
       cache[key] = value
+    },
+    provider: (key, provider) => {
+      cache[key] = provider.$get()
     }
   }
   function invoke(fn, self, locals) {
