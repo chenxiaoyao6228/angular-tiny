@@ -18,7 +18,7 @@ export function createInjector(modulesToLoad, strictDi) {
     }
   }
   function invoke(fn, self, locals) {
-    let args = fn.$inject.map(token => {
+    let args = annotate(fn).map(token => {
       if (utils.isString(token)) {
         if (locals && Object.prototype.hasOwnProperty.call(locals, token)) {
           return locals[token]
@@ -29,6 +29,9 @@ export function createInjector(modulesToLoad, strictDi) {
         throw `Incorrect injection token! Expected a string, got ${token}`
       }
     })
+    if (utils.isArray(fn)) {
+      fn = utils.last(fn)
+    }
     return fn.apply(self, args)
   }
 
