@@ -164,5 +164,16 @@ describe('setupModuleLoader', () => {
       obj.fn.$inject = ['a']
       expect(injector.invoke(obj.fn, obj)).toBe(3)
     })
+    it('overrides dependencies with locals when invoking', () => {
+      let module = angular.module('myModule', [])
+      module.constant('a', 1)
+      module.constant('b', 2)
+      let injector = createInjector(['myModule'])
+      let fn = function(one, two) {
+        return one + two
+      }
+      fn.$inject = ['a', 'b']
+      expect(injector.invoke(fn, undefined, { b: 3 })).toBe(4)
+    })
   })
 })
