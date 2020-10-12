@@ -1,4 +1,9 @@
 import utils from './utils/'
+
+let FN_ARGS = /^function\s*[^(]*\(\s*([^)]*)\)/m
+let FN_ARG = /^\s*(\S+)\s*$/
+let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
+
 export function createInjector(modulesToLoad) {
   let cache = {}
   let loadedModules = {}
@@ -27,7 +32,18 @@ export function createInjector(modulesToLoad) {
   }
 
   function annotate(fn) {
-    return utils.isArray(fn) ? fn.slice(0, -1) : fn.$inject
+    if (utils.isArray(fn)) {
+      return fn.slice(0, -1)
+    } else if (fn.$inject) {
+      return fn.$inject
+    } else {
+      let source = fn.toString().replace(STRIP_COMMENTS, '')
+      let argDeclaration = source.match(FN_ARGS)
+      if (!argDeclaration[1]) return []
+      return argDeclaration[1]
+        .split(',')
+        .map(argName => argName.match(FN_ARG)[1])
+    }
   }
 
   utils.forEach(modulesToLoad, function loadModule(moduleName) {

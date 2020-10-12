@@ -187,6 +187,35 @@ describe('setupModuleLoader', () => {
         let fn = ['a', 'b', function() {}]
         expect(injector.annotate(fn)).toEqual(['a', 'b'])
       })
+      it('returns an empty array for a non-annotated 0-arg function', () => {
+        let injector = createInjector([])
+        let fn = function() {}
+        expect(injector.annotate(fn)).toEqual([])
+      })
+      it('returns annotations parsed from function args when not annotated', () => {
+        let injector = createInjector([])
+        let fn = function(a, b) {}
+        expect(injector.annotate(fn)).toEqual(['a', 'b'])
+      })
+      it('strips comments from argument lists when parsing', () => {
+        let injector = createInjector([])
+        let fn = function(a, /*b,*/ c) {}
+        expect(injector.annotate(fn)).toEqual(['a', 'c'])
+      })
+      it('strips several comments from argument lists when parsing', () => {
+        let injector = createInjector([])
+        let fn = function(a, /*b,*/ c /*, d*/) {}
+        expect(injector.annotate(fn)).toEqual(['a', 'c'])
+      })
+      it('strips // comments from argument lists when parsing', () => {
+        let injector = createInjector([])
+        let fn = function(
+          a,
+          //b,
+          c
+        ) {}
+        expect(injector.annotate(fn)).toEqual(['a', 'c'])
+      })
     })
   })
 })
