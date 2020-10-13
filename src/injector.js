@@ -72,7 +72,7 @@ export function createInjector(modulesToLoad, strictDi) {
     // 递归过程,先注入依赖
     utils.forEach(module.requires, loadModule)
     utils.forEach(module._invokeQueue, invokeArgs => {
-      let method = invokeArgs[0]
+      let method = invokeArgs[0] // constant, provider...
       let args = invokeArgs[1]
       $provide[method].apply($provide, args)
     })
