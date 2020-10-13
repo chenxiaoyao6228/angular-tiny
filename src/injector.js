@@ -20,6 +20,9 @@ export function createInjector(modulesToLoad, strictDi) {
       instanceCache[key] = value
     },
     provider: (key, provider) => {
+      if (utils.isFunction(provider)) {
+        provider = instantiate(provider)
+      }
       providerCache[`${key}Provider`] = provider
     }
   }

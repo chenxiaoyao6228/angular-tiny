@@ -331,5 +331,26 @@ describe('injector', () => {
         injector.get('a')
       }).toThrow('Failing instantiation!')
     })
+    it('instantiates a provider if given as a constructor function', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function() {
+          return 42
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(42)
+    })
+    it('injects the given provider constructor function', () => {
+      let module = angular.module('myModule', [])
+      module.constant('b', 2)
+      module.provider('a', function AProvider(b) {
+        this.$get = function() {
+          return 1 + b
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(3)
+    })
   })
 })
