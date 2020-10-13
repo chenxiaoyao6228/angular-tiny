@@ -5,7 +5,8 @@ let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
 let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
 
 export function createInjector(modulesToLoad, strictDi) {
-  let cache = {}
+  let providerCache = {}
+  let instanceCache = {}
   let loadedModules = {}
   strictDi = strictDi === true
 
@@ -14,19 +15,31 @@ export function createInjector(modulesToLoad, strictDi) {
       if (key === 'hasOwnProperty') {
         throw 'hasOwnProperty is not a valid constant name'
       }
-      cache[key] = value
+      instanceCache[key] = value
     },
     provider: (key, provider) => {
-      cache[key] = invoke(provider.$get, provider)
+      providerCache[`${key}Provider`] = provider
     }
   }
+
+  function getService(name) {
+    if (Object.prototype.hasOwnProperty.call(instanceCache, name)) {
+      return instanceCache[name]
+    } else if (
+      Object.prototype.hasOwnProperty.call(providerCache, `${name}Provider`)
+    ) {
+      let provider = providerCache[`${name}Provider`]
+      return invoke(provider.$get, provider)
+    }
+  }
+
   function invoke(fn, self, locals) {
     let args = annotate(fn).map(token => {
       if (utils.isString(token)) {
         if (locals && Object.prototype.hasOwnProperty.call(locals, token)) {
           return locals[token]
         } else {
-          return cache[token]
+          return getService(token)
         }
       } else {
         throw `Incorrect injection token! Expected a string, got ${token}`
@@ -78,12 +91,13 @@ export function createInjector(modulesToLoad, strictDi) {
     })
   })
   return {
-    has: function(key) {
-      return Object.prototype.hasOwnProperty.call(cache, key)
+    has: key => {
+      return (
+        Object.prototype.hasOwnProperty.call(instanceCache, key) ||
+        Object.prototype.hasOwnProperty.call(providerCache, `${key}Provider`)
+      )
     },
-    get: function(key) {
-      return cache[key]
-    },
+    get: getService,
     invoke: invoke,
     annotate: annotate,
     instantiate

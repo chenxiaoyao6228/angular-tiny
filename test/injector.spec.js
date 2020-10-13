@@ -285,5 +285,16 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('b')).toBe(3)
     })
+    it('injects the $get method of a provider lazily', () => {
+      let module = angular.module('myModule', [])
+      module.provider('b', {
+        $get: function(a) {
+          return a + 2
+        }
+      })
+      module.provider('a', { $get: () => 1 })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('b')).toBe(3)
+    })
   })
 })
