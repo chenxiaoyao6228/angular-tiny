@@ -35,6 +35,8 @@ export function createInjector(modulesToLoad, strictDi) {
         )
       }
       return instanceCache[name]
+    } else if (Object.prototype.hasOwnProperty.call(providerCache, name)) {
+      return providerCache[name]
     } else if (
       Object.prototype.hasOwnProperty.call(providerCache, `${name}Provider`)
     ) {

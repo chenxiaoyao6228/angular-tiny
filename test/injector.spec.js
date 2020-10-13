@@ -352,5 +352,23 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('a')).toBe(3)
     })
+    it('injects another provider to a provider constructor function', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        let value = 1
+        this.setValue = function(v) {
+          value = v
+        }
+        this.$get = function() {
+          return value
+        }
+      })
+      module.provider('b', function BProvider(aProvider) {
+        aProvider.setValue(2)
+        this.$get = function() {}
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(2)
+    })
   })
 })
