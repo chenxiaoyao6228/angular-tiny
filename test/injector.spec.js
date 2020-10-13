@@ -296,5 +296,15 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('b')).toBe(3)
     })
+    it('instantiates a dependency only once', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', {
+        $get: function() {
+          return {}
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(injector.get('a'))
+    })
   })
 })

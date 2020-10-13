@@ -29,7 +29,8 @@ export function createInjector(modulesToLoad, strictDi) {
       Object.prototype.hasOwnProperty.call(providerCache, `${name}Provider`)
     ) {
       let provider = providerCache[`${name}Provider`]
-      return invoke(provider.$get, provider)
+      let instance = (instanceCache[name] = invoke(provider.$get, provider))
+      return instance
     }
   }
 
