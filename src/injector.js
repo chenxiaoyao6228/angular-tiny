@@ -3,11 +3,13 @@ import utils from './utils/'
 let FN_ARGS = /^function\s*[^(]*\(\s*([^)]*)\)/m
 let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
 let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
+let INSTANTIATING = {}
 
 export function createInjector(modulesToLoad, strictDi) {
   let providerCache = {}
   let instanceCache = {}
   let loadedModules = {}
+  let path = []
   strictDi = strictDi === true
 
   let $provide = {
@@ -24,13 +26,27 @@ export function createInjector(modulesToLoad, strictDi) {
 
   function getService(name) {
     if (Object.prototype.hasOwnProperty.call(instanceCache, name)) {
+      if (instanceCache[name] === INSTANTIATING) {
+        throw new Error(
+          'Circular dependency found: ' + name + ' <- ' + path.join(' <- ')
+        )
+      }
       return instanceCache[name]
     } else if (
       Object.prototype.hasOwnProperty.call(providerCache, `${name}Provider`)
     ) {
-      let provider = providerCache[`${name}Provider`]
-      let instance = (instanceCache[name] = invoke(provider.$get, provider))
-      return instance
+      path.unshift(name)
+      instanceCache[name] = INSTANTIATING
+      try {
+        let provider = providerCache[`${name}Provider`]
+        let instance = (instanceCache[name] = invoke(provider.$get, provider))
+        return instance
+      } finally {
+        path.shift()
+        if (instanceCache[name] === INSTANTIATING) {
+          delete instanceCache[name]
+        }
+      }
     }
   }
 
