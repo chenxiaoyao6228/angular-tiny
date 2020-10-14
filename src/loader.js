@@ -14,13 +14,13 @@ export function setupModuleLoader(window) {
     let moduleInstance = {
       name: name,
       requires: requires,
-      constant: invokeLater('constant'),
+      constant: invokeLater('constant', 'unshift'),
       provider: invokeLater('provider'),
       _invokeQueue: invokeQueue
     }
-    function invokeLater(method) {
+    function invokeLater(method, arrayMethod) {
       return function() {
-        invokeQueue.push([method, arguments])
+        invokeQueue[arrayMethod || 'push']([method, arguments])
         return moduleInstance
       }
     }
