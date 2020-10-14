@@ -487,5 +487,40 @@ describe('injector', () => {
         injector.get('a')
       }).toThrow()
     })
+    it('runs config blocks when the injector is created', () => {
+      let module = angular.module('myModule', [])
+      let hasRun = false
+      module.config(() => {
+        hasRun = true
+      })
+      createInjector(['myModule'])
+      expect(hasRun).toBe(true)
+    })
+    it('injects config blocks with provider injector', () => {
+      let module = angular.module('myModule', [])
+      module.config($provide => {
+        $provide.constant('a', 42)
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(42)
+    })
+    it('allows registering config blocks before providers', () => {
+      let module = angular.module('myModule', [])
+
+      module.config(aProvider => {})
+      module.provider('a', function() {
+        this.$get = () => 42
+      })
+
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toEqual(42)
+    })
+    it('runs a config block added during module registration', () => {
+      let module = angular.module('myModule', [], $provide => {
+        $provide.constant('a', 42)
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(42)
+    })
   })
 })

@@ -123,6 +123,14 @@ export function createInjector(modulesToLoad, strictDi) {
       instantiate
     }
   }
+  function runInvokeQueue(queue) {
+    utils.forEach(queue, invokeArgs => {
+      let service = providerInjector.get(invokeArgs[0])
+      let method = invokeArgs[1]
+      let args = invokeArgs[2]
+      service[method].apply(service, args)
+    })
+  }
 
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
     if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
@@ -130,11 +138,8 @@ export function createInjector(modulesToLoad, strictDi) {
     let module = window.angular.module(moduleName)
     // 递归过程,先注入依赖
     utils.forEach(module.requires, loadModule)
-    utils.forEach(module._invokeQueue, invokeArgs => {
-      let method = invokeArgs[0] // constant, provider...
-      let args = invokeArgs[1]
-      providerCache.$provide[method].apply(providerCache.$provide, args)
-    })
+    runInvokeQueue(module._invokeQueue)
+    runInvokeQueue(module._configBlock)
   })
 
   return instanceInjector

@@ -5,24 +5,33 @@ export function setupModuleLoader(window) {
 
   let angular = ensure(window, 'angular', Object)
 
-  let createModule = function(name, requires, modules) {
+  let createModule = function(name, requires, modules, configFn) {
     if (name === 'hasOwnProperty') {
       throw 'hasOwnProperty is not a valid module name'
     }
     let invokeQueue = []
+    let configBlocks = []
+
+    function invokeLater(service, method, arrayMethod, queue) {
+      return function() {
+        let item = [service, method, arguments]
+        queue[arrayMethod](item)
+        return moduleInstance
+      }
+    }
 
     let moduleInstance = {
       name: name,
       requires: requires,
-      constant: invokeLater('constant', 'unshift'),
-      provider: invokeLater('provider'),
-      _invokeQueue: invokeQueue
+      constant: invokeLater('$provide', 'constant', 'unshift', invokeQueue),
+      provider: invokeLater('$provide', 'provider', 'push', invokeQueue),
+      config: invokeLater('$injector', 'invoke', 'push', configBlocks),
+      _invokeQueue: invokeQueue,
+      _configBlock: configBlocks
     }
-    function invokeLater(method, arrayMethod) {
-      return function() {
-        invokeQueue[arrayMethod || 'push']([method, arguments])
-        return moduleInstance
-      }
+
+    if (configFn) {
+      moduleInstance.config(configFn)
     }
 
     modules[name] = moduleInstance
@@ -38,9 +47,9 @@ export function setupModuleLoader(window) {
 
   ensure(angular, 'module', () => {
     let modules = {}
-    return function(name, requires) {
+    return function(name, requires, configFn) {
       if (requires) {
-        return createModule(name, requires, modules)
+        return createModule(name, requires, modules, configFn)
       } else {
         return getModule(name, modules)
       }
