@@ -466,5 +466,26 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('b')).toBe(42)
     })
+    it('allows injecting the $provide service to providers', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider($provide) {
+        $provide.constant('b', 2)
+        this.$get = function(b) {
+          return 1 + b
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(3)
+    })
+    it('does not allow injecting the $provide service to $get', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function($provide) {}
+      })
+      let injector = createInjector(['myModule'])
+      expect(() => {
+        injector.get('a')
+      }).toThrow()
+    })
   })
 })

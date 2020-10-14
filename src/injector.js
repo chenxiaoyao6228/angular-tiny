@@ -29,7 +29,7 @@ export function createInjector(modulesToLoad, strictDi) {
   let path = []
   strictDi = strictDi === true
 
-  let $provide = {
+  providerCache.$provide = {
     constant: (key, value) => {
       if (key === 'hasOwnProperty') {
         throw 'hasOwnProperty is not a valid constant name'
@@ -133,7 +133,7 @@ export function createInjector(modulesToLoad, strictDi) {
     utils.forEach(module._invokeQueue, invokeArgs => {
       let method = invokeArgs[0] // constant, provider...
       let args = invokeArgs[1]
-      $provide[method].apply($provide, args)
+      providerCache.$provide[method].apply(providerCache.$provide, args)
     })
   })
 
