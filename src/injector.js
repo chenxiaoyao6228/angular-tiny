@@ -132,6 +132,7 @@ export function createInjector(modulesToLoad, strictDi) {
     })
   }
 
+  let runBlocks = []
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
     if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
     loadedModules[moduleName] = true
@@ -140,6 +141,10 @@ export function createInjector(modulesToLoad, strictDi) {
     utils.forEach(module.requires, loadModule)
     runInvokeQueue(module._invokeQueue)
     runInvokeQueue(module._configBlock)
+    runBlocks = runBlocks.concat(module._runBlocks)
+  })
+  runBlocks.forEach(runBlock => {
+    instanceInjector.invoke(runBlock)
   })
 
   return instanceInjector
