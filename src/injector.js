@@ -9,15 +9,21 @@ let INSTANTIATING = {}
 
 export function createInjector(modulesToLoad, strictDi) {
   let providerCache = {}
-  let providerInjector = createInternalInjector(providerCache, () => {
-    throw 'Unknown provider: ' + path.join(' <- ')
-  })
+  let providerInjector = (providerCache.$injector = createInternalInjector(
+    providerCache,
+    () => {
+      throw 'Unknown provider: ' + path.join(' <- ')
+    }
+  ))
 
   let instanceCache = {}
-  let instanceInjector = createInternalInjector(instanceCache, name => {
-    let provider = providerInjector.get(name + 'Provider')
-    return instanceInjector.invoke(provider.$get, provider)
-  })
+  let instanceInjector = (instanceCache.$injector = createInternalInjector(
+    instanceCache,
+    name => {
+      let provider = providerInjector.get(name + 'Provider')
+      return instanceInjector.invoke(provider.$get, provider)
+    }
+  ))
 
   let loadedModules = {}
   let path = []
