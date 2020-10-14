@@ -370,5 +370,62 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('a')).toBe(2)
     })
+    it('does not inject an instance to a provider constructor function', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function() {
+          return 1
+        }
+      })
+      module.provider('b', function BProvider(a) {
+        this.$get = function() {
+          return a
+        }
+      })
+      expect(() => {
+        createInjector(['myModule'])
+      }).toThrow()
+    })
+    it('does not inject a provider to a $get function', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function() {
+          return 1
+        }
+      })
+      module.provider('b', function BProvider() {
+        this.$get = function(aProvider) {
+          return aProvider.$get()
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(() => {
+        injector.get('b')
+      }).toThrow()
+    })
+    it('does not inject a provider to invoke', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function() {
+          return 1
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(() => {
+        injector.invoke(aProvider => {})
+      }).toThrow()
+    })
+    it('does not give access to providers through get', () => {
+      let module = angular.module('myModule', [])
+      module.provider('a', function AProvider() {
+        this.$get = function() {
+          return 1
+        }
+      })
+      let injector = createInjector(['myModule'])
+      expect(() => {
+        injector.get('aProvider')
+      }).toThrow()
+    })
   })
 })
