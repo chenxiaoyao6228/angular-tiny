@@ -51,6 +51,11 @@ export function createInjector(modulesToLoad, strictDi) {
     },
     value: function(key, value) {
       this.factory(key, () => value, false)
+    },
+    service: function(key, Constructor) {
+      this.factory(key, () => {
+        return instanceInjector.instantiate(Constructor)
+      })
     }
   }
 
