@@ -573,5 +573,17 @@ describe('injector', () => {
       let injector = createInjector(['myModule'])
       expect(injector.get('a')).toBe(42)
     })
+    it('supports returning a run block from a function module', () => {
+      let result
+      let functionModule = function($provide) {
+        $provide.constant('a', 42)
+        return function(a) {
+          result = a
+        }
+      }
+      angular.module('myModule', [functionModule])
+      createInjector(['myModule'])
+      expect(result).toBe(42)
+    })
   })
 })

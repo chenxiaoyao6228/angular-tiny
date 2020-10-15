@@ -145,10 +145,10 @@ export function createInjector(modulesToLoad, strictDi) {
       runInvokeQueue(module._configBlock)
       runBlocks = runBlocks.concat(module._runBlocks)
     } else if (utils.isFunction(moduleName) || utils.isArray(moduleName)) {
-      providerInjector.invoke(moduleName)
+      runBlocks.push(providerInjector.invoke(moduleName))
     }
   })
-  runBlocks.forEach(runBlock => {
+  runBlocks.filter(Boolean).forEach(runBlock => {
     instanceInjector.invoke(runBlock)
   })
 
