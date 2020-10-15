@@ -148,6 +148,10 @@ function map(val, operator) {
   return _.map(val, operator)
 }
 
+function uniqueId() {
+  return _.uniqueId()
+}
+
 export default {
   times,
   deepEqual,
@@ -176,5 +180,6 @@ export default {
   extend,
   toPlainObject,
   forOwn,
-  map
+  map,
+  uniqueId
 }
