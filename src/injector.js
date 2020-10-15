@@ -134,14 +134,19 @@ export function createInjector(modulesToLoad, strictDi) {
 
   let runBlocks = []
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
-    if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName)) return
-    loadedModules[moduleName] = true
-    let module = window.angular.module(moduleName)
-    // 递归过程,先注入依赖
-    utils.forEach(module.requires, loadModule)
-    runInvokeQueue(module._invokeQueue)
-    runInvokeQueue(module._configBlock)
-    runBlocks = runBlocks.concat(module._runBlocks)
+    if (utils.isString(moduleName)) {
+      if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName))
+        return
+      loadedModules[moduleName] = true
+      let module = window.angular.module(moduleName)
+      // 递归过程,先注入依赖
+      utils.forEach(module.requires, loadModule)
+      runInvokeQueue(module._invokeQueue)
+      runInvokeQueue(module._configBlock)
+      runBlocks = runBlocks.concat(module._runBlocks)
+    } else if (utils.isFunction(moduleName) || utils.isArray(moduleName)) {
+      providerInjector.invoke(moduleName)
+    }
   })
   runBlocks.forEach(runBlock => {
     instanceInjector.invoke(runBlock)
