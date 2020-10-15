@@ -69,6 +69,16 @@ describe('filter', () => {
     expect(injector.has('myFilter')).toBe(true)
   })
 
+  it('can be registered through module API', () => {
+    let myFilter = function() {}
+    let module = angular.module('myModule', []).filter('my', () => {
+      return myFilter
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    expect(injector.has('myFilter')).toBe(true)
+    expect(injector.get('myFilter')).toBe(myFilter)
+  })
+
   // parse
   it('can parse filter expressions', () => {
     register('upcase', () => str => str.toUpperCase())
