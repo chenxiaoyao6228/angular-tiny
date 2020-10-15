@@ -625,5 +625,25 @@ describe('injector', () => {
       }).toThrow()
       expect(injector.get('b')).toBeNull()
     })
+    it('allows registering a value', () => {
+      let module = angular.module('myModule', [])
+      module.value('a', 42)
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(42)
+    })
+    it('does not make values available to config blocks', () => {
+      let module = angular.module('myModule', [])
+      module.value('a', 42)
+      module.config(a => {})
+      expect(() => {
+        createInjector(['myModule'])
+      }).toThrow()
+    })
+    it('allows an undefined value', () => {
+      let module = angular.module('myModule', [])
+      module.value('a', undefined)
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBeUndefined()
+    })
   })
 })
