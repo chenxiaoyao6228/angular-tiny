@@ -1,4 +1,4 @@
-import { hashKey } from '../src/utils/apis'
+import { hashKey, HashMap } from '../src/utils/apis'
 describe('apis', () => {
   'use strict'
   describe('hashKey', () => {
@@ -78,6 +78,31 @@ describe('apis', () => {
           }
         })
       ).toEqual('object:42')
+    })
+  })
+  describe('HashMap', () => {
+    it('supports put and get of primitives', () => {
+      let map = new HashMap()
+      map.put(42, 'fourty two')
+      expect(map.get(42)).toEqual('fourty two')
+    })
+    it('supports put and get of objects with hashKey semantics', () => {
+      let map = new HashMap()
+      let obj = {}
+      map.put(obj, 'my value')
+      expect(map.get(obj)).toEqual('my value')
+      expect(map.get({})).toBeUndefined()
+    })
+    it('supports remove', () => {
+      let map = new HashMap()
+      map.put(42, 'fourty two')
+      map.remove(42)
+      expect(map.get(42)).toBeUndefined()
+    })
+    it('returns value from remove', () => {
+      let map = new HashMap()
+      map.put(42, 'fourty two')
+      expect(map.remove(42)).toEqual('fourty two')
     })
   })
 })

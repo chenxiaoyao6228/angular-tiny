@@ -15,3 +15,18 @@ export function hashKey(value) {
     return `${type}:${value}`
   }
 }
+
+export class HashMap {
+  constructor() {}
+  put(key, value) {
+    this[hashKey(key)] = value
+  }
+  get(key) {
+    return this[hashKey(key)]
+  }
+  remove(key) {
+    let value = this[hashKey(key)]
+    delete this[hashKey(key)]
+    return value
+  }
+}
