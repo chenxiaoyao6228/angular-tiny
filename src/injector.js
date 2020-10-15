@@ -43,6 +43,9 @@ export function createInjector(modulesToLoad, strictDi) {
         provider = providerInjector.instantiate(provider)
       }
       providerCache[`${key}Provider`] = provider
+    },
+    factory: function(key, factoryFn) {
+      this.provider(key, { $get: enforceReturnValue(factoryFn) })
     }
   }
 
@@ -131,6 +134,16 @@ export function createInjector(modulesToLoad, strictDi) {
       let args = invokeArgs[2]
       service[method].apply(service, args)
     })
+  }
+
+  function enforceReturnValue(factoryFn) {
+    return function() {
+      let value = instanceInjector.invoke(factoryFn)
+      if (utils.isUndefined(value)) {
+        throw 'factory must return a value'
+      }
+      return value
+    }
   }
 
   let runBlocks = []

@@ -594,5 +594,36 @@ describe('injector', () => {
       createInjector(['myModule'])
       expect(loadedTimes).toBe(1)
     })
+    it('injects a factory function with instances', () => {
+      let module = angular.module('myModule', [])
+      module.factory('a', () => {
+        return 1
+      })
+      module.factory('b', a => {
+        return a + 2
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('b')).toBe(3)
+    })
+    it('only calls a factory function once', () => {
+      let module = angular.module('myModule', [])
+      module.factory('a', () => {
+        return {}
+      })
+      let injector = createInjector(['myModule'])
+      expect(injector.get('a')).toBe(injector.get('a'))
+    })
+    it('forces a factory to return a value', () => {
+      let module = angular.module('myModule', [])
+      module.factory('a', () => {})
+      module.factory('b', () => {
+        return null
+      })
+      let injector = createInjector(['myModule'])
+      expect(() => {
+        injector.get('a')
+      }).toThrow()
+      expect(injector.get('b')).toBeNull()
+    })
   })
 })
