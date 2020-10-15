@@ -1,4 +1,5 @@
 import utils from './utils/'
+import { HashMap } from './utils/apis'
 
 let FN_ARGS = /^function\s*[^(]*\(\s*([^)]*)\)/m
 let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
@@ -25,7 +26,7 @@ export function createInjector(modulesToLoad, strictDi) {
     }
   ))
 
-  let loadedModules = {}
+  let loadedModules = new HashMap()
   let path = []
   strictDi = strictDi === true
 
@@ -134,18 +135,20 @@ export function createInjector(modulesToLoad, strictDi) {
 
   let runBlocks = []
   utils.forEach(modulesToLoad, function loadModule(moduleName) {
-    if (utils.isString(moduleName)) {
-      if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName))
-        return
-      loadedModules[moduleName] = true
-      let module = window.angular.module(moduleName)
-      // 递归过程,先注入依赖
-      utils.forEach(module.requires, loadModule)
-      runInvokeQueue(module._invokeQueue)
-      runInvokeQueue(module._configBlock)
-      runBlocks = runBlocks.concat(module._runBlocks)
-    } else if (utils.isFunction(moduleName) || utils.isArray(moduleName)) {
-      runBlocks.push(providerInjector.invoke(moduleName))
+    if (!loadedModules.get(moduleName)) {
+      loadedModules.put(moduleName, true)
+      if (utils.isString(moduleName)) {
+        if (Object.prototype.hasOwnProperty.call(loadedModules, moduleName))
+          return
+        let module = window.angular.module(moduleName)
+        // 递归过程,先注入依赖
+        utils.forEach(module.requires, loadModule)
+        runInvokeQueue(module._invokeQueue)
+        runInvokeQueue(module._configBlock)
+        runBlocks = runBlocks.concat(module._runBlocks)
+      } else if (utils.isFunction(moduleName) || utils.isArray(moduleName)) {
+        runBlocks.push(providerInjector.invoke(moduleName))
+      }
     }
   })
   runBlocks.filter(Boolean).forEach(runBlock => {
