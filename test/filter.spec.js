@@ -1,27 +1,75 @@
+import utils from '../src/utils'
 import parse from '../src/parser'
 import { register, filter } from '../src/filter'
-import utils from '../src/utils'
+import { createInjector } from '../src/injector'
+import { publishExternalAPI } from '../src/angular_public'
 
 describe('filter', () => {
+  beforeEach(() => {
+    publishExternalAPI()
+  })
   it('can be registered and obtained', () => {
     let myFilter = function() {}
     let myFilterFactory = function() {
       return myFilter
     }
-    register('my', myFilterFactory)
-    expect(filter('my')).toBe(myFilter)
+
+    let injector = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('my', myFilterFactory)
+      }
+    ])
+    let $filter = injector.get('$filter')
+
+    expect($filter('my')).toBe(myFilter)
   })
   it('allows registering multiple filters with an object', () => {
     let myFilter = () => {}
     let myOtherFilter = () => {}
-    register({
-      my: () => myFilter,
-      myOther: () => myOtherFilter
-    })
+    let injector = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register({
+          my: () => myFilter,
+          myOther: () => myOtherFilter
+        })
+      }
+    ])
+    let $filter = injector.get('$filter')
 
-    expect(filter('my')).toEqual(myFilter)
-    expect(filter('myOther')).toEqual(myOtherFilter)
+    expect($filter('my')).toEqual(myFilter)
+    expect($filter('myOther')).toEqual(myOtherFilter)
   })
+  it('is available through injector', () => {
+    let myFilter = function() {}
+    let injector = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('my', () => {
+          return myFilter
+        })
+      }
+    ])
+    expect(injector.has('myFilter')).toBe(true)
+    expect(injector.get('myFilter')).toBe(myFilter)
+  })
+  it('may have dependencies in factory', () => {
+    let injector = createInjector([
+      'ng',
+      function($provide, $filterProvider) {
+        $provide.constant('suffix', '!')
+        $filterProvider.register('my', suffix => {
+          return function(v) {
+            return suffix + v
+          }
+        })
+      }
+    ])
+    expect(injector.has('myFilter')).toBe(true)
+  })
+
+  // parse
   it('can parse filter expressions', () => {
     register('upcase', () => str => str.toUpperCase())
     let fn = parse('aString | upcase')

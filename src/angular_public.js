@@ -1,6 +1,6 @@
 import { setupModuleLoader } from './loader'
 import utils from '../src/utils'
-function $FilterProvider() {
+function $FilterProvider($provide) {
   let filters = {}
 
   this.register = function(name, factory) {
@@ -9,18 +9,20 @@ function $FilterProvider() {
         return this.register(name, factory)
       })
     } else {
-      let filter = factory()
-      filters[name] = filter
-      return filter
+      return $provide.factory(name + 'Filter', factory)
     }
   }
 
-  this.$get = function() {
-    return function filter(name) {
-      return filters[name]
+  this.$get = [
+    '$injector',
+    function($injector) {
+      return function filter(name) {
+        return $injector.get(name + 'Filter')
+      }
     }
-  }
+  ]
 }
+$FilterProvider.$inject = ['$provide']
 
 export function publishExternalAPI() {
   'use strict'
