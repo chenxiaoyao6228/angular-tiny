@@ -28,6 +28,7 @@ export function setupModuleLoader(window) {
       factory: invokeLater('$provide', 'factory', 'push', invokeQueue),
       value: invokeLater('$provide', 'value', 'push', invokeQueue),
       service: invokeLater('$provide', 'service', 'push', invokeQueue),
+      decorator: invokeLater('$provide', 'decorator', 'push', invokeQueue),
       config: invokeLater('$injector', 'invoke', 'push', configBlocks),
       run: fn => {
         moduleInstance._runBlocks.push(fn)

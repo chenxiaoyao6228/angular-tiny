@@ -56,6 +56,15 @@ export function createInjector(modulesToLoad, strictDi) {
       this.factory(key, () => {
         return instanceInjector.instantiate(Constructor)
       })
+    },
+    decorator: function(serviceName, decoratorFn) {
+      let provider = providerInjector.get(serviceName + 'Provider')
+      let original$get = provider.$get
+      provider.$get = function() {
+        let instance = instanceInjector.invoke(original$get, provider)
+        instanceInjector.invoke(decoratorFn, null, { $delegate: instance })
+        return instance
+      }
     }
   }
 
