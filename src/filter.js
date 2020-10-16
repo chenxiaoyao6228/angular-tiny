@@ -13,8 +13,6 @@ const register = (name, factory) => {
   }
 }
 
-const filter = name => filters[name]
-
 const deepCompare = (
   actual,
   expected,
@@ -109,6 +107,24 @@ const filterFilter = () => (array, filterExpr, comparator) => {
   return array.filter(predicateFn)
 }
 
-register('filter', filterFilter)
-
-export { register, filter }
+export default function $FilterProvider($provide) {
+  this.register = function(name, factory) {
+    if (utils.isObject(name)) {
+      return utils.map(name, (factory, name) => {
+        return this.register(name, factory)
+      })
+    } else {
+      return $provide.factory(name + 'Filter', factory)
+    }
+  }
+  this.$get = [
+    '$injector',
+    function($injector) {
+      return function filter(name) {
+        return $injector.get(name + 'Filter')
+      }
+    }
+  ]
+  this.register('filter', filterFilter)
+}
+$FilterProvider.$inject = ['$provide']

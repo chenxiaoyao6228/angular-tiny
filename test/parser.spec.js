@@ -1,8 +1,13 @@
-import parse from '../src/parser.js'
-import { filter, register } from '../src/filter.js'
 import utils from '../src/utils'
+import { publishExternalAPI } from '../src/angular_public'
+import { createInjector } from '../src/injector'
 
 describe('parse', () => {
+  let parse
+  beforeEach(() => {
+    publishExternalAPI()
+    parse = createInjector(['ng']).get('$parse')
+  })
   describe('parse Number', () => {
     it('can parse an integer', () => {
       let fn = parse('42')
@@ -530,5 +535,60 @@ describe('parse', () => {
     it('returns the value of the last statement', () => {
       expect(parse('a = 1; b = 2; a + b')({})).toBe(3)
     })
+  })
+})
+describe('parse filter', () => {
+  let parse
+  beforeEach(() => {
+    publishExternalAPI()
+  })
+  it('can parse filter expressions', () => {
+    parse = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('upcase', () => str => str.toUpperCase())
+      }
+    ]).get('$parse')
+    let fn = parse('aString | upcase')
+    expect(fn({ aString: 'Hello' })).toEqual('HELLO')
+  })
+  it('can parse filter chain expressions', () => {
+    parse = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('upcase', () => s => s.toUpperCase())
+        $filterProvider.register('exclamate', () => s => s + '!')
+      }
+    ]).get('$parse')
+    let fn = parse('"hello" | upcase | exclamate')
+    expect(fn()).toEqual('HELLO!')
+  })
+  it('can pass an additional argument to filters', () => {
+    parse = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('repeat', () => {
+          return function(s, times) {
+            return utils.repeat(s, times)
+          }
+        })
+      }
+    ]).get('$parse')
+    let fn = parse('"hello" | repeat:3')
+    expect(fn()).toEqual('hellohellohello')
+  })
+  it('can pass several additional arguments to filters', () => {
+    parse = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('surround', () => {
+          return function(s, left, right) {
+            return left + s + right
+          }
+        })
+      }
+    ]).get('$parse')
+    let fn = parse('"hello" | surround:"*":"!"')
+    expect(fn()).toEqual('*hello!')
   })
 })

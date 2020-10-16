@@ -16,4 +16,14 @@ describe('angularPublic', () => {
     let injector = createInjector(['ng'])
     expect(injector.has('$filter')).toBe(true)
   })
+  it('sets up the $parse service', () => {
+    publishExternalAPI()
+    let injector = createInjector(['ng'])
+    expect(injector.has('$parse')).toBe(true)
+  })
+  it('sets up the $rootScope', () => {
+    publishExternalAPI()
+    let injector = createInjector(['ng'])
+    expect(injector.has('$rootScope')).toBe(true)
+  })
 })

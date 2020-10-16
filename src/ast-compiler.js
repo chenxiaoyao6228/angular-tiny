@@ -1,16 +1,16 @@
 import AST from './ast-builder'
 import utils from './utils'
-import { filter } from './filter.js'
 export default class ASTCompiler {
   static stringEscapeRegex = /[^ a-zA-Z0-9]/g
-  constructor(astBuilder) {
+  constructor(astBuilder, $filter) {
     this.astBuilder = astBuilder
+    this.$filter = $filter
   }
   compile(text) {
     let ast = this.astBuilder.ast(text)
     let extra = ''
     // console.log('ast', JSON.stringify(ast))
-    markConstantAndWatchExpressions(ast)
+    markConstantAndWatchExpressions(ast, this.$filter)
     this.state = {
       fn: {
         body: [],
@@ -71,7 +71,7 @@ export default class ASTCompiler {
       ensureSafeObject,
       ensureSafeFunction,
       ifDefined,
-      filter
+      this.$filter
     )
     fn.literal = isLiteral(ast)
     fn.constant = ast.constant
@@ -486,14 +486,14 @@ function isLiteral(ast) {
   )
 }
 
-function markConstantAndWatchExpressions(ast) {
+function markConstantAndWatchExpressions(ast, $filter) {
   let allConstants
   let argsToWatch
   switch (ast.type) {
     case AST.Program:
       allConstants = true
       ast.body.forEach(expr => {
-        markConstantAndWatchExpressions(expr)
+        markConstantAndWatchExpressions(expr, $filter)
         allConstants = allConstants && expr.constant
       })
       ast.constant = allConstants // 每个节点都定义一个constant
@@ -510,7 +510,7 @@ function markConstantAndWatchExpressions(ast) {
       allConstants = true
       argsToWatch = []
       ast.elements.forEach(element => {
-        markConstantAndWatchExpressions(element)
+        markConstantAndWatchExpressions(element, $filter)
         allConstants = allConstants && element.constant
         if (!element.constant) {
           argsToWatch.push.apply(argsToWatch, element.toWatch)
@@ -523,7 +523,7 @@ function markConstantAndWatchExpressions(ast) {
       allConstants = true
       argsToWatch = []
       ast.properties.forEach(property => {
-        markConstantAndWatchExpressions(property.value)
+        markConstantAndWatchExpressions(property.value, $filter)
         allConstants = allConstants && property.value.constant
         if (!property.value.constant) {
           argsToWatch.push.apply(argsToWatch, property.value.toWatch)
@@ -537,20 +537,20 @@ function markConstantAndWatchExpressions(ast) {
       ast.toWatch = []
       break
     case AST.MemberExpression:
-      markConstantAndWatchExpressions(ast.object)
+      markConstantAndWatchExpressions(ast.object, $filter)
       if (ast.computed) {
-        markConstantAndWatchExpressions(ast.property)
+        markConstantAndWatchExpressions(ast.property, $filter)
       }
       ast.constant =
         ast.object.constant && (!ast.computed || ast.property.constant)
       ast.toWatch = [ast]
       break
     case AST.CallExpression: {
-      let stateless = ast.filter && !filter(ast.callee.name).$stateful
+      let stateless = ast.filter && !$filter(ast.callee.name).$stateful
       allConstants = stateless ? true : false
       argsToWatch = []
       ast.arguments.forEach(arg => {
-        markConstantAndWatchExpressions(arg)
+        markConstantAndWatchExpressions(arg, $filter)
         allConstants = allConstants && arg.constant
         if (!arg.constant) {
           argsToWatch.push.apply(argsToWatch, arg.toWatch)
@@ -561,32 +561,32 @@ function markConstantAndWatchExpressions(ast) {
       break
     }
     case AST.AssignmentExpression:
-      markConstantAndWatchExpressions(ast.left)
-      markConstantAndWatchExpressions(ast.right)
+      markConstantAndWatchExpressions(ast.left, $filter)
+      markConstantAndWatchExpressions(ast.right, $filter)
       ast.constant = ast.left.constant && ast.right.constant
       ast.toWatch = [ast]
       break
     case AST.UnaryExpression:
-      markConstantAndWatchExpressions(ast.argument)
+      markConstantAndWatchExpressions(ast.argument, $filter)
       ast.constant = ast.argument.constant
       ast.toWatch = ast.argument.toWatch
       break
     case AST.BinaryExpression:
-      markConstantAndWatchExpressions(ast.left)
-      markConstantAndWatchExpressions(ast.right)
+      markConstantAndWatchExpressions(ast.left, $filter)
+      markConstantAndWatchExpressions(ast.right, $filter)
       ast.constant = ast.left.constant && ast.right.constant
       ast.toWatch = ast.left.toWatch.concat(ast.right.toWatch)
       break
     case AST.LogicalExpression:
-      markConstantAndWatchExpressions(ast.left)
-      markConstantAndWatchExpressions(ast.right)
+      markConstantAndWatchExpressions(ast.left, $filter)
+      markConstantAndWatchExpressions(ast.right, $filter)
       ast.constant = ast.left.constant && ast.right.constant
       ast.toWatch = [ast]
       break
     case AST.ConditionalExpression:
-      markConstantAndWatchExpressions(ast.test)
-      markConstantAndWatchExpressions(ast.consequent)
-      markConstantAndWatchExpressions(ast.alternate)
+      markConstantAndWatchExpressions(ast.test, $filter)
+      markConstantAndWatchExpressions(ast.consequent, $filter)
+      markConstantAndWatchExpressions(ast.alternate, $filter)
       ast.constant =
         ast.test.constant && ast.consequent.constant && ast.alternate.constant
       ast.toWatch = [ast]

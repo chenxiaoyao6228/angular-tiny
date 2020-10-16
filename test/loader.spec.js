@@ -1,5 +1,4 @@
 import { setupModuleLoader } from '../src/loader'
-import { createInjector } from '../src/injector'
 describe('setupModuleLoader', () => {
   beforeEach(() => {
     delete window.angular

@@ -1,32 +1,13 @@
 import { setupModuleLoader } from './loader'
-import utils from '../src/utils'
-function $FilterProvider($provide) {
-  let filters = {}
-
-  this.register = function(name, factory) {
-    if (utils.isObject(name)) {
-      return utils.map(name, (factory, name) => {
-        return this.register(name, factory)
-      })
-    } else {
-      return $provide.factory(name + 'Filter', factory)
-    }
-  }
-
-  this.$get = [
-    '$injector',
-    function($injector) {
-      return function filter(name) {
-        return $injector.get(name + 'Filter')
-      }
-    }
-  ]
-}
-$FilterProvider.$inject = ['$provide']
+import $FilterProvider from '../src/filter'
+import $ParseProvider from '../src/parser'
+import $RootScopeProvider from '../src/scope'
 
 export function publishExternalAPI() {
   'use strict'
   setupModuleLoader(window)
   let ngModule = angular.module('ng', [])
   ngModule.provider('$filter', $FilterProvider)
+  ngModule.provider('$parse', $ParseProvider)
+  ngModule.provider('$rootScope', $RootScopeProvider)
 }

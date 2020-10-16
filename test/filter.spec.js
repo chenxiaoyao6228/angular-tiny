@@ -1,9 +1,5 @@
-import utils from '../src/utils'
-import parse from '../src/parser'
-import { register, filter } from '../src/filter'
 import { createInjector } from '../src/injector'
 import { publishExternalAPI } from '../src/angular_public'
-
 describe('filter', () => {
   beforeEach(() => {
     publishExternalAPI()
@@ -78,41 +74,18 @@ describe('filter', () => {
     expect(injector.has('myFilter')).toBe(true)
     expect(injector.get('myFilter')).toBe(myFilter)
   })
-
-  // parse
-  it('can parse filter expressions', () => {
-    register('upcase', () => str => str.toUpperCase())
-    let fn = parse('aString | upcase')
-    expect(fn({ aString: 'Hello' })).toEqual('HELLO')
-  })
-  it('can parse filter chain expressions', () => {
-    register('upcase', () => s => s.toUpperCase())
-    register('exclamate', () => s => s + '!')
-    let fn = parse('"hello" | upcase | exclamate')
-    expect(fn()).toEqual('HELLO!')
-  })
-  it('can pass an additional argument to filters', () => {
-    register('repeat', () => {
-      return function(s, times) {
-        return utils.repeat(s, times)
-      }
-    })
-    let fn = parse('"hello" | repeat:3')
-    expect(fn()).toEqual('hellohellohello')
-  })
-  it('can pass several additional arguments to filters', () => {
-    register('surround', () => {
-      return function(s, left, right) {
-        return left + s + right
-      }
-    })
-    let fn = parse('"hello" | surround:"*":"!"')
-    expect(fn()).toEqual('*hello!')
-  })
 })
 describe('filter filter', () => {
+  let parse, filter
+  beforeEach(() => {
+    publishExternalAPI()
+    let injector = createInjector(['ng'])
+    parse = injector.get('$parse')
+    filter = injector.get('$filter')
+  })
   it('is available', () => {
-    expect(filter('filter')).toBeDefined()
+    let injector = createInjector(['ng'])
+    expect(injector.has('filterFilter')).toBe(true)
   })
 
   it('can filter an array with a predicate function', () => {
@@ -487,9 +460,14 @@ describe('filter filter', () => {
     expect(parse('aFunction()').constant).toBe(false)
   })
   it('marks filters constant if arguments are', () => {
-    register('aFilter', () => {
-      return value => value
-    })
+    parse = createInjector([
+      'ng',
+      function($filterProvider) {
+        $filterProvider.register('aFilter', () => {
+          return () => value => value
+        })
+      }
+    ]).get('$parse')
     expect(parse('[1, 2, 3] | aFilter').constant).toBe(true)
     expect(parse('[1, 2, a] | aFilter').constant).toBe(false)
     expect(parse('[1, 2, 3] | aFilter:42').constant).toBe(true)
