@@ -1,19 +1,14 @@
-import Scope from '../src/scope'
 import utils from '../src/utils'
-import parse from '../src/parser'
-import { register } from '../src/filter'
+import { publishExternalAPI } from '../src/angular_public'
+import { createInjector } from '../src/injector'
 
 describe('Scope', () => {
-  test('can be constructed and used as an Object', () => {
-    let scope = new Scope()
-    scope.aProperty = 1
-    expect(scope.aProperty).toEqual(1)
-  })
-
   describe('digest', () => {
     let scope
     beforeEach(() => {
-      scope = new Scope()
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      scope = injector.get('$rootScope')
     })
     test('calls the listener function of a watch on first $digest', () => {
       let watchFn = () => 'wat'
@@ -656,9 +651,10 @@ describe('Scope', () => {
   describe('$watchGroup', () => {
     let scope
     beforeEach(() => {
-      scope = new Scope()
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      scope = injector.get('$rootScope')
     })
-
     test('takes watches as an array and calls listener with arrays', () => {
       let gotNewValues, gotOldValues
 
@@ -784,8 +780,13 @@ describe('Scope', () => {
   })
 
   describe('inheritance', () => {
+    let parent
+    beforeEach(() => {
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      parent = injector.get('$rootScope')
+    })
     test("inherits the parent's properties", () => {
-      let parent = new Scope()
       parent.aValue = [1, 2, 3]
 
       let child = parent.$new()
@@ -794,20 +795,17 @@ describe('Scope', () => {
     })
 
     test('does not cause a parent to inherit its properties', () => {
-      let parent = new Scope()
       let child = parent.$new()
       child.aValue = [1, 2, 3]
       expect(parent.aValue).toBeUndefined()
     })
 
     test("inherits the parent's properties whenever they are defined", () => {
-      let parent = new Scope()
       let child = parent.$new()
       parent.aValue = [1, 2, 3]
       expect(child.aValue).toEqual([1, 2, 3])
     })
     test("can manipulate a parent scope's property", () => {
-      let parent = new Scope()
       let child = parent.$new()
       parent.aValue = [1, 2, 3]
       child.aValue.push(4)
@@ -816,7 +814,6 @@ describe('Scope', () => {
     })
 
     test('can watch a property in the parent ', () => {
-      let parent = new Scope()
       let child = parent.$new()
 
       parent.aValue = [1, 2, 3]
@@ -839,7 +836,7 @@ describe('Scope', () => {
       expect(child.counter).toEqual(2)
     })
     test('can be nested at any depth', () => {
-      let a = new Scope()
+      let a = parent
       let aa = a.$new()
       let aaa = aa.$new()
       let aab = aa.$new()
@@ -861,7 +858,6 @@ describe('Scope', () => {
     })
 
     test("shadows a parent's property with the same name", () => {
-      let parent = new Scope()
       let child = parent.$new()
       parent.name = 'Joe'
       child.name = 'Jill'
@@ -870,7 +866,6 @@ describe('Scope', () => {
     })
 
     test("does not shadow members of parent scope's attributes", () => {
-      let parent = new Scope()
       let child = parent.$new()
       parent.user = { name: 'Joe' }
       child.user.name = 'Jill'
@@ -879,7 +874,6 @@ describe('Scope', () => {
     })
 
     test('does not digest its parents', () => {
-      let parent = new Scope()
       let child = parent.$new()
 
       parent.aValue = 'abc'
@@ -896,7 +890,6 @@ describe('Scope', () => {
       expect(child.aValueWas).toBeUndefined()
     })
     test('keep a record of its children', () => {
-      let parent = new Scope()
       let child1 = parent.$new()
       let child2 = parent.$new()
       let child2_1 = child2.$new()
@@ -911,7 +904,6 @@ describe('Scope', () => {
     })
 
     test('digests its children', () => {
-      let parent = new Scope()
       let child = parent.$new()
 
       child.aValue = 'abc'
@@ -927,7 +919,6 @@ describe('Scope', () => {
     })
 
     test('digests from root on $apply', () => {
-      let parent = new Scope()
       let child = parent.$new()
       let child2 = child.$new()
 
@@ -945,7 +936,6 @@ describe('Scope', () => {
     })
 
     test('scheduls a digest from root on $evalAsync', async () => {
-      let parent = new Scope()
       let child = parent.$new()
       let child2 = child.$new()
 
@@ -967,7 +957,6 @@ describe('Scope', () => {
     })
 
     test('does not have access to parent attributes when isolated', () => {
-      let parent = new Scope()
       let child = parent.$new(true)
 
       parent.aValue = 'abc'
@@ -976,7 +965,6 @@ describe('Scope', () => {
     })
 
     test('cannot watch parent attributes when isolated', () => {
-      let parent = new Scope()
       let child = parent.$new(true)
       parent.aValue = 'abc'
       child.$watch(
@@ -992,7 +980,6 @@ describe('Scope', () => {
     })
 
     test('digests its isolated children', () => {
-      let parent = new Scope()
       let child = parent.$new(true)
 
       child.aValue = 'abc'
@@ -1008,7 +995,6 @@ describe('Scope', () => {
     })
 
     test('digests from root on $apply when isolated', () => {
-      let parent = new Scope()
       let child = parent.$new(true)
       let child2 = child.$new()
 
@@ -1028,7 +1014,6 @@ describe('Scope', () => {
     })
 
     test('schedules a digest from root on $evalAsyn when isolated', async () => {
-      let parent = new Scope()
       let child = parent.$new(true)
       let child2 = child.$new()
       parent.aValue = 'abc'
@@ -1049,7 +1034,6 @@ describe('Scope', () => {
     })
 
     test('executes $evalAsync functions on isolated scopes', async () => {
-      let parent = new Scope()
       let child = parent.$new(true)
       child.$evalAsync(scope => {
         scope.didEvalAsync = true
@@ -1059,7 +1043,6 @@ describe('Scope', () => {
       expect(child.didEvalAsync).toBe(true)
     })
     test('executes $$postDigest functions on isolated scopes', () => {
-      let parent = new Scope()
       let child = parent.$new(true)
       child.$$postDigest(() => {
         child.didPostDigest = true
@@ -1069,9 +1052,9 @@ describe('Scope', () => {
     })
 
     test('can take some other scope as the parent', () => {
-      let prototypeParent = new Scope()
+      let prototypeParent = parent.$new()
       prototypeParent.name = 'prototypeParent'
-      let hierarchyParent = new Scope()
+      let hierarchyParent = parent.$new()
       hierarchyParent.name = 'hierarchyParent'
 
       let child = prototypeParent.$new(false, hierarchyParent)
@@ -1091,7 +1074,6 @@ describe('Scope', () => {
     })
 
     test('is no longer digested when $destroy has been called', () => {
-      let parent = new Scope()
       let child = parent.$new()
 
       child.aValue = [1, 2, 3]
@@ -1120,9 +1102,10 @@ describe('Scope', () => {
 
   describe('watchCollection', () => {
     let scope
-
     beforeEach(() => {
-      scope = new Scope()
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      scope = injector.get('$rootScope')
     })
 
     test('works like a normal watch for non-collections', () => {
@@ -1497,10 +1480,12 @@ describe('Scope', () => {
   })
 
   describe('events', () => {
-    let parent, scope, child, isolatedChild
+    let scope, parent, child, isolatedChild
 
     beforeEach(() => {
-      parent = new Scope()
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      parent = injector.get('$rootScope')
       scope = parent.$new()
       child = scope.$new()
       isolatedChild = scope.$new(true)
@@ -1865,16 +1850,20 @@ describe('Scope', () => {
       expect(values[1]).toEqual([1, 2, 4])
     })
     it('allows $stateful filter value to change over time', async () => {
-      register('withTime', () => {
-        return utils.extend(
-          v => {
-            return new Date().toISOString() + ': ' + v
-          },
-          {
-            $stateful: true
-          }
-        )
-      })
+      let injector = createInjector([
+        'ng',
+        function($filterProvider) {
+          $filterProvider.register('withTime', () => {
+            return utils.extend(
+              v => {
+                return new Date().toISOString() + ': ' + v
+              },
+              { $stateful: true }
+            )
+          })
+        }
+      ])
+      scope = injector.get('$rootScope')
       let listenerSpy = jest.fn()
       scope.$watch('42 | withTime', listenerSpy)
       scope.$digest()
@@ -1889,6 +1878,9 @@ describe('Scope', () => {
       expect(secondValue).not.toEqual(firstValue)
     })
     test('allows calling assign on identifier expressions ', () => {
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      let parse = injector.get('$parse')
       let fn = parse('anAttribute')
       expect(fn.assign).toBeDefined()
 
@@ -1898,12 +1890,53 @@ describe('Scope', () => {
       expect(scope.anAttribute).toEqual(42)
     })
     test('allows calling assign on member inputExpressions', () => {
+      publishExternalAPI()
+      let injector = createInjector(['ng'])
+      let parse = injector.get('$parse')
       let fn = parse('anObject.anAttribute')
       expect(fn.assign).toBeDefined()
 
       let scope = {}
       fn.assign(scope, 42)
       expect(scope.anObject).toEqual({ anAttribute: 42 })
+    })
+  })
+
+  describe('TTL configurability', () => {
+    beforeEach(() => {
+      publishExternalAPI()
+    })
+    it('allows configuring a shorter TTL', () => {
+      let injector = createInjector([
+        'ng',
+        function($rootScopeProvider) {
+          $rootScopeProvider.digestTtl(5)
+        }
+      ])
+      let scope = injector.get('$rootScope')
+      scope.counterA = 0
+      scope.counterB = 0
+      scope.$watch(
+        scope => {
+          return scope.counterA
+        },
+        (newValue, oldValue, scope) => {
+          if (scope.counterB < 5) {
+            scope.counterB++
+          }
+        }
+      )
+      scope.$watch(
+        scope => {
+          return scope.counterB
+        },
+        (newValue, oldValue, scope) => {
+          scope.counterA++
+        }
+      )
+      expect(() => {
+        scope.$digest()
+      }).toThrow()
     })
   })
 })

@@ -3,10 +3,10 @@ import AST from './ast-builder.js'
 import ASTCompiler from './ast-compiler.js'
 import utils from '../src/utils'
 class Parser {
-  constructor(lexer) {
+  constructor(lexer, $filter) {
     this.lexer = lexer
     this.ast = new AST(this.lexer)
-    this.astCompiler = new ASTCompiler(this.ast)
+    this.astCompiler = new ASTCompiler(this.ast, $filter)
   }
   parse(text) {
     return this.astCompiler.compile(text)
@@ -110,34 +110,41 @@ function expressionInputDirtyCheck(newValue, oldValue) {
   )
 }
 
-const parse = expr => {
-  switch (typeof expr) {
-    case 'string': {
-      let lexer = new Lexer()
-      let parser = new Parser(lexer)
-      let oneTime = false
-      if (expr.charAt(0) === ':' && expr.charAt(1) === ':') {
-        oneTime = true
-        expr = expr.substring(2)
-      }
-      let parseFn = parser.parse(expr)
-      if (parseFn.constant) {
-        parseFn.$$watchDelegate = constantWatchDelegate
-      } else if (oneTime) {
-        parseFn.$$watchDelegate = parseFn.literal
-          ? oneTimeLiteralWatchDelegate
-          : oneTimeWatchDelegate
-      } else if (parseFn.inputs) {
-        parseFn.$$watchDelegate = inputsWatchDelegate
-      }
-      return parseFn
-    }
+function $ParseProvider() {
+  this.$get = [
+    '$filter',
+    function($filter) {
+      return function(expr) {
+        switch (typeof expr) {
+          case 'string': {
+            let lexer = new Lexer()
+            let parser = new Parser(lexer, $filter)
+            let oneTime = false
+            if (expr.charAt(0) === ':' && expr.charAt(1) === ':') {
+              oneTime = true
+              expr = expr.substring(2)
+            }
+            let parseFn = parser.parse(expr)
+            if (parseFn.constant) {
+              parseFn.$$watchDelegate = constantWatchDelegate
+            } else if (oneTime) {
+              parseFn.$$watchDelegate = parseFn.literal
+                ? oneTimeLiteralWatchDelegate
+                : oneTimeWatchDelegate
+            } else if (parseFn.inputs) {
+              parseFn.$$watchDelegate = inputsWatchDelegate
+            }
+            return parseFn
+          }
 
-    case 'function':
-      return expr
-    default:
-      return () => {}
-  }
+          case 'function':
+            return expr
+          default:
+            return () => {}
+        }
+      }
+    }
+  ]
 }
 
-export default parse
+export default $ParseProvider

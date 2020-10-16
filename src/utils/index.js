@@ -111,6 +111,7 @@ function some(value, predicate) {
   if (isArrayLike(value)) {
     return Array.from(value).some(predicate)
   } else {
+    // eslint-disable-next-line you-dont-need-lodash-underscore/some
     return _.some(value, predicate)
   }
 }
@@ -119,6 +120,7 @@ function every(value, predicate) {
   if (isArrayLike(value)) {
     return Array.from(value).every(predicate)
   } else {
+    // eslint-disable-next-line you-dont-need-lodash-underscore/every
     return _.every(value, predicate)
   }
 }
@@ -142,7 +144,12 @@ function isEqual(a, b) {
 }
 
 function map(val, operator) {
+  // eslint-disable-next-line you-dont-need-lodash-underscore/map
   return _.map(val, operator)
+}
+
+function uniqueId() {
+  return _.uniqueId()
 }
 
 export default {
@@ -173,5 +180,6 @@ export default {
   extend,
   toPlainObject,
   forOwn,
-  map
+  map,
+  uniqueId
 }

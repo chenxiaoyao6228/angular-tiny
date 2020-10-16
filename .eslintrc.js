@@ -28,7 +28,11 @@ module.exports = {
     expect: true,
     jest: true,
     filter: false,
-    register: false
+    register: false,
+    angular: true,
+    publishExternalAPI: false,
+    createInjector: false,
+    parse: false
   },
   "rules": {
     "prettier/prettier": "error",
