@@ -1,6 +1,14 @@
 import utils from './utils'
 
 export default function $RootScopeProvider() {
+  let TTL = 10
+  this.digestTtl = function(value) {
+    if (utils.isNumber(value)) {
+      TTL = value
+    }
+    return TTL
+  }
+
   this.$get = [
     '$parse',
     function($parse) {
@@ -213,7 +221,7 @@ export default function $RootScopeProvider() {
         }
         $digest() {
           let dirty,
-            dirtyCountLimit = 10
+            dirtyCountLimit = TTL
           this.$root.$$lastDirtyWatch = null
           this.$beginPhase('$digest')
 

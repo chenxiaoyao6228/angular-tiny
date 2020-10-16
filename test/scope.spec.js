@@ -1901,4 +1901,42 @@ describe('Scope', () => {
       expect(scope.anObject).toEqual({ anAttribute: 42 })
     })
   })
+
+  describe('TTL configurability', () => {
+    beforeEach(() => {
+      publishExternalAPI()
+    })
+    it('allows configuring a shorter TTL', () => {
+      let injector = createInjector([
+        'ng',
+        function($rootScopeProvider) {
+          $rootScopeProvider.digestTtl(5)
+        }
+      ])
+      let scope = injector.get('$rootScope')
+      scope.counterA = 0
+      scope.counterB = 0
+      scope.$watch(
+        scope => {
+          return scope.counterA
+        },
+        (newValue, oldValue, scope) => {
+          if (scope.counterB < 5) {
+            scope.counterB++
+          }
+        }
+      )
+      scope.$watch(
+        scope => {
+          return scope.counterB
+        },
+        (newValue, oldValue, scope) => {
+          scope.counterA++
+        }
+      )
+      expect(() => {
+        scope.$digest()
+      }).toThrow()
+    })
+  })
 })
