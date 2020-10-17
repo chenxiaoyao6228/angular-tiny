@@ -272,4 +272,47 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(rejectedSpy).not.toHaveBeenCalled()
   })
+  it('waits on promise returned from handler', () => {
+    let d = $q.defer()
+    let fulfilledSpy = jest.fn()
+    // eslint-disable-next-line
+    d.promise
+      .then(v => {
+        let d2 = $q.defer()
+        d2.resolve(v + 1)
+        return d2.promise
+      })
+      .then(v => {
+        return v * 2
+      })
+      .then(fulfilledSpy)
+    d.resolve(20)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith(42)
+  })
+  it('waits on promise given to resolve', () => {
+    let d = $q.defer()
+    let d2 = $q.defer()
+    let fulfilledSpy = jest.fn()
+    d.promise.then(fulfilledSpy)
+    d2.resolve(42)
+    d.resolve(d2.promise)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith(42)
+  })
+  it('rejects when promise returned from handler rejects', () => {
+    let d = $q.defer()
+    let rejectedSpy = jest.fn()
+    // eslint-disable-next-line
+    d.promise
+      .then(() => {
+        let d2 = $q.defer()
+        d2.reject('fail')
+        return d2.promise
+      })
+      .catch(rejectedSpy)
+    d.resolve('ok')
+    $rootScope.$apply()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
 })

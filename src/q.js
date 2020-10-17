@@ -38,9 +38,13 @@ export default function $QProvider() {
         if (this.promise.$$state.status) {
           return
         }
-        this.promise.$$state.value = value
-        this.promise.$$state.status = 1
-        scheduleProcessQueue(this.promise.$$state)
+        if (value && utils.isFunction(value.then)) {
+          value.then(this.resolve.bind(this), this.reject.bind(this))
+        } else {
+          this.promise.$$state.value = value
+          this.promise.$$state.status = 1
+          scheduleProcessQueue(this.promise.$$state)
+        }
       }
       Deferred.prototype.reject = function(reason) {
         if (this.promise.$$state.status) {
