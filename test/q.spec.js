@@ -111,4 +111,40 @@ describe('$q', () => {
     expect(firstSpy.mock.calls.length).toBe(1)
     expect(secondSpy.mock.calls.length).toBe(1)
   })
+  it('can reject a deferred', () => {
+    let d = $q.defer()
+    let fulfillSpy = jest.fn()
+    let rejectSpy = jest.fn()
+    d.promise.then(fulfillSpy, rejectSpy)
+    d.reject('fail')
+    $rootScope.$apply()
+    expect(fulfillSpy).not.toHaveBeenCalled()
+    expect(rejectSpy).toHaveBeenCalledWith('fail')
+  })
+  it('can reject just once', () => {
+    let d = $q.defer()
+
+    let rejectSpy = jest.fn()
+    d.promise.then(null, rejectSpy)
+
+    d.reject('fail')
+    $rootScope.$apply()
+    expect(rejectSpy.mock.calls.length).toEqual(1)
+
+    d.reject('fail again')
+    $rootScope.$apply()
+    expect(rejectSpy.mock.calls.length).toEqual(1)
+  })
+  it('cannot fulfill a promise once rejected', () => {
+    let d = $q.defer()
+    let fulfillSpy = jest.fn()
+    let rejectSpy = jest.fn()
+
+    d.promise.then(fulfillSpy, rejectSpy)
+    d.reject('fail')
+    $rootScope.$apply()
+    d.resolve('success')
+    $rootScope.$apply()
+    expect(fulfillSpy).not.toHaveBeenCalled()
+  })
 })

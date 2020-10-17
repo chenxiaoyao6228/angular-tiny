@@ -1,3 +1,4 @@
+import utils from './utils'
 export default function $QProvider() {
   this.$get = [
     '$rootScope',
@@ -5,13 +6,13 @@ export default function $QProvider() {
       function Promise() {
         this.$$state = {
           pending: [],
-          status: 0, // 1为resolved状态
+          status: 0, // 1为resolved状态, 2为rejected
           value: ''
         }
       }
-      Promise.prototype.then = function(onFulfilled) {
+      Promise.prototype.then = function(onFulfilled, onRejected) {
         this.$$state.pending = this.$$state.pending || []
-        this.$$state.pending.push(onFulfilled)
+        this.$$state.pending.push([null, onFulfilled, onRejected])
         if (this.$$state.status > 0) {
           scheduleProcessQueue(this.$$state)
         }
@@ -29,6 +30,14 @@ export default function $QProvider() {
         this.promise.$$state.status = 1
         scheduleProcessQueue(this.promise.$$state)
       }
+      Deferred.prototype.reject = function(reason) {
+        if (this.promise.$$state.status) {
+          return
+        }
+        this.promise.$$state.value = reason
+        this.promise.$$state.status = 2
+        scheduleProcessQueue(this.promise.$$state)
+      }
 
       function scheduleProcessQueue(state) {
         $rootScope.$evalAsync(() => {
@@ -38,8 +47,9 @@ export default function $QProvider() {
       function processQueue(state) {
         let pending = state.pending
         delete state.pending
-        pending.forEach(onFulfilled => {
-          onFulfilled(state.value)
+        pending.forEach(handlers => {
+          let fn = handlers[state.status]
+          fn(state.value)
         })
       }
 
