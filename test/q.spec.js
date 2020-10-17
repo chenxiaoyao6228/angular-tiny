@@ -315,4 +315,32 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(rejectedSpy).toHaveBeenCalledWith('fail')
   })
+  it('allows chaining handlers on finally, with original value', () => {
+    let d = $q.defer()
+    let fulfilledSpy = jest.fn()
+    d.promise
+      .then(result => {
+        return result + 1
+      })
+      .finally(result => {
+        return result * 2
+      })
+      .then(fulfilledSpy)
+    d.resolve(20)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith(21)
+  })
+  it('allows chaining handlers on finally, with original rejection', () => {
+    let d = $q.defer()
+    let rejectedSpy = jest.fn()
+    d.promise
+      .then(result => {
+        throw 'fail'
+      })
+      .finally(() => {})
+      .catch(rejectedSpy)
+    d.resolve(20)
+    $rootScope.$apply()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
 })
