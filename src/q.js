@@ -4,13 +4,14 @@ export default function $QProvider() {
     function($rootScope) {
       function Promise() {
         this.$$state = {
-          pending: () => {},
+          pending: [],
           status: 0, // 1为resolved状态
           value: ''
         }
       }
       Promise.prototype.then = function(onFulfilled) {
-        this.$$state.pending = onFulfilled
+        this.$$state.pending = this.$$state.pending || []
+        this.$$state.pending.push(onFulfilled)
         if (this.$$state.status > 0) {
           scheduleProcessQueue(this.$$state)
         }
@@ -35,7 +36,11 @@ export default function $QProvider() {
         })
       }
       function processQueue(state) {
-        state.pending(state.value)
+        let pending = state.pending
+        delete state.pending
+        pending.forEach(onFulfilled => {
+          onFulfilled(state.value)
+        })
       }
 
       function defer() {
