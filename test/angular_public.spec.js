@@ -26,4 +26,9 @@ describe('angularPublic', () => {
     let injector = createInjector(['ng'])
     expect(injector.has('$rootScope')).toBe(true)
   })
+  it('sets up $q', () => {
+    publishExternalAPI()
+    let injector = createInjector(['ng'])
+    expect(injector.has('$q')).toBe(true)
+  })
 })
