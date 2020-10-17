@@ -167,4 +167,12 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(fulfillSpy).toHaveBeenCalledWith('ok')
   })
+  it('can register rejection handler with catch', () => {
+    let d = $q.defer()
+    let rejectSpy = jest.fn()
+    d.promise.catch(rejectSpy)
+    d.reject('fail')
+    $rootScope.$apply()
+    expect(rejectSpy).toHaveBeenCalled()
+  })
 })
