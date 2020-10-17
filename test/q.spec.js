@@ -75,4 +75,13 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(promiseSpy.mock.calls.length).toEqual(1)
   })
+  it('resolves a listener added after resolution', () => {
+    let d = $q.defer()
+    d.resolve(42)
+    $rootScope.$apply()
+    let promiseSpy = jest.fn()
+    d.promise.then(promiseSpy)
+    $rootScope.$apply()
+    expect(promiseSpy).toHaveBeenCalledWith(42)
+  })
 })
