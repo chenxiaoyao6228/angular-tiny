@@ -21,6 +21,13 @@ export default function $QProvider() {
         this.then(null, onRejected)
       }
 
+      Promise.prototype.finally = function(callback) {
+        return this.then(
+          () => callback(),
+          () => callback()
+        )
+      }
+
       function Deferred() {
         this.promise = new Promise()
       }
