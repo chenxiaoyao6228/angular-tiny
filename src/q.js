@@ -47,12 +47,13 @@ export default function $QProvider() {
       function processQueue(state) {
         let pending = state.pending
         delete state.pending
-        pending.forEach(handlers => {
-          let fn = handlers[state.status]
-          if (utils.isFunction(fn)) {
-            fn(state.value)
-          }
-        })
+        pending &&
+          pending.forEach(handlers => {
+            let fn = handlers[state.status]
+            if (utils.isFunction(fn)) {
+              fn(state.value)
+            }
+          })
       }
 
       function defer() {
