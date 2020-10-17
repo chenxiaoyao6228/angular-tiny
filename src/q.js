@@ -49,7 +49,9 @@ export default function $QProvider() {
         delete state.pending
         pending.forEach(handlers => {
           let fn = handlers[state.status]
-          fn(state.value)
+          if (utils.isFunction(fn)) {
+            fn(state.value)
+          }
         })
       }
 
