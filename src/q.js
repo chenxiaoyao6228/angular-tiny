@@ -20,7 +20,7 @@ export default function $QProvider() {
         return result.promise
       }
       Promise.prototype.catch = function(onRejected) {
-        this.then(null, onRejected)
+        return this.then(null, onRejected)
       }
 
       Promise.prototype.finally = function(callback) {
@@ -65,6 +65,10 @@ export default function $QProvider() {
             let fn = handlers[state.status]
             if (utils.isFunction(fn)) {
               deferred.resolve(fn(state.value))
+            } else if (state.status === 1) {
+              deferred.resolve(state.value)
+            } else {
+              deferred.reject(state.value)
             }
           })
       }

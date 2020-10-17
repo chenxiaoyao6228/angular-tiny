@@ -221,4 +221,32 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(fulfilledSpy).toHaveBeenCalledWith(20)
   })
+  it('catches rejection on chained handler', () => {
+    let d = $q.defer()
+    let rejectedSpy = jest.fn()
+    d.promise.then(() => () => {}).catch(rejectedSpy)
+    d.reject('fail')
+    $rootScope.$apply()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
+  it('fulfills on chained handler', () => {
+    let d = $q.defer()
+    let fulfilledSpy = jest.fn()
+    d.promise.catch(() => () => {}).then(fulfilledSpy)
+    d.resolve(42)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith(42)
+  })
+  it('treats catch return value as resolution', () => {
+    let d = $q.defer()
+    let fulfilledSpy = jest.fn()
+    d.promise
+      .catch(() => {
+        return 42
+      })
+      .then(fulfilledSpy)
+    d.reject('fail')
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith(42)
+  })
 })
