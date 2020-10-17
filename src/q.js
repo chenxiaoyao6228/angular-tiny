@@ -63,12 +63,16 @@ export default function $QProvider() {
           pending.forEach(handlers => {
             let deferred = handlers[0]
             let fn = handlers[state.status]
-            if (utils.isFunction(fn)) {
-              deferred.resolve(fn(state.value))
-            } else if (state.status === 1) {
-              deferred.resolve(state.value)
-            } else {
-              deferred.reject(state.value)
+            try {
+              if (utils.isFunction(fn)) {
+                deferred.resolve(fn(state.value))
+              } else if (state.status === 1) {
+                deferred.resolve(state.value)
+              } else {
+                deferred.reject(state.value)
+              }
+            } catch (e) {
+              deferred.reject(e)
             }
           })
       }

@@ -249,4 +249,16 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(fulfilledSpy).toHaveBeenCalledWith(42)
   })
+  it('rejects chained promise when handler throws', () => {
+    let d = $q.defer()
+    let rejectedSpy = jest.fn()
+    d.promise
+      .then(() => {
+        throw 'fail'
+      })
+      .catch(rejectedSpy)
+    d.resolve(42)
+    $rootScope.$apply()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
 })
