@@ -26,14 +26,15 @@ export default function $QProvider() {
         return this.then(null, onRejected)
       }
 
-      Promise.prototype.finally = function(callback) {
+      Promise.prototype.finally = function(callback, progressBack) {
         return this.then(
           value => {
             return handleFinallyCallback(callback, value, true)
           },
           rejection => {
             return handleFinallyCallback(callback, rejection, false)
-          }
+          },
+          progressBack
         )
       }
 

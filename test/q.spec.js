@@ -471,4 +471,12 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(progressSpy).toHaveBeenCalledWith('working...')
   })
+  it('allows attaching progressback in finally', () => {
+    let d = $q.defer()
+    let progressSpy = jest.fn()
+    d.promise.finally(null, progressSpy)
+    d.notify('working...')
+    $rootScope.$apply()
+    expect(progressSpy).toHaveBeenCalledWith('working...')
+  })
 })
