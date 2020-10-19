@@ -444,4 +444,19 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(progressSpy).toHaveBeenCalledWith('***working...***')
   })
+
+  it('recovers from progressback exceptions', () => {
+    let d = $q.defer()
+    let progressSpy = jest.fn()
+    let fulfilledSpy = jest.fn()
+    d.promise.then(null, null, progress => {
+      throw 'fail'
+    })
+    d.promise.then(fulfilledSpy, null, progressSpy)
+    d.notify('working...')
+    d.resolve('ok')
+    $rootScope.$apply()
+    expect(progressSpy).toHaveBeenCalledWith('working...')
+    expect(fulfilledSpy).toHaveBeenCalledWith('ok')
+  })
 })

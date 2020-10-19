@@ -89,11 +89,15 @@ export default function $QProvider() {
             pending.forEach(handlers => {
               let deferred = handlers[0]
               let progressBack = handlers[3]
-              deferred.notify(
-                utils.isFunction(progressBack)
-                  ? progressBack(progress)
-                  : progress
-              )
+              try {
+                deferred.notify(
+                  utils.isFunction(progressBack)
+                    ? progressBack(progress)
+                    : progress
+                )
+              } catch (e) {
+                console.log(e)
+              }
             })
           })
         }
