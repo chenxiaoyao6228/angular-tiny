@@ -67,7 +67,11 @@ export default function $QProvider() {
           return
         }
         if (value && utils.isFunction(value.then)) {
-          value.then(this.resolve.bind(this), this.reject.bind(this))
+          value.then(
+            this.resolve.bind(this),
+            this.reject.bind(this),
+            this.notify.bind(this)
+          )
         } else {
           this.promise.$$state.value = value
           this.promise.$$state.status = 1

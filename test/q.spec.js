@@ -459,4 +459,16 @@ describe('$q', () => {
     expect(progressSpy).toHaveBeenCalledWith('working...')
     expect(fulfilledSpy).toHaveBeenCalledWith('ok')
   })
+  it('can notify progress through promise returned from handler', () => {
+    let d = $q.defer()
+    let progressSpy = jest.fn()
+    d.promise.then(null, null, progressSpy)
+    let d2 = $q.defer()
+    // Resolve original with nested promise
+    d.resolve(d2.promise)
+    // Notify on the nested  promise
+    d2.notify('working...')
+    $rootScope.$apply()
+    expect(progressSpy).toHaveBeenCalledWith('working...')
+  })
 })
