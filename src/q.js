@@ -1,4 +1,5 @@
 import utils from './utils'
+let uuid = 0
 export default function $QProvider() {
   this.$get = [
     '$rootScope',
@@ -9,6 +10,7 @@ export default function $QProvider() {
           status: 0, // 1为resolved状态, 2为rejected
           value: ''
         }
+        this.id = 0
       }
       Promise.prototype.then = function(onFulfilled, onRejected) {
         let result = new Deferred()
@@ -17,6 +19,7 @@ export default function $QProvider() {
         if (this.$$state.status > 0) {
           scheduleProcessQueue(this.$$state)
         }
+        result.promise.id = uuid++
         return result.promise
       }
       Promise.prototype.catch = function(onRejected) {
@@ -26,8 +29,14 @@ export default function $QProvider() {
       Promise.prototype.finally = function(callback) {
         return this.then(
           value => {
-            callback()
-            return value
+            let callbackValue = callback()
+            if (callbackValue && callbackValue.then) {
+              return callbackValue.then(() => {
+                return value
+              })
+            } else {
+              return value
+            }
           },
           rejection => {
             callback()

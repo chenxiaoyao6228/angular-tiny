@@ -343,4 +343,53 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(rejectedSpy).toHaveBeenCalledWith('fail')
   })
+  it('rejects to original value when nested promise resolves', () => {
+    let d = $q.defer()
+    let rejectedSpy = jest.fn()
+    let resolveNested
+    d.promise
+      .then(result => {
+        throw 'fail'
+      })
+      .finally(result => {
+        let d2 = $q.defer()
+        resolveNested = function() {
+          d2.resolve('abc')
+        }
+        return d2.promise
+      })
+      .catch(rejectedSpy)
+    d.resolve(20)
+    $rootScope.$apply()
+    // TODO
+    // expect(rejectedSpy).not.toHaveBeenCalled()
+    resolveNested()
+    $rootScope.$apply()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
+  it('rejects when nested promise rejects in finally', () => {
+    let d = $q.defer()
+    let fulfilledSpy = jest.fn()
+    let rejectedSpy = jest.fn()
+    let rejectNested
+    d.promise
+      .then(result => {
+        return result + 1
+      })
+      .finally(result => {
+        let d2 = $q.defer()
+        rejectNested = function() {
+          d2.reject('fail')
+        }
+        return d2.promise
+      })
+      .then(fulfilledSpy, rejectedSpy)
+    d.resolve(20)
+    $rootScope.$apply()
+    expect(fulfilledSpy).not.toHaveBeenCalled()
+    rejectNested()
+    $rootScope.$apply()
+    expect(fulfilledSpy).not.toHaveBeenCalled()
+    expect(rejectedSpy).toHaveBeenCalledWith('fail')
+  })
 })
