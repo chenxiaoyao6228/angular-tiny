@@ -12,10 +12,10 @@ export default function $QProvider() {
         }
         this.id = 0
       }
-      Promise.prototype.then = function(onFulfilled, onRejected) {
+      Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
         let result = new Deferred()
         this.$$state.pending = this.$$state.pending || []
-        this.$$state.pending.push([result, onFulfilled, onRejected])
+        this.$$state.pending.push([result, onFulfilled, onRejected, onProgress])
         if (this.$$state.status > 0) {
           scheduleProcessQueue(this.$$state)
         }
@@ -81,6 +81,19 @@ export default function $QProvider() {
         this.promise.$$state.value = reason
         this.promise.$$state.status = 2
         scheduleProcessQueue(this.promise.$$state)
+      }
+      Deferred.prototype.notify = function(progress) {
+        let pending = this.promise.$$state.pending
+        if (pending && pending.length && !this.promise.$$state.status) {
+          $rootScope.$evalAsync(() => {
+            pending.forEach(handlers => {
+              let progressBack = handlers[3]
+              if (utils.isFunction(progressBack)) {
+                progressBack(progress)
+              }
+            })
+          })
+        }
       }
 
       function scheduleProcessQueue(state) {
