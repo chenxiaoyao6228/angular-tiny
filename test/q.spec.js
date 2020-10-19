@@ -361,8 +361,7 @@ describe('$q', () => {
       .catch(rejectedSpy)
     d.resolve(20)
     $rootScope.$apply()
-    // TODO
-    // expect(rejectedSpy).not.toHaveBeenCalled()
+    expect(rejectedSpy).not.toHaveBeenCalled()
     resolveNested()
     $rootScope.$apply()
     expect(rejectedSpy).toHaveBeenCalledWith('fail')

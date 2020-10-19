@@ -39,10 +39,18 @@ export default function $QProvider() {
             }
           },
           rejection => {
-            callback()
-            let d = new Deferred()
-            d.reject(rejection)
-            return d.promise
+            let callbackValue = callback()
+            if (callbackValue && callbackValue.then) {
+              return callbackValue.then(() => {
+                let d = new Deferred()
+                d.reject(rejection)
+                return d.promise
+              })
+            } else {
+              let d = new Deferred()
+              d.reject(rejection)
+              return d.promise
+            }
           }
         )
       }
