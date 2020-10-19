@@ -32,7 +32,7 @@ export default function $QProvider() {
             let callbackValue = callback()
             if (callbackValue && callbackValue.then) {
               return callbackValue.then(() => {
-                return value
+                return makePromise(value, true)
               })
             } else {
               return value
@@ -42,17 +42,23 @@ export default function $QProvider() {
             let callbackValue = callback()
             if (callbackValue && callbackValue.then) {
               return callbackValue.then(() => {
-                let d = new Deferred()
-                d.reject(rejection)
-                return d.promise
+                return makePromise(rejection, false)
               })
             } else {
-              let d = new Deferred()
-              d.reject(rejection)
-              return d.promise
+              return makePromise(rejection, false)
             }
           }
         )
+      }
+
+      function makePromise(value, resolved) {
+        let d = new Deferred()
+        if (resolved) {
+          d.resolve(value)
+        } else {
+          d.reject(value)
+        }
+        return d.promise
       }
 
       function Deferred() {
