@@ -137,8 +137,14 @@ export default function $QProvider() {
       function defer() {
         return new Deferred()
       }
+      function reject(rejection) {
+        let d = defer()
+        d.reject(rejection)
+        return d.promise
+      }
       return {
-        defer
+        defer,
+        reject
       }
     }
   ]
