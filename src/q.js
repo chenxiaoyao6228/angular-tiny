@@ -29,24 +29,10 @@ export default function $QProvider() {
       Promise.prototype.finally = function(callback) {
         return this.then(
           value => {
-            let callbackValue = callback()
-            if (callbackValue && callbackValue.then) {
-              return callbackValue.then(() => {
-                return makePromise(value, true)
-              })
-            } else {
-              return value
-            }
+            return handleFinallyCallback(callback, value, true)
           },
           rejection => {
-            let callbackValue = callback()
-            if (callbackValue && callbackValue.then) {
-              return callbackValue.then(() => {
-                return makePromise(rejection, false)
-              })
-            } else {
-              return makePromise(rejection, false)
-            }
+            return handleFinallyCallback(callback, rejection, false)
           }
         )
       }
@@ -59,6 +45,17 @@ export default function $QProvider() {
           d.reject(value)
         }
         return d.promise
+      }
+
+      function handleFinallyCallback(callback, value, resolved) {
+        let callbackValue = callback()
+        if (callbackValue && callbackValue.then) {
+          return callbackValue.then(() => {
+            return makePromise(value, resolved)
+          })
+        } else {
+          return makePromise(value, resolved)
+        }
       }
 
       function Deferred() {
