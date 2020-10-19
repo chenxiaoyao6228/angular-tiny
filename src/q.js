@@ -87,10 +87,12 @@ export default function $QProvider() {
         if (pending && pending.length && !this.promise.$$state.status) {
           $rootScope.$evalAsync(() => {
             pending.forEach(handlers => {
+              let deferred = handlers[0]
               let progressBack = handlers[3]
               if (utils.isFunction(progressBack)) {
                 progressBack(progress)
               }
+              deferred.notify(progress)
             })
           })
         }

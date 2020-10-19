@@ -419,4 +419,15 @@ describe('$q', () => {
     $rootScope.$apply()
     expect(progressSpy).not.toHaveBeenCalled()
   })
+  it('can notify progress through chain', () => {
+    let d = $q.defer()
+    let progressSpy = jest.fn()
+    d.promise
+      .then(() => {})
+      .catch(() => {})
+      .then(null, null, progressSpy)
+    d.notify('working...')
+    $rootScope.$apply()
+    expect(progressSpy).toHaveBeenCalledWith('working...')
+  })
 })
