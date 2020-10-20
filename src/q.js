@@ -157,13 +157,18 @@ export default function $QProvider() {
         let d = defer()
         _.forEach(promises, (promise, index) => {
           counter++
-          promise.then(value => {
-            results[index] = value
-            counter--
-            if (!counter) {
-              d.resolve(results)
+          promise.then(
+            value => {
+              results[index] = value
+              counter--
+              if (!counter) {
+                d.resolve(results)
+              }
+            },
+            rejection => {
+              d.reject(rejection)
             }
-          })
+          )
         })
 
         if (!counter) {
