@@ -1,4 +1,5 @@
 import utils from './utils'
+import _ from 'lodash'
 let uuid = 0
 export default function $QProvider() {
   this.$get = [
@@ -150,11 +151,34 @@ export default function $QProvider() {
         return d.promise.then(callback, errback, progressBack)
       }
 
+      function all(promises) {
+        let results = utils.isArray(promises) ? [] : {}
+        let counter = 0
+        let d = defer()
+        _.forEach(promises, (promise, index) => {
+          counter++
+          promise.then(value => {
+            results[index] = value
+            counter--
+            if (!counter) {
+              d.resolve(results)
+            }
+          })
+        })
+
+        if (!counter) {
+          d.resolve(results)
+        }
+
+        return d.promise
+      }
+
       return {
         defer,
         reject,
         when,
-        resolve: when
+        resolve: when,
+        all
       }
     }
   ]
