@@ -153,7 +153,8 @@ export default function $QProvider() {
       return {
         defer,
         reject,
-        when
+        when,
+        resolve: when
       }
     }
   ]

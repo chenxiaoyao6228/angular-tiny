@@ -516,4 +516,13 @@ describe('$q', () => {
     expect(rejectedSpy).not.toHaveBeenCalled()
     expect(progressSpy).toHaveBeenCalledWith('working...')
   })
+  it('makes an immediately resolved promise with resolve', () => {
+    let fulfilledSpy = jest.fn()
+    let rejectedSpy = jest.fn()
+    let promise = $q.resolve('ok')
+    promise.then(fulfilledSpy, rejectedSpy)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith('ok')
+    expect(rejectedSpy).not.toHaveBeenCalled()
+  })
 })
