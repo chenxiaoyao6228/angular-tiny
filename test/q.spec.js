@@ -488,4 +488,19 @@ describe('$q', () => {
     expect(fulfilledSpy).not.toHaveBeenCalled()
     expect(rejectedSpy).toHaveBeenCalledWith('fail')
   })
+  it('can wrap a foreign promise', () => {
+    let fulfilledSpy = jest.fn()
+    let rejectedSpy = jest.fn()
+    let promise = $q.when({
+      then: function(handler) {
+        $rootScope.$evalAsync(() => {
+          handler('ok')
+        })
+      }
+    })
+    promise.then(fulfilledSpy, rejectedSpy)
+    $rootScope.$apply()
+    expect(fulfilledSpy).toHaveBeenCalledWith('ok')
+    expect(rejectedSpy).not.toHaveBeenCalled()
+  })
 })
