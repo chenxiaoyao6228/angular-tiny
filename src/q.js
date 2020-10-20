@@ -178,13 +178,22 @@ export default function $QProvider() {
         return d.promise
       }
 
-      return {
+      let $Q = function Q(resolver) {
+        if (!utils.isFunction(resolver)) {
+          throw 'Expected function, got ' + resolver
+        }
+        let d = defer()
+        resolver(d.resolve.bind(d), d.reject.bind(d))
+        return d.promise
+      }
+
+      return _.extend($Q, {
         defer,
         reject,
         when,
         resolve: when,
         all
-      }
+      })
     }
   ]
 }

@@ -562,4 +562,35 @@ describe('$q', () => {
       expect(fulfilledSpy).toHaveBeenCalledWith([1, 2, 3])
     })
   })
+  describe('ES6 style', () => {
+    it('is a function', () => {
+      expect($q instanceof Function).toBe(true)
+    })
+    it('expects a function as an argument', () => {
+      expect($q).toThrow()
+      $q(() => {}) // Just checking that this doesn't throw
+    })
+    it('returns a promise', () => {
+      expect($q(() => {})).toBeDefined()
+      expect($q(() => {}).then).toBeDefined()
+    })
+    it('calls function with a resolve function', () => {
+      let fulfilledSpy = jest.fn()
+      $q(resolve => {
+        resolve('ok')
+      }).then(fulfilledSpy)
+      $rootScope.$apply()
+      expect(fulfilledSpy).toHaveBeenCalledWith('ok')
+    })
+    it('calls function with a reject function', () => {
+      let fulfilledSpy = jest.fn()
+      let rejectedSpy = jest.fn()
+      $q((resolve, reject) => {
+        reject('fail')
+      }).then(fulfilledSpy, rejectedSpy)
+      $rootScope.$apply()
+      expect(fulfilledSpy).not.toHaveBeenCalled()
+      expect(rejectedSpy).toHaveBeenCalledWith('fail')
+    })
+  })
 })
