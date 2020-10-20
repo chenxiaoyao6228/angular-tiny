@@ -144,10 +144,10 @@ export default function $QProvider() {
         return d.promise
       }
 
-      function when(value) {
+      function when(value, callback, errback, progressBack) {
         let d = defer()
         d.resolve(value)
-        return d.promise
+        return d.promise.then(callback, errback, progressBack)
       }
 
       return {
