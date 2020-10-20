@@ -554,5 +554,12 @@ describe('$q', () => {
       $rootScope.$apply()
       expect(fulfilledSpy).toHaveBeenCalledWith({})
     })
+    it('wraps non-promises in the input collection', () => {
+      let promise = $q.all([$q.when(1), 2, 3])
+      let fulfilledSpy = jest.fn()
+      promise.then(fulfilledSpy)
+      $rootScope.$apply()
+      expect(fulfilledSpy).toHaveBeenCalledWith([1, 2, 3])
+    })
   })
 })
