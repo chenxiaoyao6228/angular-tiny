@@ -599,6 +599,8 @@ describe('$q', () => {
       jest.useFakeTimers()
     })
     it('uses deferreds that do not resolve at digest', () => {
+      // eslint-disable-next-line
+       debugger 
       let d = $$q.defer()
       let fulfilledSpy = jest.fn()
       d.promise.then(fulfilledSpy)

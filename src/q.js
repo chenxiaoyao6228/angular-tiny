@@ -9,7 +9,6 @@ function qFactory(callLater) {
       status: 0, // 1为resolved状态, 2为rejected
       value: ''
     }
-    this.id = 0
   }
   Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
     let result = new Deferred()
@@ -18,7 +17,6 @@ function qFactory(callLater) {
     if (this.$$state.status > 0) {
       scheduleProcessQueue(this.$$state)
     }
-    result.promise.id = uuid++
     return result.promise
   }
   Promise.prototype.catch = function(onRejected) {
