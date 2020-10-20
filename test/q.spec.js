@@ -2,12 +2,13 @@ import { publishExternalAPI } from '../src/angular_public'
 import { createInjector } from '../src/injector'
 
 describe('$q', () => {
-  let $q, $rootScope
+  let $q, $$q, $rootScope
   beforeEach(() => {
     publishExternalAPI()
     let injector = createInjector(['ng'])
     $rootScope = injector.get('$rootScope')
     $q = injector.get('$q')
+    $$q = injector.get('$$q')
   })
   it('can create a Deferred', () => {
     let d = $q.defer()
@@ -591,6 +592,36 @@ describe('$q', () => {
       $rootScope.$apply()
       expect(fulfilledSpy).not.toHaveBeenCalled()
       expect(rejectedSpy).toHaveBeenCalledWith('fail')
+    })
+  })
+  describe('$$q', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+    it('uses deferreds that do not resolve at digest', () => {
+      let d = $$q.defer()
+      let fulfilledSpy = jest.fn()
+      d.promise.then(fulfilledSpy)
+      d.resolve('ok')
+      $rootScope.$apply()
+      expect(fulfilledSpy).not.toHaveBeenCalled()
+    })
+    it('uses deferreds that resolve later', () => {
+      let d = $$q.defer()
+      let fulfilledSpy = jest.fn()
+      d.promise.then(fulfilledSpy)
+      d.resolve('ok')
+      jest.runAllTimers()
+      expect(fulfilledSpy).toHaveBeenCalledWith('ok')
+    })
+    it('does not invoke digest', () => {
+      let d = $$q.defer()
+      d.promise.then(() => {})
+      d.resolve('ok')
+      let watchSpy = jest.fn()
+      $rootScope.$watch(watchSpy)
+      jest.runAllTimers()
+      expect(watchSpy).not.toHaveBeenCalled()
     })
   })
 })

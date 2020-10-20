@@ -2,7 +2,7 @@ import { setupModuleLoader } from './loader'
 import $FilterProvider from '../src/filter'
 import $ParseProvider from '../src/parser'
 import $RootScopeProvider from '../src/scope'
-import $QProvider from '../src/q'
+import { $QProvider, $$QProvider } from '../src/q'
 
 export function publishExternalAPI() {
   'use strict'
@@ -12,4 +12,5 @@ export function publishExternalAPI() {
   ngModule.provider('$parse', $ParseProvider)
   ngModule.provider('$rootScope', $RootScopeProvider)
   ngModule.provider('$q', $QProvider)
+  ngModule.provider('$$q', $$QProvider)
 }
