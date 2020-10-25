@@ -31,4 +31,10 @@ describe('angularPublic', () => {
     let injector = createInjector(['ng'])
     expect(injector.has('$q')).toBe(true)
   })
+  it('sets up $http and $httpBackend', () => {
+    publishExternalAPI()
+    let injector = createInjector(['ng'])
+    expect(injector.has('$http')).toBe(true)
+    expect(injector.has('$httpBackend')).toBe(true)
+  })
 })
