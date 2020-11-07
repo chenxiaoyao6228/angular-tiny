@@ -1,5 +1,5 @@
 export default function $HttpProvider() {
-  let defaults = {
+  let defaults = (this.defaults = {
     headers: {
       common: {
         Accept: 'application/json, text/plain, */*'
@@ -14,7 +14,7 @@ export default function $HttpProvider() {
         'Content-Type': 'application/json;charset=utf-8'
       }
     }
-  }
+  })
   this.$get = [
     '$httpBackend',
     '$q',
