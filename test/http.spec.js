@@ -98,4 +98,11 @@ describe('$http', () => {
       'application/json, text/plain, */*'
     )
   })
+  it('sets method-specific default headers on request', () => {
+    $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    expect(requests.length).toBe(1)
+    expect(requests[0].requestHeaders['Content-Type']).toBe(
+      'application/json;charset=utf-8'
+    )
+  })
 })
