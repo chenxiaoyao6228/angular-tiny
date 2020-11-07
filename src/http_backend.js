@@ -10,6 +10,9 @@ export default function $HttpBackendProvider() {
         let statusText = request.statusText || ''
         callback(request.status, response, statusText)
       }
+      request.onerror = function() {
+        callback(-1, null, '')
+      }
     }
   }
 }

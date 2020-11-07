@@ -10,6 +10,7 @@ export default function $HttpProvider() {
           return status >= 200 && status < 300
         }
         function done(status, response, statusText) {
+          status = Math.max(status, 0)
           deferred[isSuccess(status) ? 'resolve' : 'reject']({
             status: status,
             data: response,

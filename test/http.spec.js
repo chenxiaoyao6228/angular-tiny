@@ -63,4 +63,16 @@ describe('$http', () => {
     expect(response.data).toBe('Fail')
     expect(response.config.url).toEqual('http://teropa.info')
   })
+  it('rejects promise when XHR result errors/aborts', () => {
+    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let response
+    $http(requestConfig).catch(r => {
+      response = r
+    })
+    requests[0].onerror()
+    expect(response).toBeDefined()
+    expect(response.status).toBe(0)
+    expect(response.data).toBe(null)
+    expect(response.config.url).toEqual('http://teropa.info')
+  })
 })
