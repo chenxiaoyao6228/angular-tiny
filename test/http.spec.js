@@ -75,4 +75,11 @@ describe('$http', () => {
     expect(response.data).toBe(null)
     expect(response.config.url).toEqual('http://teropa.info')
   })
+  it('use GET method as default method', () => {
+    $http({
+      url: 'http://teropa.info'
+    })
+    expect(requests.length).toEqual(1)
+    expect(requests[0].method).toEqual('GET')
+  })
 })

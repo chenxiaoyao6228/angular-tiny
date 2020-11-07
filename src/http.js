@@ -5,6 +5,7 @@ export default function $HttpProvider() {
     '$rootScope',
     function($httpBackend, $q, $rootScope) {
       return function $http(config) {
+        config = Object.assign({ method: 'GET' }, config)
         let deferred = $q.defer()
         function isSuccess(status) {
           return status >= 200 && status < 300
