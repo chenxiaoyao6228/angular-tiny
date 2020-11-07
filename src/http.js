@@ -20,7 +20,7 @@ export default function $HttpProvider() {
     '$q',
     '$rootScope',
     function($httpBackend, $q, $rootScope) {
-      return function $http(requestConfig) {
+      function $http(requestConfig) {
         let config = Object.assign({ method: 'GET' }, requestConfig)
         config.headers = mergeHeaders(requestConfig)
         let deferred = $q.defer()
@@ -58,6 +58,8 @@ export default function $HttpProvider() {
           )
         }
       }
+      $http.defaults = defaults
+      return $http
     }
   ]
 }
