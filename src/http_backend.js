@@ -2,6 +2,12 @@ import utils from './utils'
 export default function $HttpBackendProvider() {
   this.$get = function() {
     return function $httpBackend(method, url, post, headers = {}, callback) {
+      headers = Object.assign(
+        {
+          Accept: 'application/json, text/plain, */*'
+        },
+        headers
+      )
       let request = new XMLHttpRequest()
       request.open(method, url, true)
       // set before send method and after open
