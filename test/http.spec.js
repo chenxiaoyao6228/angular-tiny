@@ -50,4 +50,17 @@ describe('$http', () => {
     expect(response.data).toBe('Hello')
     expect(response.config.url).toEqual('http://teropa.info')
   })
+  it('rejects promise when XHR result received with error status', () => {
+    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let response
+    $http(requestConfig).catch(r => {
+      response = r
+    })
+    requests[0].respond(401, {}, 'Fail')
+    expect(response).toBeDefined()
+    expect(response.status).toBe(401)
+    expect(response.statusText).toBe('Unauthorized')
+    expect(response.data).toBe('Fail')
+    expect(response.config.url).toEqual('http://teropa.info')
+  })
 })
