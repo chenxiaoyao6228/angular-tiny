@@ -37,4 +37,17 @@ describe('$http', () => {
     expect(requests[0].async).toBe(true)
     expect(requests[0].requestBody).toBe('hello')
   })
+
+  it('resolves promise when XHR result received', () => {
+    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let response
+    $http(requestConfig).then(r => {
+      response = r
+    })
+    requests[0].respond(200, {}, 'Hello')
+    expect(response.status).toBe(200)
+    expect(response.statusText).toBe('OK')
+    expect(response.data).toBe('Hello')
+    expect(response.config.url).toEqual('http://teropa.info')
+  })
 })
