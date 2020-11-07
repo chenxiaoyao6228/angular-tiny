@@ -82,4 +82,13 @@ describe('$http', () => {
     expect(requests.length).toEqual(1)
     expect(requests[0].method).toEqual('GET')
   })
+  it('sets headers on request', () => {
+    $http({
+      url: 'http://teropa.info',
+      headers: { Accept: 'text/plain', 'Cache-Control': 'no-cache' }
+    })
+    expect(requests.length).toBe(1)
+    expect(requests[0].requestHeaders.Accept).toBe('text/plain')
+    expect(requests[0].requestHeaders['Cache-Control']).toBe('no-cache')
+  })
 })

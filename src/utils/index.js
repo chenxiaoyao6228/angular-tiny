@@ -64,7 +64,10 @@ function forEach(value, operator) {
   if (isArrayLike(value)) {
     return Array.from(value).forEach(operator)
   } else if (isObject(value)) {
-    return Object.entries(value).forEach(operator)
+    return Object.entries(value).forEach(v => {
+      let [key, val] = v
+      return operator(key, val)
+    })
   }
 }
 

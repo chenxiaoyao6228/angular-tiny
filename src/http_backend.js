@@ -1,8 +1,13 @@
+import utils from './utils'
 export default function $HttpBackendProvider() {
   this.$get = function() {
-    return function $httpBackend(method, url, post, callback) {
+    return function $httpBackend(method, url, post, headers = {}, callback) {
       let request = new XMLHttpRequest()
       request.open(method, url, true)
+      // set before send method and after open
+      utils.forEach(headers, (key, value) => {
+        request.setRequestHeader(key, value)
+      })
       request.send(post || null)
       request.onload = function() {
         let response =

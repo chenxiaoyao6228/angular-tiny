@@ -23,7 +23,13 @@ export default function $HttpProvider() {
             $rootScope.$apply()
           }
         }
-        $httpBackend(config.method, config.url, config.data, done)
+        $httpBackend(
+          config.method,
+          config.url,
+          config.data,
+          config.headers,
+          done
+        )
         return deferred.promise
       }
     }
