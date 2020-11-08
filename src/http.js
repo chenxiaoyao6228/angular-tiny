@@ -292,6 +292,14 @@ export function $HttpParamSerializerJQLikeProvider() {
               encodeURIComponent(key + '[]') + '=' + encodeURIComponent(v)
             )
           })
+        } else if (_.isObject(value) && !_.isDate(value)) {
+          _.forEach(value, (v, k) => {
+            parts.push(
+              encodeURIComponent(key + '[' + k + ']') +
+                '=' +
+                encodeURIComponent(v)
+            )
+          })
         } else {
           parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value))
         }
