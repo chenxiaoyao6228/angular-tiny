@@ -56,7 +56,8 @@ export default function $HttpProvider() {
           config.url,
           config.data,
           config.headers,
-          done
+          done,
+          config.withCredentials
         )
         return deferred.promise
 
