@@ -43,11 +43,17 @@ export default function $HttpProvider() {
   function defaultHttpResponseTransform(data, headers) {
     if (_.isString(data)) {
       let contentType = headers('Content-Type')
-      if (contentType && contentType.indexOf('application/json') === 0) {
+      if (
+        (contentType && contentType.indexOf('application/json') === 0) ||
+        isJsonLike(data)
+      ) {
         return JSON.parse(data)
       }
     }
     return data
+    function isJsonLike(data) {
+      return data.match(/^\{/) || data.match(/^\[/)
+    }
   }
   this.$get = [
     '$httpBackend',
