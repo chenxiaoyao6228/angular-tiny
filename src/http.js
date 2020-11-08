@@ -39,7 +39,7 @@ export default function $HttpProvider() {
       }
     ],
     transformResponse: [defaultHttpResponseTransform],
-    paramSerializer: serializeParams
+    paramSerializer: '$httpParamSerializer'
   })
   function defaultHttpResponseTransform(data, headers) {
     if (_.isString(data)) {
@@ -59,27 +59,6 @@ export default function $HttpProvider() {
         return data.match(/\]$/)
       }
     }
-  }
-  function serializeParams(params) {
-    let parts = []
-    _.forEach(params, (value, key) => {
-      if (value === undefined && value === null) {
-        return
-      }
-      if (!Array.isArray(value)) {
-        value = [value]
-      }
-      _.forEach(value, v => {
-        if (v === undefined || v === null) {
-          return
-        }
-        if (_.isObject(v)) {
-          v = JSON.stringify(v)
-        }
-        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
-      })
-    })
-    return parts.join('&')
   }
   this.$get = [
     '$httpBackend',
@@ -272,4 +251,29 @@ export default function $HttpProvider() {
       return $http
     }
   ]
+}
+export function $HttpParamSerializerProvider() {
+  this.$get = function() {
+    return function serializeParams(params) {
+      let parts = []
+      _.forEach(params, (value, key) => {
+        if (value === undefined && value === null) {
+          return
+        }
+        if (!Array.isArray(value)) {
+          value = [value]
+        }
+        _.forEach(value, v => {
+          if (v === undefined || v === null) {
+            return
+          }
+          if (_.isObject(v)) {
+            v = JSON.stringify(v)
+          }
+          parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
+        })
+      })
+      return parts.join('&')
+    }
+  }
 }

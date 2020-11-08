@@ -446,4 +446,11 @@ describe('$http', () => {
       expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
     })
   })
+  it('makes default param serializer available through DI', () => {
+    let injector = createInjector(['ng'])
+    injector.invoke($httpParamSerializer => {
+      let result = $httpParamSerializer({ a: 42, b: 43 })
+      expect(result).toEqual('a=42&b=43')
+    })
+  })
 })
