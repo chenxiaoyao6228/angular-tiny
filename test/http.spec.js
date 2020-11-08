@@ -338,4 +338,10 @@ describe('$http', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: [1, 'two', 3] })
     expect(requests[0].requestBody).toBe('[1,"two",3]')
   })
+  it('does not serialize blobs for requests', () => {
+    let Blob = window.Blob || window.WebKit || window.MozBlob || window.MSBlob
+    let blob = new Blob(['hello'], { type: 'text/plain' })
+    $http({ method: 'POST', url: 'http://teropa.info', data: blob })
+    expect(requests[0].requestBody).toBe(blob)
+  })
 })

@@ -17,10 +17,24 @@ export default function $HttpProvider() {
     },
     transformRequest: [
       function(data) {
-        if (_.isObject(data)) {
+        if (
+          _.isObject(data) &&
+          !isBlob(data) &&
+          !isFile(data) &&
+          !isFormData(data)
+        ) {
           return JSON.stringify(data)
         } else {
           return data
+        }
+        function isBlob(object) {
+          return object.toString() === '[object Blob]'
+        }
+        function isFile(object) {
+          return object.toString() === '[object File]'
+        }
+        function isFormData(object) {
+          return object.toString() === '[object FormData]'
         }
       }
     ]
