@@ -52,7 +52,11 @@ export default function $HttpProvider() {
     }
     return data
     function isJsonLike(data) {
-      return data.match(/^\{/) || data.match(/^\[/)
+      if (data.match(/^\{(?!\{)/)) {
+        return data.match(/\}$/)
+      } else if (data.match(/^\[/)) {
+        return data.match(/\]$/)
+      }
     }
   }
   this.$get = [

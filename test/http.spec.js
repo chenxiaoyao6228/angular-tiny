@@ -376,4 +376,12 @@ describe('$http', () => {
     expect(Array.isArray(response.data)).toBe(true)
     expect(response.data).toEqual([1, 2, 3])
   })
+  it('does not choke on response resembling JSON but not valid', () => {
+    let response
+    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+      response = r
+    })
+    requests[0].respond(200, {}, '{1, 2, 3]')
+    expect(response.data).toEqual('{1, 2, 3]')
+  })
 })
