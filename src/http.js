@@ -36,7 +36,11 @@ export default function $HttpProvider() {
           config.withCredentials = defaults.withCredentials
         }
 
-        let reqData = transformData(config.data, config.transformRequest)
+        let reqData = transformData(
+          config.data,
+          headersGetter(config.headers),
+          config.transformRequest
+        )
 
         if (!reqData) {
           _.forEach(config.headers, (v, k) => {
@@ -121,29 +125,39 @@ export default function $HttpProvider() {
           }
         }
         function parseHeaders(headers) {
-          let lines = headers.split('\n')
-          return _.transform(
-            lines,
-            (result, line) => {
-              let separatorAt = line.indexOf(':')
-              let name = line
-                .substring(0, separatorAt)
-                .toLowerCase()
-                .trim()
-              let value = line.substring(separatorAt + 1).trim()
-              if (name) {
-                result[name] = value
-              }
-            },
-            {}
-          )
+          if (_.isObject(headers)) {
+            return _.transform(
+              headers,
+              (result, v, k) => {
+                result[k.toLocaleLowerCase().trim()] = v.trim()
+              },
+              {}
+            )
+          } else {
+            let lines = headers.split('\n')
+            return _.transform(
+              lines,
+              (result, line) => {
+                let separatorAt = line.indexOf(':')
+                let name = line
+                  .substring(0, separatorAt)
+                  .toLowerCase()
+                  .trim()
+                let value = line.substring(separatorAt + 1).trim()
+                if (name) {
+                  result[name] = value
+                }
+              },
+              {}
+            )
+          }
         }
-        function transformData(data, transform) {
+        function transformData(data, headers, transform) {
           if (_.isFunction(transform)) {
-            return transform(data)
+            return transform(data, headers)
           } else if (Array.isArray(transform)) {
             return transform.reduce((data, fn) => {
-              return fn(data)
+              return fn(data, headers)
             }, data)
           } else {
             return data
