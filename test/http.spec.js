@@ -1,6 +1,7 @@
 import { publishExternalAPI } from '../src/angular_public'
 import { createInjector } from '../src/injector'
 const sinon = require('sinon')
+import utils from '../src/utils'
 
 describe('$http', () => {
   let $http
@@ -343,5 +344,18 @@ describe('$http', () => {
     let blob = new Blob(['hello'], { type: 'text/plain' })
     $http({ method: 'POST', url: 'http://teropa.info', data: blob })
     expect(requests[0].requestBody).toBe(blob)
+  })
+  it('parses JSON data for JSON responses', () => {
+    let response
+    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+      response = r
+    })
+    requests[0].respond(
+      200,
+      { 'Content-Type': 'application/json' },
+      '{"message":"hello"}'
+    )
+    expect(utils.isObject(response.data)).toBe(true)
+    expect(response.data.message).toBe('hello')
   })
 })

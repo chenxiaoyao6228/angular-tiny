@@ -37,8 +37,18 @@ export default function $HttpProvider() {
           return object.toString() === '[object FormData]'
         }
       }
-    ]
+    ],
+    transformResponse: [defaultHttpResponseTransform]
   })
+  function defaultHttpResponseTransform(data, headers) {
+    if (_.isString(data)) {
+      let contentType = headers('Content-Type')
+      if (contentType && contentType.indexOf('application/json') === 0) {
+        return JSON.parse(data)
+      }
+    }
+    return data
+  }
   this.$get = [
     '$httpBackend',
     '$q',
