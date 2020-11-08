@@ -152,15 +152,25 @@ export default function $HttpProvider() {
         return url
       }
       function serializeParams(params) {
-        let serializedParams = ''
-        _.forEach(params, (v, k) => {
-          if (v !== undefined && v !== null) {
-            serializedParams += `${encodeURIComponent(k)}=${encodeURIComponent(
-              v
-            )}`
+        let parts = []
+        _.forEach(params, (value, key) => {
+          if (value === undefined && value === null) {
+            return
           }
+          if (!Array.isArray(value)) {
+            value = [value]
+          }
+          _.forEach(value, v => {
+            if (v === undefined || v === null) {
+              return
+            }
+            if (_.isObject(v)) {
+              v = JSON.stringify(v)
+            }
+            parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
+          })
         })
-        return serializedParams
+        return parts.join('&')
       }
       function isSuccess(status) {
         return status >= 200 && status < 300

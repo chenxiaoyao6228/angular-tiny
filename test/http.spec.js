@@ -400,4 +400,12 @@ describe('$http', () => {
     $http({ url: 'http://teropa.info', params: { a: null, b: undefined } })
     expect(requests[0].url).toBe('http://teropa.info')
   })
+  it('attaches multiple params from arrays', () => {
+    $http({ url: 'http://teropa.info', params: { a: [42, 43] } })
+    expect(requests[0].url).toBe('http://teropa.info?a=42&a=43')
+  })
+  it('serializes objects to json', () => {
+    $http({ url: 'http://teropa.info', params: { a: { b: 42 } } })
+    expect(requests[0].url).toBe('http://teropa.info?a=%7B%22b%22%3A42%7D')
+  })
 })
