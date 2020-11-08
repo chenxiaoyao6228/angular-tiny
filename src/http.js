@@ -154,7 +154,9 @@ export default function $HttpProvider() {
       function serializeParams(params) {
         let serializedParams = ''
         _.forEach(params, (v, k) => {
-          serializedParams += `${k}=${v}`
+          serializedParams += `${encodeURIComponent(k)}=${encodeURIComponent(
+            v
+          )}`
         })
         return serializedParams
       }

@@ -392,4 +392,8 @@ describe('$http', () => {
     $http({ url: 'http://teropa.info?a=42', params: { b: 42 } })
     expect(requests[0].url).toBe('http://teropa.info?a=42&b=42')
   })
+  it('escapes url characters in params', () => {
+    $http({ url: 'http://teropa.info', params: { '==': '&&' } })
+    expect(requests[0].url).toBe('http://teropa.info?%3D%3D=%26%26')
+  })
 })
