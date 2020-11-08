@@ -23,7 +23,13 @@ export default function $HttpProvider() {
     '$rootScope',
     function($httpBackend, $q, $rootScope) {
       function $http(requestConfig) {
-        let config = Object.assign({ method: 'GET' }, requestConfig)
+        let config = Object.assign(
+          {
+            method: 'GET',
+            transformRequest: defaults.transformRequest
+          },
+          requestConfig
+        )
         config.headers = mergeHeaders(requestConfig)
 
         if (!config.withCredentials && defaults.withCredentials) {
