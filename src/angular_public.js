@@ -4,7 +4,10 @@ import $ParseProvider from '../src/parser'
 import $RootScopeProvider from '../src/scope'
 import { $QProvider, $$QProvider } from '../src/q'
 import $HttpBackendProvider from './http_backend'
-import $HttpProvider, { $HttpParamSerializerProvider } from './http'
+import $HttpProvider, {
+  $HttpParamSerializerProvider,
+  $HttpParamSerializerJQLikeProvider
+} from './http'
 
 export function publishExternalAPI() {
   'use strict'
@@ -18,4 +21,8 @@ export function publishExternalAPI() {
   ngModule.provider('$httpBackend', $HttpBackendProvider)
   ngModule.provider('$http', $HttpProvider)
   ngModule.provider('$httpParamSerializer', $HttpParamSerializerProvider)
+  ngModule.provider(
+    '$httpParamSerializerJQLike',
+    $HttpParamSerializerJQLikeProvider
+  )
 }

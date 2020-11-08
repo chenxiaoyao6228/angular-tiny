@@ -277,3 +277,18 @@ export function $HttpParamSerializerProvider() {
     }
   }
 }
+
+export function $HttpParamSerializerJQLikeProvider() {
+  this.$get = function() {
+    return function(params) {
+      let parts = []
+      _.forEach(params, (value, key) => {
+        if (value === null || value === undefined) {
+          return
+        }
+        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value))
+      })
+      return parts.join('&')
+    }
+  }
+}
