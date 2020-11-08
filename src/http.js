@@ -14,7 +14,8 @@ export default function $HttpProvider() {
       patch: {
         'Content-Type': 'application/json;charset=utf-8'
       }
-    }
+    },
+    withCredentials: true
   })
   this.$get = [
     '$httpBackend',
@@ -24,6 +25,10 @@ export default function $HttpProvider() {
       function $http(requestConfig) {
         let config = Object.assign({ method: 'GET' }, requestConfig)
         config.headers = mergeHeaders(requestConfig)
+
+        if (!config.withCredentials && defaults.withCredentials) {
+          config.withCredentials = defaults.withCredentials
+        }
 
         if (!config.data) {
           _.forEach(config.headers, (v, k) => {
