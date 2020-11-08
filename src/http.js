@@ -24,9 +24,15 @@ export default function $HttpProvider() {
       function $http(requestConfig) {
         let config = Object.assign({ method: 'GET' }, requestConfig)
         let h = mergeHeaders(requestConfig)
-        // eslint-disable-next-line
-        console.log('h', h);
         config.headers = mergeHeaders(requestConfig)
+
+        if (!config.data) {
+          _.forEach(config.headers, (v, k) => {
+            if (k.toLowerCase() === 'content-type') {
+              delete config.headers[k]
+            }
+          })
+        }
 
         let deferred = $q.defer()
         function isSuccess(status) {

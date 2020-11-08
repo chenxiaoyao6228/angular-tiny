@@ -141,4 +141,15 @@ describe('$http', () => {
     )
     expect(requests[0].requestHeaders['Content-Type']).toBeUndefined()
   })
+  it('does not send content-type header when no data', () => {
+    $http({
+      method: 'POST',
+      url: 'http://teropa.info',
+      headers: { 'Content-Type': 'application/json;charset=utf-8' }
+    })
+    expect(requests.length).toBe(1)
+    expect(requests[0].requestHeaders['Content-Type']).not.toBe(
+      'application/json;charset=utf-8'
+    )
+  })
 })
