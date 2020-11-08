@@ -214,4 +214,20 @@ describe('$http', () => {
     })
     expect(requests[0].requestBody).toBe('*42*')
   })
+  it('allows multiple request transform functions', () => {
+    $http({
+      method: 'POST',
+      url: 'http://teropa.info',
+      data: 42,
+      transformRequest: [
+        function(data) {
+          return '*' + data + '*'
+        },
+        function(data) {
+          return '-' + data + '-'
+        }
+      ]
+    })
+    expect(requests[0].requestBody).toBe('-*42*-')
+  })
 })

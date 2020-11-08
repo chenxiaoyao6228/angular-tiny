@@ -135,6 +135,10 @@ export default function $HttpProvider() {
         function transformData(data, transform) {
           if (_.isFunction(transform)) {
             return transform(data)
+          } else if (Array.isArray(transform)) {
+            return transform.reduce((data, fn) => {
+              return fn(data)
+            }, data)
           } else {
             return data
           }
