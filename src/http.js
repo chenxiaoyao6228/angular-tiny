@@ -85,7 +85,8 @@ export default function $HttpProvider() {
     '$httpBackend',
     '$q',
     '$rootScope',
-    function($httpBackend, $q, $rootScope) {
+    '$injector',
+    function($httpBackend, $q, $rootScope, $injector) {
       function $http(requestConfig) {
         let config = Object.assign(
           {
@@ -97,6 +98,10 @@ export default function $HttpProvider() {
           requestConfig
         )
         config.headers = mergeHeaders(requestConfig)
+
+        if (_.isString(config.paramSerializer)) {
+          config.paramSerializer = $injector.get(config.paramSerializer)
+        }
 
         if (!config.withCredentials && defaults.withCredentials) {
           config.withCredentials = defaults.withCredentials

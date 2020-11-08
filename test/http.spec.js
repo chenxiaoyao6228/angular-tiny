@@ -422,4 +422,28 @@ describe('$http', () => {
     })
     expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
   })
+  it('allows substituting param serializer through DI', () => {
+    let injector = createInjector([
+      'ng',
+      function($provide) {
+        $provide.factory('mySpecialSerializer', () => {
+          return function(params) {
+            return utils
+              .map(params, (v, k) => {
+                return k + '=' + v + 'lol'
+              })
+              .join('&')
+          }
+        })
+      }
+    ])
+    injector.invoke($http => {
+      $http({
+        url: 'http://teropa.info',
+        params: { a: 42, b: 43 },
+        paramSerializer: 'mySpecialSerializer'
+      })
+      expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
+    })
+  })
 })
