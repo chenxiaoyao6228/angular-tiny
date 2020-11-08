@@ -286,7 +286,15 @@ export function $HttpParamSerializerJQLikeProvider() {
         if (value === null || value === undefined) {
           return
         }
-        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value))
+        if (Array.isArray(value)) {
+          _.forEach(value, v => {
+            parts.push(
+              encodeURIComponent(key + '[]') + '=' + encodeURIComponent(v)
+            )
+          })
+        } else {
+          parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value))
+        }
       })
       return parts.join('&')
     }
