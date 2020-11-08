@@ -59,16 +59,21 @@ export default function $HttpProvider() {
               config.transformResponse
             )
           }
-          return response
+
+          if (isSuccess(response.status)) {
+            return response
+          } else {
+            return $q.reject(response)
+          }
         }
 
-        return sendReq(config, reqData).then(transformResponse)
+        return sendReq(config, reqData).then(
+          transformResponse,
+          transformResponse
+        )
       }
       function sendReq(config, reqData) {
         let deferred = $q.defer()
-        function isSuccess(status) {
-          return status >= 200 && status < 300
-        }
         function done(status, response, headerString, statusText) {
           status = Math.max(status, 0)
           deferred[isSuccess(status) ? 'resolve' : 'reject']({
@@ -94,6 +99,9 @@ export default function $HttpProvider() {
         return deferred.promise
       }
       // helpers
+      function isSuccess(status) {
+        return status >= 200 && status < 300
+      }
       function parseHeaders(headers) {
         if (_.isObject(headers)) {
           return _.transform(

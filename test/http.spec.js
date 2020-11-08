@@ -300,4 +300,17 @@ describe('$http', () => {
     requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
     expect(response.data).toEqual('*Hello*')
   })
+  it('transforms error responses also', () => {
+    let response
+    $http({
+      url: 'http://teropa.info',
+      transformResponse: function(data) {
+        return '*' + data + '*'
+      }
+    }).catch(r => {
+      response = r
+    })
+    requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
+    expect(response.data).toEqual('*Fail*')
+  })
 })
