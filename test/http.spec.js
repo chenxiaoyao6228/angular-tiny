@@ -162,4 +162,12 @@ describe('$http', () => {
       'text/plain;charset=utf-8'
     )
   })
+  it('ignores header function value when null/undefined', () => {
+    let cacheControlSpy = jest.fn().mockReturnValue(null)
+    $http.defaults.headers.post['Cache-Control'] = cacheControlSpy
+    let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
+    $http(request)
+    expect(cacheControlSpy).toHaveBeenCalledWith(request)
+    expect(requests[0].requestHeaders['Cache-Control']).toBeUndefined()
+  })
 })

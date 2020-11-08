@@ -81,7 +81,12 @@ export default function $HttpProvider() {
               headers,
               (result, v, k) => {
                 if (_.isFunction(v)) {
-                  result[k] = v(config)
+                  v = v(config)
+                  if (v === null || v === undefined) {
+                    delete result[k]
+                  } else {
+                    result[k] = v
+                  }
                 }
               },
               headers
