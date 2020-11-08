@@ -249,6 +249,9 @@ export default function $HttpProvider() {
         }
       }
       $http.defaults = defaults
+      $http.get = function(url, data) {
+        return $http(Object.assign({}, data, { url, method: 'GET' }))
+      }
       return $http
     }
   ]
