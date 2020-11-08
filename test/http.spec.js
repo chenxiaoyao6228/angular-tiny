@@ -203,4 +203,15 @@ describe('$http', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: 42 })
     expect(requests[0].withCredentials).toBe(true)
   })
+  it('allows transforming requests with functions', () => {
+    $http({
+      method: 'POST',
+      url: 'http://teropa.info',
+      data: 42,
+      transformRequest: function(data) {
+        return '*' + data + '*'
+      }
+    })
+    expect(requests[0].requestBody).toBe('*42*')
+  })
 })

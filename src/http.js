@@ -30,7 +30,9 @@ export default function $HttpProvider() {
           config.withCredentials = defaults.withCredentials
         }
 
-        if (!config.data) {
+        let reqData = transformData(config.data, config.transformRequest)
+
+        if (!reqData) {
           _.forEach(config.headers, (v, k) => {
             if (k.toLowerCase() === 'content-type') {
               delete config.headers[k]
@@ -59,7 +61,7 @@ export default function $HttpProvider() {
         $httpBackend(
           config.method,
           config.url,
-          config.data,
+          reqData,
           config.headers,
           done,
           config.withCredentials
@@ -129,6 +131,13 @@ export default function $HttpProvider() {
             },
             {}
           )
+        }
+        function transformData(data, transform) {
+          if (_.isFunction(transform)) {
+            return transform(data)
+          } else {
+            return data
+          }
         }
       }
       $http.defaults = defaults
