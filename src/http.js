@@ -50,6 +50,9 @@ export default function $HttpProvider() {
           })
         }
 
+        return sendReq(config, reqData)
+      }
+      function sendReq(config, reqData) {
         let deferred = $q.defer()
         function isSuccess(status) {
           return status >= 200 && status < 300
@@ -77,91 +80,90 @@ export default function $HttpProvider() {
           config.withCredentials
         )
         return deferred.promise
-
-        function mergeHeaders(config) {
-          let reqHeaders = _.extend({}, config.headers)
-          let defHeaders = _.extend(
-            {},
-            defaults.headers.common,
-            defaults.headers[(config.method || 'get').toLowerCase()]
+      }
+      // helpers
+      function parseHeaders(headers) {
+        if (_.isObject(headers)) {
+          return _.transform(
+            headers,
+            (result, v, k) => {
+              result[k.toLocaleLowerCase().trim()] = v.trim()
+            },
+            {}
           )
-          _.forEach(defHeaders, (value, key) => {
-            let headerExists = _.some(reqHeaders, (v, k) => {
-              return k.toLowerCase() === key.toLowerCase()
-            })
-            if (!headerExists) {
-              reqHeaders[key] = value
-            }
+        } else {
+          let lines = headers.split('\n')
+          return _.transform(
+            lines,
+            (result, line) => {
+              let separatorAt = line.indexOf(':')
+              let name = line
+                .substring(0, separatorAt)
+                .toLowerCase()
+                .trim()
+              let value = line.substring(separatorAt + 1).trim()
+              if (name) {
+                result[name] = value
+              }
+            },
+            {}
+          )
+        }
+      }
+      function headersGetter(headerString) {
+        let headersObj
+        headersObj = headersObj || parseHeaders(headerString)
+        return function(name) {
+          if (name) {
+            return headersObj[name.toLowerCase()]
+          } else {
+            return headersObj
+          }
+        }
+      }
+      function mergeHeaders(config) {
+        let reqHeaders = _.extend({}, config.headers)
+        let defHeaders = _.extend(
+          {},
+          defaults.headers.common,
+          defaults.headers[(config.method || 'get').toLowerCase()]
+        )
+        _.forEach(defHeaders, (value, key) => {
+          let headerExists = _.some(reqHeaders, (v, k) => {
+            return k.toLowerCase() === key.toLowerCase()
           })
+          if (!headerExists) {
+            reqHeaders[key] = value
+          }
+        })
 
-          return executeHeaderFns(reqHeaders, config)
-          function executeHeaderFns(headers, config) {
-            return _.transform(
-              headers,
-              (result, v, k) => {
-                if (_.isFunction(v)) {
-                  v = v(config)
-                  if (v === null || v === undefined) {
-                    delete result[k]
-                  } else {
-                    result[k] = v
-                  }
+        return executeHeaderFns(reqHeaders, config)
+        function executeHeaderFns(headers, config) {
+          return _.transform(
+            headers,
+            (result, v, k) => {
+              if (_.isFunction(v)) {
+                v = v(config)
+                if (v === null || v === undefined) {
+                  delete result[k]
+                } else {
+                  result[k] = v
                 }
-              },
-              headers
-            )
-          }
+              }
+            },
+            headers
+          )
         }
-
-        function headersGetter(headerString) {
-          let headersObj
-          headersObj = headersObj || parseHeaders(headerString)
-          return function(name) {
-            if (name) {
-              return headersObj[name.toLowerCase()]
-            } else {
-              return headersObj
-            }
-          }
-        }
-        function parseHeaders(headers) {
-          if (_.isObject(headers)) {
-            return _.transform(
-              headers,
-              (result, v, k) => {
-                result[k.toLocaleLowerCase().trim()] = v.trim()
-              },
-              {}
-            )
-          } else {
-            let lines = headers.split('\n')
-            return _.transform(
-              lines,
-              (result, line) => {
-                let separatorAt = line.indexOf(':')
-                let name = line
-                  .substring(0, separatorAt)
-                  .toLowerCase()
-                  .trim()
-                let value = line.substring(separatorAt + 1).trim()
-                if (name) {
-                  result[name] = value
-                }
-              },
-              {}
-            )
-          }
-        }
-        function transformData(data, headers, transform) {
-          if (_.isFunction(transform)) {
-            return transform(data, headers)
-          } else if (Array.isArray(transform)) {
-            return transform.reduce((data, fn) => {
-              return fn(data, headers)
-            }, data)
-          } else {
-            return data
-          }
+      }
+      function transformData(data, headers, transform) {
+        if (_.isFunction(transform)) {
+          return transform(data, headers)
+        } else if (Array.isArray(transform)) {
+          return transform.reduce((data, fn) => {
+            return fn(data, headers)
+          }, data)
+        } else {
+          return data
         }
       }
       $http.defaults = defaults
