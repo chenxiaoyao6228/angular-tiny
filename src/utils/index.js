@@ -155,6 +155,12 @@ function uniqueId() {
   return _.uniqueId()
 }
 
+function isDate(date) {
+  return _.isDate(date)
+}
+
+let transform = _.transform
+
 export default {
   times,
   deepEqual,
@@ -164,6 +170,7 @@ export default {
   isObject,
   isArray,
   isArrayLike,
+  isDate,
   isPlainObject,
   forEach,
   isString,
@@ -184,5 +191,6 @@ export default {
   toPlainObject,
   forOwn,
   map,
-  uniqueId
+  uniqueId,
+  transform
 }

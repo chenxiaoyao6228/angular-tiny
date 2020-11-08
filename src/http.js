@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import utils from '../src/utils'
 export default function $HttpProvider() {
   let defaults = (this.defaults = {
     headers: {
@@ -18,7 +19,7 @@ export default function $HttpProvider() {
     transformRequest: [
       function(data) {
         if (
-          _.isObject(data) &&
+          utils.isObject(data) &&
           !isBlob(data) &&
           !isFile(data) &&
           !isFormData(data)
@@ -42,7 +43,7 @@ export default function $HttpProvider() {
     paramSerializer: '$httpParamSerializer'
   })
   function defaultHttpResponseTransform(data, headers) {
-    if (_.isString(data)) {
+    if (utils.isString(data)) {
       let contentType = headers('Content-Type')
       if (
         (contentType && contentType.indexOf('application/json') === 0) ||
@@ -78,7 +79,7 @@ export default function $HttpProvider() {
         )
         config.headers = mergeHeaders(requestConfig)
 
-        if (_.isString(config.paramSerializer)) {
+        if (utils.isString(config.paramSerializer)) {
           config.paramSerializer = $injector.get(config.paramSerializer)
         }
 
@@ -94,7 +95,7 @@ export default function $HttpProvider() {
         )
 
         if (!reqData) {
-          _.forEach(config.headers, (v, k) => {
+          utils.forEach(config.headers, (k, v) => {
             if (k.toLowerCase() === 'content-type') {
               delete config.headers[k]
             }
@@ -164,8 +165,8 @@ export default function $HttpProvider() {
         return status >= 200 && status < 300
       }
       function parseHeaders(headers) {
-        if (_.isObject(headers)) {
-          return _.transform(
+        if (utils.isObject(headers)) {
+          return utils.transform(
             headers,
             (result, v, k) => {
               result[k.toLocaleLowerCase().trim()] = v.trim()
@@ -174,7 +175,7 @@ export default function $HttpProvider() {
           )
         } else {
           let lines = headers.split('\n')
-          return _.transform(
+          return utils.transform(
             lines,
             (result, line) => {
               let separatorAt = line.indexOf(':')
@@ -203,14 +204,14 @@ export default function $HttpProvider() {
         }
       }
       function mergeHeaders(config) {
-        let reqHeaders = _.extend({}, config.headers)
-        let defHeaders = _.extend(
+        let reqHeaders = Object.assign({}, config.headers)
+        let defHeaders = Object.assign(
           {},
           defaults.headers.common,
           defaults.headers[(config.method || 'get').toLowerCase()]
         )
-        _.forEach(defHeaders, (value, key) => {
-          let headerExists = _.some(reqHeaders, (v, k) => {
+        utils.forEach(defHeaders, (key, value) => {
+          let headerExists = utils.some(reqHeaders, (v, k) => {
             return k.toLowerCase() === key.toLowerCase()
           })
           if (!headerExists) {
@@ -220,10 +221,10 @@ export default function $HttpProvider() {
 
         return executeHeaderFns(reqHeaders, config)
         function executeHeaderFns(headers, config) {
-          return _.transform(
+          return utils.transform(
             headers,
             (result, v, k) => {
-              if (_.isFunction(v)) {
+              if (utils.isFunction(v)) {
                 v = v(config)
                 if (v === null || v === undefined) {
                   delete result[k]
@@ -237,7 +238,7 @@ export default function $HttpProvider() {
         }
       }
       function transformData(data, headers, status, transform) {
-        if (_.isFunction(transform)) {
+        if (utils.isFunction(transform)) {
           return transform(data, headers, status)
         } else if (Array.isArray(transform)) {
           return transform.reduce((data, fn) => {
@@ -256,18 +257,18 @@ export function $HttpParamSerializerProvider() {
   this.$get = function() {
     return function serializeParams(params) {
       let parts = []
-      _.forEach(params, (value, key) => {
+      utils.forEach(params, (key, value) => {
         if (value === undefined && value === null) {
           return
         }
         if (!Array.isArray(value)) {
           value = [value]
         }
-        _.forEach(value, v => {
+        utils.forEach(value, v => {
           if (v === undefined || v === null) {
             return
           }
-          if (_.isObject(v)) {
+          if (utils.isObject(v)) {
             v = JSON.stringify(v)
           }
           parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
@@ -282,23 +283,35 @@ export function $HttpParamSerializerJQLikeProvider() {
   this.$get = function() {
     return function(params) {
       let parts = []
-      _.forEach(params, (value, key) => {
+      function serialize(value, prefix) {
         if (value === null || value === undefined) {
           return
         }
         if (Array.isArray(value)) {
-          _.forEach(value, v => {
-            parts.push(
-              encodeURIComponent(key + '[]') + '=' + encodeURIComponent(v)
-            )
+          utils.forEach(value, v => {
+            serialize(v, prefix + '[]')
           })
-        } else if (_.isObject(value) && !_.isDate(value)) {
-          _.forEach(value, (v, k) => {
-            parts.push(
-              encodeURIComponent(key + '[' + k + ']') +
-                '=' +
-                encodeURIComponent(v)
-            )
+        } else if (utils.isObject(value) && !utils.isDate(value)) {
+          utils.forEach(value, (k, v) => {
+            serialize(v, prefix + '[' + k + ']')
+          })
+        } else {
+          parts.push(
+            encodeURIComponent(prefix) + '=' + encodeURIComponent(value)
+          )
+        }
+      }
+      utils.forEach(params, (key, value) => {
+        if (value === null || value === undefined) {
+          return
+        }
+        if (Array.isArray(value)) {
+          utils.forEach(value, v => {
+            serialize(v, key + '[]')
+          })
+        } else if (utils.isObject(value) && !utils.isDate(value)) {
+          utils.forEach(value, (k, v) => {
+            serialize(v, key + '[' + k + ']')
           })
         } else {
           parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value))

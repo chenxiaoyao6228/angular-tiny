@@ -482,5 +482,13 @@ describe('$http', () => {
         'http://teropa.info?a%5Bb%5D=42&a%5Bc%5D=43'
       )
     })
+    it('supports nesting in objects', () => {
+      $http({
+        url: 'http://teropa.info',
+        params: { a: { b: { c: 42 } } },
+        paramSerializer: '$httpParamSerializerJQLike'
+      })
+      expect(requests[0].url).toEqual('http://teropa.info?a%5Bb%5D%5Bc%5D=42')
+    })
   })
 })
