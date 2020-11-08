@@ -330,4 +330,12 @@ describe('$http', () => {
     requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
     expect(response.data).toEqual('unauthorized')
   })
+  it('serializes object data to JSON for requests', () => {
+    $http({ method: 'POST', url: 'http://teropa.info', data: { aKey: 42 } })
+    expect(requests[0].requestBody).toBe('{"aKey":42}')
+  })
+  it('serializes array data to JSON for requests', () => {
+    $http({ method: 'POST', url: 'http://teropa.info', data: [1, 'two', 3] })
+    expect(requests[0].requestBody).toBe('[1,"two",3]')
+  })
 })

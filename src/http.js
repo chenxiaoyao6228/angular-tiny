@@ -15,7 +15,15 @@ export default function $HttpProvider() {
         'Content-Type': 'application/json;charset=utf-8'
       }
     },
-    withCredentials: true
+    transformRequest: [
+      function(data) {
+        if (_.isObject(data)) {
+          return JSON.stringify(data)
+        } else {
+          return data
+        }
+      }
+    ]
   })
   this.$get = [
     '$httpBackend',
