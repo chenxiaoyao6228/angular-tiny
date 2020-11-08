@@ -97,9 +97,13 @@ export default function $HttpProvider() {
 
         function headersGetter(headerString) {
           let headersObj
+          headersObj = headersObj || parseHeaders(headerString)
           return function(name) {
-            headersObj = headersObj || parseHeaders(headerString)
-            return headersObj[name.toLowerCase()]
+            if (name) {
+              return headersObj[name.toLowerCase()]
+            } else {
+              return headersObj
+            }
           }
         }
         function parseHeaders(headers) {
@@ -112,10 +116,7 @@ export default function $HttpProvider() {
                 .substring(0, separatorAt)
                 .toLowerCase()
                 .trim()
-              let value = line
-                .substring(separatorAt + 1)
-                .toLowerCase()
-                .trim()
+              let value = line.substring(separatorAt + 1).trim()
               if (name) {
                 result[name] = value
               }

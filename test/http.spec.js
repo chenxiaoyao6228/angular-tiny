@@ -181,4 +181,12 @@ describe('$http', () => {
     expect(response.headers('Content-Type')).toBe('text/plain')
     expect(response.headers('content-type')).toBe('text/plain') //case sensitive
   })
+  it('may returns all response headers', () => {
+    let response
+    $http({ method: 'POST', url: 'http://teropa.info', data: 42 }).then(r => {
+      response = r
+    })
+    requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
+    expect(response.headers()).toEqual({ 'content-type': 'text/plain' })
+  })
 })
