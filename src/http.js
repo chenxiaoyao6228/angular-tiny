@@ -26,7 +26,8 @@ export default function $HttpProvider() {
         let config = Object.assign(
           {
             method: 'GET',
-            transformRequest: defaults.transformRequest
+            transformRequest: defaults.transformRequest,
+            transformResponse: defaults.transformResponse
           },
           requestConfig
         )
@@ -50,7 +51,18 @@ export default function $HttpProvider() {
           })
         }
 
-        return sendReq(config, reqData)
+        function transformResponse(response) {
+          if (response.data) {
+            response.data = transformData(
+              response.data,
+              response.headers,
+              config.transformResponse
+            )
+          }
+          return response
+        }
+
+        return sendReq(config, reqData).then(transformResponse)
       }
       function sendReq(config, reqData) {
         let deferred = $q.defer()

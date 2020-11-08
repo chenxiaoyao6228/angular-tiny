@@ -257,4 +257,47 @@ describe('$http', () => {
     })
     expect(requests[0].requestBody).toBe('*42*')
   })
+  it('allows transforming responses with functions', () => {
+    let response
+    $http({
+      url: 'http://teropa.info',
+      transformResponse: function(data) {
+        return '*' + data + '*'
+      }
+    }).then(r => {
+      response = r
+    })
+    requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
+    expect(response.data).toEqual('*Hello*')
+  })
+  it('passes response headers to transform functions', () => {
+    let response
+    $http({
+      url: 'http://teropa.info',
+      transformResponse: function(data, headers) {
+        if (headers('content-type') === 'text/decorated') {
+          return '*' + data + '*'
+        } else {
+          return data
+        }
+      }
+    }).then(r => {
+      response = r
+    })
+    requests[0].respond(200, { 'Content-Type': 'text/decorated' }, 'Hello')
+    expect(response.data).toEqual('*Hello*')
+  })
+  it('allows setting default response transforms', () => {
+    $http.defaults.transformResponse = [
+      function(data) {
+        return '*' + data + '*'
+      }
+    ]
+    let response
+    $http({ url: 'http://teropa.info' }).then(r => {
+      response = r
+    })
+    requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
+    expect(response.data).toEqual('*Hello*')
+  })
 })
