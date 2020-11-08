@@ -118,6 +118,7 @@ export default function $HttpProvider() {
       }
       function sendReq(config, reqData) {
         let deferred = $q.defer()
+        let url = buildUrl(config.url, serializeParams(config.params))
         function done(status, response, headerString, statusText) {
           status = Math.max(status, 0)
           deferred[isSuccess(status) ? 'resolve' : 'reject']({
@@ -134,7 +135,7 @@ export default function $HttpProvider() {
         }
         $httpBackend(
           config.method,
-          config.url,
+          url,
           reqData,
           config.headers,
           done,
@@ -143,6 +144,20 @@ export default function $HttpProvider() {
         return deferred.promise
       }
       // helpers
+      function buildUrl(url, serializedParams) {
+        if (serializedParams.length) {
+          url += url.indexOf('?') > -1 ? '&' : '?'
+          url += serializedParams
+        }
+        return url
+      }
+      function serializeParams(params) {
+        let serializedParams = ''
+        _.forEach(params, (v, k) => {
+          serializedParams += `${k}=${v}`
+        })
+        return serializedParams
+      }
       function isSuccess(status) {
         return status >= 200 && status < 300
       }

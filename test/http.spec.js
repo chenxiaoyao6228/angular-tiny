@@ -384,4 +384,12 @@ describe('$http', () => {
     requests[0].respond(200, {}, '{1, 2, 3]')
     expect(response.data).toEqual('{1, 2, 3]')
   })
+  it('adds params to URL', () => {
+    $http({ url: 'http://teropa.info', params: { a: 42 } })
+    expect(requests[0].url).toBe('http://teropa.info?a=42')
+  })
+  it('adds additional params to URL', () => {
+    $http({ url: 'http://teropa.info?a=42', params: { b: 42 } })
+    expect(requests[0].url).toBe('http://teropa.info?a=42&b=42')
+  })
 })
