@@ -37,12 +37,13 @@ export default function $HttpProvider() {
         function isSuccess(status) {
           return status >= 200 && status < 300
         }
-        function done(status, response, statusText) {
+        function done(status, response, headerString, statusText) {
           status = Math.max(status, 0)
           deferred[isSuccess(status) ? 'resolve' : 'reject']({
             status: status,
             data: response,
             statusText: statusText,
+            headers: headersGetter(headerString),
             config: config
           })
 
@@ -92,6 +93,35 @@ export default function $HttpProvider() {
               headers
             )
           }
+        }
+
+        function headersGetter(headerString) {
+          let headersObj
+          return function(name) {
+            headersObj = headersObj || parseHeaders(headerString)
+            return headersObj[name.toLowerCase()]
+          }
+        }
+        function parseHeaders(headers) {
+          let lines = headers.split('\n')
+          return _.transform(
+            lines,
+            (result, line) => {
+              let separatorAt = line.indexOf(':')
+              let name = line
+                .substring(0, separatorAt)
+                .toLowerCase()
+                .trim()
+              let value = line
+                .substring(separatorAt + 1)
+                .toLowerCase()
+                .trim()
+              if (name) {
+                result[name] = value
+              }
+            },
+            {}
+          )
         }
       }
       $http.defaults = defaults

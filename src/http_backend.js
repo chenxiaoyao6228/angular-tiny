@@ -13,7 +13,12 @@ export default function $HttpBackendProvider() {
         let response =
           'response' in request ? request.response : request.responseText
         let statusText = request.statusText || ''
-        callback(request.status, response, statusText)
+        callback(
+          request.status,
+          response,
+          request.getAllResponseHeaders(),
+          statusText
+        )
       }
       request.onerror = function() {
         callback(-1, null, '')
