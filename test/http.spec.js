@@ -152,4 +152,14 @@ describe('$http', () => {
       'application/json;charset=utf-8'
     )
   })
+  it('supports functions as header values', () => {
+    let contentTypeSpy = jest.fn().mockReturnValue('text/plain;charset=utf-8')
+    $http.defaults.headers.post['Content-Type'] = contentTypeSpy
+    let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
+    $http(request)
+    expect(contentTypeSpy).toHaveBeenCalledWith(request)
+    expect(requests[0].requestHeaders['Content-Type']).toBe(
+      'text/plain;charset=utf-8'
+    )
+  })
 })

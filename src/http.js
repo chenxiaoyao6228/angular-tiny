@@ -23,7 +23,6 @@ export default function $HttpProvider() {
     function($httpBackend, $q, $rootScope) {
       function $http(requestConfig) {
         let config = Object.assign({ method: 'GET' }, requestConfig)
-        let h = mergeHeaders(requestConfig)
         config.headers = mergeHeaders(requestConfig)
 
         if (!config.data) {
@@ -59,6 +58,7 @@ export default function $HttpProvider() {
           done
         )
         return deferred.promise
+
         function mergeHeaders(config) {
           let reqHeaders = _.extend({}, config.headers)
           let defHeaders = _.extend(
@@ -74,7 +74,19 @@ export default function $HttpProvider() {
               reqHeaders[key] = value
             }
           })
-          return reqHeaders
+
+          return executeHeaderFns(reqHeaders, config)
+          function executeHeaderFns(headers, config) {
+            return _.transform(
+              headers,
+              (result, v, k) => {
+                if (_.isFunction(v)) {
+                  result[k] = v(config)
+                }
+              },
+              headers
+            )
+          }
         }
       }
       $http.defaults = defaults
