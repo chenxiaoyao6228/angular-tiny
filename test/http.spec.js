@@ -313,4 +313,21 @@ describe('$http', () => {
     requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
     expect(response.data).toEqual('*Fail*')
   })
+  it('passes HTTP status to response transformers', () => {
+    let response
+    $http({
+      url: 'http://teropa.info',
+      transformResponse: function(data, headers, status) {
+        if (status === 401) {
+          return 'unauthorized'
+        } else {
+          return data
+        }
+      }
+    }).catch(r => {
+      response = r
+    })
+    requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
+    expect(response.data).toEqual('unauthorized')
+  })
 })

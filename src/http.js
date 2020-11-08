@@ -40,6 +40,7 @@ export default function $HttpProvider() {
         let reqData = transformData(
           config.data,
           headersGetter(config.headers),
+          undefined,
           config.transformRequest
         )
 
@@ -56,6 +57,7 @@ export default function $HttpProvider() {
             response.data = transformData(
               response.data,
               response.headers,
+              response.status,
               config.transformResponse
             )
           }
@@ -175,12 +177,12 @@ export default function $HttpProvider() {
           )
         }
       }
-      function transformData(data, headers, transform) {
+      function transformData(data, headers, status, transform) {
         if (_.isFunction(transform)) {
-          return transform(data, headers)
+          return transform(data, headers, status)
         } else if (Array.isArray(transform)) {
           return transform.reduce((data, fn) => {
-            return fn(data, headers)
+            return fn(data, headers, status)
           }, data)
         } else {
           return data
