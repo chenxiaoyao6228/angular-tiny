@@ -408,4 +408,18 @@ describe('$http', () => {
     $http({ url: 'http://teropa.info', params: { a: { b: 42 } } })
     expect(requests[0].url).toBe('http://teropa.info?a=%7B%22b%22%3A42%7D')
   })
+  it('allows substituting param serializer', () => {
+    $http({
+      url: 'http://teropa.info',
+      params: { a: 42, b: 43 },
+      paramSerializer: function(params) {
+        return utils
+          .map(params, (v, k) => {
+            return k + '=' + v + 'lol'
+          })
+          .join('&')
+      }
+    })
+    expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
+  })
 })

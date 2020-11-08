@@ -38,7 +38,8 @@ export default function $HttpProvider() {
         }
       }
     ],
-    transformResponse: [defaultHttpResponseTransform]
+    transformResponse: [defaultHttpResponseTransform],
+    paramSerializer: serializeParams
   })
   function defaultHttpResponseTransform(data, headers) {
     if (_.isString(data)) {
@@ -59,6 +60,27 @@ export default function $HttpProvider() {
       }
     }
   }
+  function serializeParams(params) {
+    let parts = []
+    _.forEach(params, (value, key) => {
+      if (value === undefined && value === null) {
+        return
+      }
+      if (!Array.isArray(value)) {
+        value = [value]
+      }
+      _.forEach(value, v => {
+        if (v === undefined || v === null) {
+          return
+        }
+        if (_.isObject(v)) {
+          v = JSON.stringify(v)
+        }
+        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
+      })
+    })
+    return parts.join('&')
+  }
   this.$get = [
     '$httpBackend',
     '$q',
@@ -69,7 +91,8 @@ export default function $HttpProvider() {
           {
             method: 'GET',
             transformRequest: defaults.transformRequest,
-            transformResponse: defaults.transformResponse
+            transformResponse: defaults.transformResponse,
+            paramSerializer: defaults.paramSerializer
           },
           requestConfig
         )
@@ -118,7 +141,9 @@ export default function $HttpProvider() {
       }
       function sendReq(config, reqData) {
         let deferred = $q.defer()
-        let url = buildUrl(config.url, serializeParams(config.params))
+
+        let url = buildUrl(config.url, config.paramSerializer(config.params))
+
         function done(status, response, headerString, statusText) {
           status = Math.max(status, 0)
           deferred[isSuccess(status) ? 'resolve' : 'reject']({
@@ -150,27 +175,6 @@ export default function $HttpProvider() {
           url += serializedParams
         }
         return url
-      }
-      function serializeParams(params) {
-        let parts = []
-        _.forEach(params, (value, key) => {
-          if (value === undefined && value === null) {
-            return
-          }
-          if (!Array.isArray(value)) {
-            value = [value]
-          }
-          _.forEach(value, v => {
-            if (v === undefined || v === null) {
-              return
-            }
-            if (_.isObject(v)) {
-              v = JSON.stringify(v)
-            }
-            parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v))
-          })
-        })
-        return parts.join('&')
       }
       function isSuccess(status) {
         return status >= 200 && status < 300
