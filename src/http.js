@@ -1,3 +1,4 @@
+import _ from 'lodash'
 export default function $HttpProvider() {
   let defaults = (this.defaults = {
     headers: {
@@ -22,7 +23,11 @@ export default function $HttpProvider() {
     function($httpBackend, $q, $rootScope) {
       function $http(requestConfig) {
         let config = Object.assign({ method: 'GET' }, requestConfig)
+        let h = mergeHeaders(requestConfig)
+        // eslint-disable-next-line
+        console.log('h', h);
         config.headers = mergeHeaders(requestConfig)
+
         let deferred = $q.defer()
         function isSuccess(status) {
           return status >= 200 && status < 300
@@ -48,14 +53,22 @@ export default function $HttpProvider() {
           done
         )
         return deferred.promise
-
         function mergeHeaders(config) {
-          return Object.assign(
+          let reqHeaders = _.extend({}, config.headers)
+          let defHeaders = _.extend(
             {},
             defaults.headers.common,
-            defaults.headers[(config.method || 'get').toLowerCase()],
-            config.headers
+            defaults.headers[(config.method || 'get').toLowerCase()]
           )
+          _.forEach(defHeaders, (value, key) => {
+            let headerExists = _.some(reqHeaders, (v, k) => {
+              return k.toLowerCase() === key.toLowerCase()
+            })
+            if (!headerExists) {
+              reqHeaders[key] = value
+            }
+          })
+          return reqHeaders
         }
       }
       $http.defaults = defaults
