@@ -4,12 +4,13 @@ const sinon = require('sinon')
 import utils from '../src/utils'
 
 describe('$http', () => {
-  let $http
+  let $http, $rootScope
   let xhr, requests
   beforeEach(() => {
     publishExternalAPI()
     let injector = createInjector(['ng'])
     $http = injector.get('$http')
+    $rootScope = injector.get('$rootScope')
   })
   beforeEach(() => {
     xhr = sinon.useFakeXMLHttpRequest()
@@ -32,6 +33,7 @@ describe('$http', () => {
   })
   it('makes an XMLHttpRequest to given URL', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: 'hello' })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].method).toBe('POST')
     expect(requests[0].url).toBe('http://teropa.info')
@@ -123,7 +125,9 @@ describe('$http', () => {
       }
     ])
     $http = injector.get('$http')
+    $rootScope = injector.get('$rootScope')
     $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
       'text/plain;charset=utf-8'
@@ -437,12 +441,14 @@ describe('$http', () => {
         })
       }
     ])
+    $rootScope = injector.get('$rootScope')
     injector.invoke($http => {
       $http({
         url: 'http://teropa.info',
         params: { a: 42, b: 43 },
         paramSerializer: 'mySpecialSerializer'
       })
+      $rootScope.$apply()
       expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
     })
   })

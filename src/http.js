@@ -71,26 +71,10 @@ export default function $HttpProvider() {
       let interceptors = interceptorFactories.map(fn => {
         return utils.isString(fn) ? $injector.get(fn) : $injector.invoke(fn)
       })
-      function $http(requestConfig) {
-        let config = Object.assign(
-          {
-            method: 'GET',
-            transformRequest: defaults.transformRequest,
-            transformResponse: defaults.transformResponse,
-            paramSerializer: defaults.paramSerializer
-          },
-          requestConfig
-        )
-        config.headers = mergeHeaders(requestConfig)
-
-        if (utils.isString(config.paramSerializer)) {
-          config.paramSerializer = $injector.get(config.paramSerializer)
-        }
-
+      function serverRequest(config) {
         if (!config.withCredentials && defaults.withCredentials) {
           config.withCredentials = defaults.withCredentials
         }
-
         let reqData = transformData(
           config.data,
           headersGetter(config.headers),
@@ -128,6 +112,25 @@ export default function $HttpProvider() {
           transformResponse
         )
       }
+      function $http(requestConfig) {
+        let config = Object.assign(
+          {
+            method: 'GET',
+            transformRequest: defaults.transformRequest,
+            transformResponse: defaults.transformResponse,
+            paramSerializer: defaults.paramSerializer
+          },
+          requestConfig
+        )
+        config.headers = mergeHeaders(requestConfig)
+
+        if (utils.isString(config.paramSerializer)) {
+          config.paramSerializer = $injector.get(config.paramSerializer)
+        }
+
+        return serverRequest(config)
+      }
+      // helpers
       function sendReq(config, reqData) {
         let deferred = $q.defer()
 
@@ -157,7 +160,6 @@ export default function $HttpProvider() {
         )
         return deferred.promise
       }
-      // helpers
       function buildUrl(url, serializedParams) {
         if (serializedParams.length) {
           url += url.indexOf('?') > -1 ? '&' : '?'
