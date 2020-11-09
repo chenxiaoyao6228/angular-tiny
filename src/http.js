@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import utils from '../src/utils'
 export default function $HttpProvider() {
+  let interceptorFactories = (this.interceptors = [])
   let defaults = (this.defaults = {
     headers: {
       common: {
@@ -67,6 +68,9 @@ export default function $HttpProvider() {
     '$rootScope',
     '$injector',
     function($httpBackend, $q, $rootScope, $injector) {
+      let interceptors = interceptorFactories.map(fn => {
+        return $injector.invoke(fn)
+      })
       function $http(requestConfig) {
         let config = Object.assign(
           {

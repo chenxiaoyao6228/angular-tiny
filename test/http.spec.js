@@ -523,5 +523,28 @@ describe('$http', () => {
       expect(requests[0].method).toBe('PATCH')
       expect(requests[0].requestBody).toBe('data')
     })
+    it('allows attaching interceptor factories', () => {
+      let interceptorFactorySpy = jest.fn()
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push(interceptorFactorySpy)
+        }
+      ])
+      $http = injector.get('$http')
+      expect(interceptorFactorySpy).toHaveBeenCalled()
+    })
+    it('uses DI to instantiate interceptors', () => {
+      let interceptorFactorySpy = jest.fn()
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push(['$rootScope', interceptorFactorySpy])
+        }
+      ])
+      $http = injector.get('$http')
+      let $rootScope = injector.get('$rootScope')
+      expect(interceptorFactorySpy).toHaveBeenCalledWith($rootScope)
+    })
   })
 })
