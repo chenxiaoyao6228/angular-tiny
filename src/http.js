@@ -249,8 +249,17 @@ export default function $HttpProvider() {
         }
       }
       $http.defaults = defaults
+
       $http.get = function(url, data) {
         return $http(Object.assign({}, data, { url, method: 'GET' }))
+      }
+      $http.head = function(url, config) {
+        return $http(Object.assign(config || {}, { method: 'HEAD', url: url }))
+      }
+      $http.delete = function(url, config) {
+        return $http(
+          Object.assign(config || {}, { method: 'DELETE', url: url })
+        )
       }
       return $http
     }

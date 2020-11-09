@@ -495,5 +495,15 @@ describe('$http', () => {
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('GET')
     })
+    it('supports shorthand method for HEAD', () => {
+      $http.head('http://teropa.info', { params: { q: 42 } })
+      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].method).toBe('HEAD')
+    })
+    it('supports shorthand method for DELETE', () => {
+      $http.delete('http://teropa.info', { params: { q: 42 } })
+      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].method).toBe('DELETE')
+    })
   })
 })
