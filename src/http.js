@@ -249,18 +249,13 @@ export default function $HttpProvider() {
         }
       }
       $http.defaults = defaults
-
-      $http.get = function(url, data) {
-        return $http(Object.assign({}, data, { url, method: 'GET' }))
-      }
-      $http.head = function(url, config) {
-        return $http(Object.assign(config || {}, { method: 'HEAD', url: url }))
-      }
-      $http.delete = function(url, config) {
-        return $http(
-          Object.assign(config || {}, { method: 'DELETE', url: url })
-        )
-      }
+      ;['get', 'head', 'delete'].forEach(method => {
+        $http[method] = function(url, config) {
+          return $http(
+            Object.assign({}, config, { url, method: method.toUpperCase() })
+          )
+        }
+      })
       return $http
     }
   ]
