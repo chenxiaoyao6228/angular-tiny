@@ -69,7 +69,7 @@ export default function $HttpProvider() {
     '$injector',
     function($httpBackend, $q, $rootScope, $injector) {
       let interceptors = interceptorFactories.map(fn => {
-        return $injector.invoke(fn)
+        return utils.isString(fn) ? $injector.get(fn) : $injector.invoke(fn)
       })
       function $http(requestConfig) {
         let config = Object.assign(

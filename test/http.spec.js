@@ -546,5 +546,17 @@ describe('$http', () => {
       let $rootScope = injector.get('$rootScope')
       expect(interceptorFactorySpy).toHaveBeenCalledWith($rootScope)
     })
+    it('allows referencing existing interceptor factories', () => {
+      let interceptorFactorySpy = jest.fn().mockReturnValue({})
+      let injector = createInjector([
+        'ng',
+        function($provide, $httpProvider) {
+          $provide.factory('myInterceptor', interceptorFactorySpy)
+          $httpProvider.interceptors.push('myInterceptor')
+        }
+      ])
+      $http = injector.get('$http')
+      expect(interceptorFactorySpy).toHaveBeenCalled()
+    })
   })
 })
