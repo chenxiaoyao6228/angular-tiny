@@ -505,5 +505,23 @@ describe('$http', () => {
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('DELETE')
     })
+    it('supports shorthand method for POST with data', () => {
+      $http.post('http://teropa.info', 'data', { params: { q: 42 } })
+      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].method).toBe('POST')
+      expect(requests[0].requestBody).toBe('data')
+    })
+    it('supports shorthand method for PUT with data', () => {
+      $http.put('http://teropa.info', 'data', { params: { q: 42 } })
+      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].method).toBe('PUT')
+      expect(requests[0].requestBody).toBe('data')
+    })
+    it('supports shorthand method for PATCH with data', () => {
+      $http.patch('http://teropa.info', 'data', { params: { q: 42 } })
+      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].method).toBe('PATCH')
+      expect(requests[0].requestBody).toBe('data')
+    })
   })
 })

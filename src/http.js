@@ -256,6 +256,21 @@ export default function $HttpProvider() {
           )
         }
       })
+      ;['put', 'post', 'patch'].forEach(method => {
+        $http[method] = function(url, data, config) {
+          return $http(
+            Object.assign(
+              {},
+              {
+                url,
+                method: method.toUpperCase(),
+                data: data
+              },
+              config
+            )
+          )
+        }
+      })
       return $http
     }
   ]
