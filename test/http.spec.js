@@ -47,6 +47,7 @@ describe('$http', () => {
     $http(requestConfig).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, {}, 'Hello')
     expect(response.status).toBe(200)
     expect(response.statusText).toBe('OK')
@@ -59,6 +60,7 @@ describe('$http', () => {
     $http(requestConfig).catch(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(401, {}, 'Fail')
     expect(response).toBeDefined()
     expect(response.status).toBe(401)
@@ -72,6 +74,7 @@ describe('$http', () => {
     $http(requestConfig).catch(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].onerror()
     expect(response).toBeDefined()
     expect(response.status).toBe(0)
@@ -82,6 +85,7 @@ describe('$http', () => {
     $http({
       url: 'http://teropa.info'
     })
+    $rootScope.$apply()
     expect(requests.length).toEqual(1)
     expect(requests[0].method).toEqual('GET')
   })
@@ -90,12 +94,14 @@ describe('$http', () => {
       url: 'http://teropa.info',
       headers: { Accept: 'text/plain', 'Cache-Control': 'no-cache' }
     })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders.Accept).toBe('text/plain')
     expect(requests[0].requestHeaders['Cache-Control']).toBe('no-cache')
   })
   it('sets default headers on request', () => {
     $http({ url: 'http://teropa.info' })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders.Accept).toBe(
       'application/json, text/plain, */*'
@@ -103,6 +109,7 @@ describe('$http', () => {
   })
   it('sets method-specific default headers on request', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
       'application/json;charset=utf-8'
@@ -111,6 +118,7 @@ describe('$http', () => {
   it('exposes default headers for overriding', () => {
     $http.defaults.headers.post['Content-Type'] = 'text/plain;charset=utf-8'
     $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
       'text/plain;charset=utf-8'
@@ -140,6 +148,7 @@ describe('$http', () => {
       data: '42',
       headers: { 'content-type': 'text/plain;charset=utf-8' }
     })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['content-type']).toBe(
       'text/plain;charset=utf-8'
@@ -152,6 +161,7 @@ describe('$http', () => {
       url: 'http://teropa.info',
       headers: { 'Content-Type': 'application/json;charset=utf-8' }
     })
+    $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).not.toBe(
       'application/json;charset=utf-8'
@@ -162,6 +172,7 @@ describe('$http', () => {
     $http.defaults.headers.post['Content-Type'] = contentTypeSpy
     let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
     $http(request)
+    $rootScope.$apply()
     expect(contentTypeSpy).toHaveBeenCalledWith(request)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
       'text/plain;charset=utf-8'
@@ -172,6 +183,7 @@ describe('$http', () => {
     $http.defaults.headers.post['Cache-Control'] = cacheControlSpy
     let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
     $http(request)
+    $rootScope.$apply()
     expect(cacheControlSpy).toHaveBeenCalledWith(request)
     expect(requests[0].requestHeaders['Cache-Control']).toBeUndefined()
   })
@@ -180,6 +192,7 @@ describe('$http', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: 42 }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
     expect(response.headers).toBeDefined()
     expect(response.headers instanceof Function).toBe(true)
@@ -191,6 +204,7 @@ describe('$http', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: 42 }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
     expect(response.headers()).toEqual({ 'content-type': 'text/plain' })
   })
@@ -201,11 +215,13 @@ describe('$http', () => {
       data: 42,
       withCredentials: true
     })
+    $rootScope.$apply()
     expect(requests[0].withCredentials).toBe(true)
   })
   it('allows setting withCredentials from defaults', () => {
     $http.defaults.withCredentials = true
     $http({ method: 'POST', url: 'http://teropa.info', data: 42 })
+    $rootScope.$apply()
     expect(requests[0].withCredentials).toBe(true)
   })
   it('allows transforming requests with functions', () => {
@@ -217,6 +233,7 @@ describe('$http', () => {
         return '*' + data + '*'
       }
     })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('*42*')
   })
   it('allows multiple request transform functions', () => {
@@ -233,6 +250,7 @@ describe('$http', () => {
         }
       ]
     })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('-*42*-')
   })
   it('allows settings transforms in defaults', () => {
@@ -242,6 +260,7 @@ describe('$http', () => {
       }
     ]
     $http({ method: 'POST', url: 'http://teropa.info', data: 42 })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('*42*')
   })
   it('passes request headers getter to transforms', () => {
@@ -260,6 +279,7 @@ describe('$http', () => {
       data: 42,
       headers: { 'content-type': 'text/emphasized' }
     })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('*42*')
   })
   it('allows transforming responses with functions', () => {
@@ -272,6 +292,7 @@ describe('$http', () => {
     }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
     expect(response.data).toEqual('*Hello*')
   })
@@ -289,6 +310,7 @@ describe('$http', () => {
     }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, { 'Content-Type': 'text/decorated' }, 'Hello')
     expect(response.data).toEqual('*Hello*')
   })
@@ -302,6 +324,7 @@ describe('$http', () => {
     $http({ url: 'http://teropa.info' }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, { 'Content-Type': 'text/plain' }, 'Hello')
     expect(response.data).toEqual('*Hello*')
   })
@@ -315,6 +338,7 @@ describe('$http', () => {
     }).catch(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
     expect(response.data).toEqual('*Fail*')
   })
@@ -332,21 +356,25 @@ describe('$http', () => {
     }).catch(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(401, { 'Content-Type': 'text/plain' }, 'Fail')
     expect(response.data).toEqual('unauthorized')
   })
   it('serializes object data to JSON for requests', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: { aKey: 42 } })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('{"aKey":42}')
   })
   it('serializes array data to JSON for requests', () => {
     $http({ method: 'POST', url: 'http://teropa.info', data: [1, 'two', 3] })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe('[1,"two",3]')
   })
   it('does not serialize blobs for requests', () => {
     let Blob = window.Blob || window.WebKit || window.MozBlob || window.MSBlob
     let blob = new Blob(['hello'], { type: 'text/plain' })
     $http({ method: 'POST', url: 'http://teropa.info', data: blob })
+    $rootScope.$apply()
     expect(requests[0].requestBody).toBe(blob)
   })
   it('parses JSON data for JSON responses', () => {
@@ -354,11 +382,13 @@ describe('$http', () => {
     $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(
       200,
       { 'Content-Type': 'application/json' },
       '{"message":"hello"}'
     )
+    $rootScope.$apply()
     expect(utils.isObject(response.data)).toBe(true)
     expect(response.data.message).toBe('hello')
   })
@@ -367,6 +397,7 @@ describe('$http', () => {
     $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, {}, '{"message":"hello"}')
     expect(utils.isObject(response.data)).toBe(true)
     expect(response.data.message).toBe('hello')
@@ -376,6 +407,7 @@ describe('$http', () => {
     $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, {}, '[1, 2, 3]')
     expect(Array.isArray(response.data)).toBe(true)
     expect(response.data).toEqual([1, 2, 3])
@@ -385,31 +417,38 @@ describe('$http', () => {
     $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
       response = r
     })
+    $rootScope.$apply()
     requests[0].respond(200, {}, '{1, 2, 3]')
     expect(response.data).toEqual('{1, 2, 3]')
   })
   it('adds params to URL', () => {
     $http({ url: 'http://teropa.info', params: { a: 42 } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info?a=42')
   })
   it('adds additional params to URL', () => {
     $http({ url: 'http://teropa.info?a=42', params: { b: 42 } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info?a=42&b=42')
   })
   it('escapes url characters in params', () => {
     $http({ url: 'http://teropa.info', params: { '==': '&&' } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info?%3D%3D=%26%26')
   })
   it('does not attach null or undefined params', () => {
     $http({ url: 'http://teropa.info', params: { a: null, b: undefined } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info')
   })
   it('attaches multiple params from arrays', () => {
     $http({ url: 'http://teropa.info', params: { a: [42, 43] } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info?a=42&a=43')
   })
   it('serializes objects to json', () => {
     $http({ url: 'http://teropa.info', params: { a: { b: 42 } } })
+    $rootScope.$apply()
     expect(requests[0].url).toBe('http://teropa.info?a=%7B%22b%22%3A42%7D')
   })
   it('allows substituting param serializer', () => {
@@ -424,6 +463,7 @@ describe('$http', () => {
           .join('&')
       }
     })
+    $rootScope.$apply()
     expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
   })
   it('allows substituting param serializer through DI', () => {
@@ -466,6 +506,7 @@ describe('$http', () => {
         params: { a: 42, b: 43 },
         paramSerializer: '$httpParamSerializerJQLike'
       })
+      $rootScope.$apply()
       expect(requests[0].url).toEqual('http://teropa.info?a=42&b=43')
     })
     it('uses square brackets in arrays', () => {
@@ -474,6 +515,7 @@ describe('$http', () => {
         params: { a: [42, 43] },
         paramSerializer: '$httpParamSerializerJQLike'
       })
+      $rootScope.$apply()
       expect(requests[0].url).toEqual(
         'http://teropa.info?a%5B%5D=42&a%5B%5D=43'
       )
@@ -484,6 +526,7 @@ describe('$http', () => {
         params: { a: { b: 42, c: 43 } },
         paramSerializer: '$httpParamSerializerJQLike'
       })
+      $rootScope.$apply()
       expect(requests[0].url).toEqual(
         'http://teropa.info?a%5Bb%5D=42&a%5Bc%5D=43'
       )
@@ -494,37 +537,44 @@ describe('$http', () => {
         params: { a: { b: { c: 42 } } },
         paramSerializer: '$httpParamSerializerJQLike'
       })
+      $rootScope.$apply()
       expect(requests[0].url).toEqual('http://teropa.info?a%5Bb%5D%5Bc%5D=42')
     })
     it('supports shorthand method for GET', () => {
       $http.get('http://teropa.info', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('GET')
     })
     it('supports shorthand method for HEAD', () => {
       $http.head('http://teropa.info', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('HEAD')
     })
     it('supports shorthand method for DELETE', () => {
       $http.delete('http://teropa.info', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('DELETE')
     })
     it('supports shorthand method for POST with data', () => {
       $http.post('http://teropa.info', 'data', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('POST')
       expect(requests[0].requestBody).toBe('data')
     })
     it('supports shorthand method for PUT with data', () => {
       $http.put('http://teropa.info', 'data', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('PUT')
       expect(requests[0].requestBody).toBe('data')
     })
     it('supports shorthand method for PATCH with data', () => {
       $http.patch('http://teropa.info', 'data', { params: { q: 42 } })
+      $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?q=42')
       expect(requests[0].method).toBe('PATCH')
       expect(requests[0].requestBody).toBe('data')
@@ -538,6 +588,7 @@ describe('$http', () => {
         }
       ])
       $http = injector.get('$http')
+
       expect(interceptorFactorySpy).toHaveBeenCalled()
     })
     it('uses DI to instantiate interceptors', () => {
@@ -550,6 +601,7 @@ describe('$http', () => {
       ])
       $http = injector.get('$http')
       let $rootScope = injector.get('$rootScope')
+      $rootScope.$apply()
       expect(interceptorFactorySpy).toHaveBeenCalledWith($rootScope)
     })
     it('allows referencing existing interceptor factories', () => {
@@ -562,7 +614,48 @@ describe('$http', () => {
         }
       ])
       $http = injector.get('$http')
+      $rootScope.$apply()
       expect(interceptorFactorySpy).toHaveBeenCalled()
+    })
+    it('allows intercepting requests', () => {
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push(() => {
+            return {
+              request: function(config) {
+                config.params.intercepted = true
+                return config
+              }
+            }
+          })
+        }
+      ])
+      $http = injector.get('$http')
+      $rootScope = injector.get('$rootScope')
+      $http.get('http://teropa.info', { params: {} })
+      $rootScope.$apply()
+      expect(requests[0].url).toBe('http://teropa.info?intercepted=true')
+    })
+    it('allows returning promises from request intercepts', () => {
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push($q => {
+            return {
+              request: function(config) {
+                config.params.intercepted = true
+                return $q.when(config)
+              }
+            }
+          })
+        }
+      ])
+      $http = injector.get('$http')
+      $rootScope = injector.get('$rootScope')
+      $http.get('http://teropa.info', { params: {} })
+      $rootScope.$apply()
+      expect(requests[0].url).toBe('http://teropa.info?intercepted=true')
     })
   })
 })

@@ -72,16 +72,18 @@ export default function $HttpProvider() {
         return utils.isString(fn) ? $injector.get(fn) : $injector.invoke(fn)
       })
       function serverRequest(config) {
+        // 跨域处理
         if (!config.withCredentials && defaults.withCredentials) {
           config.withCredentials = defaults.withCredentials
         }
+
+        // 处理requestData
         let reqData = transformData(
           config.data,
           headersGetter(config.headers),
           undefined,
           config.transformRequest
         )
-
         if (!reqData) {
           utils.forEach(config.headers, (k, v) => {
             if (k.toLowerCase() === 'content-type') {
@@ -90,6 +92,7 @@ export default function $HttpProvider() {
           })
         }
 
+        // responseData处理
         function transformResponse(response) {
           if (response.data) {
             response.data = transformData(
@@ -122,13 +125,19 @@ export default function $HttpProvider() {
           },
           requestConfig
         )
+        // 处理header
         config.headers = mergeHeaders(requestConfig)
 
+        // 处理params
         if (utils.isString(config.paramSerializer)) {
           config.paramSerializer = $injector.get(config.paramSerializer)
         }
 
-        return serverRequest(config)
+        let promise = $q.when(config)
+        utils.forEach(interceptors, interceptor => {
+          promise = promise.then(interceptor.request)
+        })
+        return promise.then(serverRequest)
       }
       // helpers
       function sendReq(config, reqData) {
