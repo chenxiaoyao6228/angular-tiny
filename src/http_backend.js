@@ -11,6 +11,7 @@ export default function $HttpBackendProvider() {
       withCredentials
     ) {
       let request = new XMLHttpRequest()
+      let timeoutId
       request.open(method, url, true)
       // set before send method and after open
       utils.forEach(headers, (key, value) => {
@@ -21,6 +22,9 @@ export default function $HttpBackendProvider() {
       }
       request.send(post || null)
       request.onload = function() {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId)
+        }
         let response =
           'response' in request ? request.response : request.responseText
         let statusText = request.statusText || ''
@@ -32,12 +36,19 @@ export default function $HttpBackendProvider() {
         )
       }
       request.onerror = function() {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId)
+        }
         callback(-1, null, '')
       }
-      if (timeout) {
+      if (timeout && timeout.then) {
         timeout.then(() => {
           request.abort()
         })
+      } else if (timeout > 0) {
+        timeoutId = setTimeout(() => {
+          request.abort()
+        }, timeout)
       }
     }
   }

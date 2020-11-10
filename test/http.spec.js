@@ -20,6 +20,12 @@ describe('$http', () => {
       requests.push(req)
     }
   })
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.clearAllTimers()
+  })
   afterEach(() => {
     xhr.restore()
   })
@@ -766,6 +772,12 @@ describe('$http', () => {
     $rootScope.$apply()
     timeout.resolve()
     $rootScope.$apply()
+    expect(requests[0].aborted).toBe(true)
+  })
+  it('allows aborting a request after a timeout', () => {
+    $http.get('http://teropa.info', { timeout: 5000 })
+    $rootScope.$apply()
+    jest.advanceTimersByTime(5001)
     expect(requests[0].aborted).toBe(true)
   })
 })
