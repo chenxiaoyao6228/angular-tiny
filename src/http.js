@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import utils from '../src/utils'
 export default function $HttpProvider() {
   let interceptorFactories = (this.interceptors = [])
@@ -135,17 +134,41 @@ export default function $HttpProvider() {
 
         // 将config的处理作为一个链条
         let promise = $q.when(config)
+        // 处理request
         utils.forEach(interceptors, interceptor => {
           promise = promise
             .then(interceptor.request)
             .catch(interceptor.requestError)
         })
         promise = promise.then(serverRequest)
-        _.forEachRight(interceptors, interceptor => {
+        // 处理response
+        utils.forEachRight(interceptors, interceptor => {
           promise = promise
             .then(interceptor.response)
             .catch(interceptor.responseError)
         })
+        // promise扩展
+        promise.success = function(fn) {
+          promise.then(response => {
+            fn(
+              response.data,
+              response.status,
+              response.headers,
+              response.config
+            )
+          })
+          return promise
+        }
+        promise.error = function(fn) {
+          promise.catch(response => {
+            fn(
+              response.data,
+              response.status,
+              response.headers,
+              response.config
+            )
+          })
+        }
         return promise
       }
       // helpers
