@@ -4,12 +4,13 @@ const sinon = require('sinon')
 import utils from '../src/utils'
 
 describe('$http', () => {
-  let $http, $rootScope
+  let $http, $rootScope, $q
   let xhr, requests
   beforeEach(() => {
     publishExternalAPI()
     let injector = createInjector(['ng'])
     $http = injector.get('$http')
+    $q = injector.get('$q')
     $rootScope = injector.get('$rootScope')
   })
   beforeEach(() => {
@@ -758,5 +759,13 @@ describe('$http', () => {
     expect(status).toBe(401)
     expect(headers('Cache-Control')).toBe('no-cache')
     expect(config.method).toBe('GET')
+  })
+  it('allows aborting a request with a Promise', () => {
+    let timeout = $q.defer()
+    $http.get('http://teropa.info', { timeout: timeout.promise })
+    $rootScope.$apply()
+    timeout.resolve()
+    $rootScope.$apply()
+    expect(requests[0].aborted).toBe(true)
   })
 })

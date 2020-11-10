@@ -196,6 +196,7 @@ export default function $HttpProvider() {
           url,
           reqData,
           config.headers,
+          config.timeout,
           done,
           config.withCredentials
         )

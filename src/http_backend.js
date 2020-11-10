@@ -6,6 +6,7 @@ export default function $HttpBackendProvider() {
       url,
       post,
       headers = {},
+      timeout,
       callback,
       withCredentials
     ) {
@@ -32,6 +33,11 @@ export default function $HttpBackendProvider() {
       }
       request.onerror = function() {
         callback(-1, null, '')
+      }
+      if (timeout) {
+        timeout.then(() => {
+          request.abort()
+        })
       }
     }
   }
