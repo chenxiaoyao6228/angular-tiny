@@ -64,7 +64,10 @@ function forEach(value, operator) {
   if (isArrayLike(value)) {
     return Array.from(value).forEach(operator)
   } else if (isObject(value)) {
-    return Object.entries(value).forEach(operator)
+    return Object.entries(value).forEach(v => {
+      let [key, val] = v
+      return operator(key, val)
+    })
   }
 }
 
@@ -152,6 +155,13 @@ function uniqueId() {
   return _.uniqueId()
 }
 
+function isDate(date) {
+  return _.isDate(date)
+}
+
+let transform = _.transform
+let remove = _.remove
+
 export default {
   times,
   deepEqual,
@@ -161,6 +171,7 @@ export default {
   isObject,
   isArray,
   isArrayLike,
+  isDate,
   isPlainObject,
   forEach,
   isString,
@@ -181,5 +192,7 @@ export default {
   toPlainObject,
   forOwn,
   map,
-  uniqueId
+  uniqueId,
+  transform,
+  remove
 }

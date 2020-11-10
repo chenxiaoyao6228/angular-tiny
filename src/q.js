@@ -1,6 +1,5 @@
 import utils from './utils'
 import _ from 'lodash'
-let uuid = 0
 
 function qFactory(callLater) {
   function Promise() {

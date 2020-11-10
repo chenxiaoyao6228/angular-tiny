@@ -39,6 +39,9 @@
         "statements": 95
       }
     },
+    "transformIgnorePatterns": [
+      "node_modules/sinon/pkg/sinon-esm.js"
+    ],
     "collectCoverageFrom": [
       "src/*.js",
       "src/**/*.js"
@@ -94,6 +97,7 @@
     "prettier": "^1.18.2"
   },
   "dependencies": {
-    "lodash": "^4.17.19"
+    "lodash": "^4.17.19",
+    "sinon": "^9.2.1"
   }
 }
