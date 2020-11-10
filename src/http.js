@@ -1,6 +1,15 @@
 import utils from '../src/utils'
 export default function $HttpProvider() {
   let interceptorFactories = (this.interceptors = [])
+  let useApplyAsync = false
+  this.useApplyAsync = function(value) {
+    if (value === undefined) {
+      return useApplyAsync
+    } else {
+      useApplyAsync = !!value
+      return this
+    }
+  }
   let defaults = (this.defaults = {
     headers: {
       common: {
@@ -187,13 +196,23 @@ export default function $HttpProvider() {
 
         function done(status, response, headerString, statusText) {
           status = Math.max(status, 0)
-          deferred[isSuccess(status) ? 'resolve' : 'reject']({
-            status: status,
-            data: response,
-            statusText: statusText,
-            headers: headersGetter(headerString),
-            config: config
-          })
+          function resolvePromise() {
+            deferred[isSuccess(status) ? 'resolve' : 'reject']({
+              status: status,
+              data: response,
+              statusText: statusText,
+              headers: headersGetter(headerString),
+              config: config
+            })
+          }
+          if (useApplyAsync) {
+            $rootScope.$applyAsync(resolvePromise)
+          } else {
+            resolvePromise()
+            if (!$rootScope.$$phase) {
+              $rootScope.$apply()
+            }
+          }
 
           if (!$rootScope.$$phase) {
             $rootScope.$apply()

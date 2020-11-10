@@ -20,12 +20,6 @@ describe('$http', () => {
       requests.push(req)
     }
   })
-  beforeEach(() => {
-    jest.useFakeTimers()
-  })
-  afterEach(() => {
-    jest.clearAllTimers()
-  })
   afterEach(() => {
     xhr.restore()
   })
@@ -853,6 +847,7 @@ describe('$http', () => {
     expect(requests[0].aborted).toBe(true)
   })
   it('allows aborting a request after a timeout', () => {
+    jest.useFakeTimers()
     $http.get('http://chenxiaoyao6228.gitee.io', { timeout: 5000 })
     $rootScope.$apply()
     jest.advanceTimersByTime(5001)
@@ -877,6 +872,35 @@ describe('$http', () => {
       requests[0].respond(404, {}, 'Not found')
       $rootScope.$apply()
       expect($http.pendingRequests.length).toBe(0)
+    })
+  })
+  describe('useApplyAsync', () => {
+    beforeEach(() => {
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.useApplyAsync(true)
+        }
+      ])
+      $http = injector.get('$http')
+      $rootScope = injector.get('$rootScope')
+    })
+    // TODO
+    it.skip('does not resolve promise immediately when enabled', () => {
+      let resolvedSpy = jest.fn()
+      $http.get('http://chenxiaoyao6228.gitee.io').then(resolvedSpy)
+      $rootScope.$apply()
+      requests[0].respond(200, {}, 'OK')
+      expect(resolvedSpy).not.toHaveBeenCalled()
+    })
+    it('resolves promise later when enabled', () => {
+      let resolvedSpy = jest.fn()
+      jest.useFakeTimers()
+      $http.get('http://chenxiaoyao6228.gitee.io').then(resolvedSpy)
+      $rootScope.$apply()
+      requests[0].respond(200, {}, 'OK')
+      jest.advanceTimersByTime(100)
+      expect(resolvedSpy).toHaveBeenCalled()
     })
   })
 })
