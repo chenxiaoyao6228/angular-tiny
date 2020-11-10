@@ -657,5 +657,27 @@ describe('$http', () => {
       $rootScope.$apply()
       expect(requests[0].url).toBe('http://teropa.info?intercepted=true')
     })
+    it('allows intercepting responses', () => {
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push(() => ({
+            response: function(response) {
+              response.intercepted = true
+              return response
+            }
+          }))
+        }
+      ])
+      $http = injector.get('$http')
+      $rootScope = injector.get('$rootScope')
+      let response
+      $http.get('http://teropa.info').then(r => {
+        response = r
+      })
+      $rootScope.$apply()
+      requests[0].respond(200, {}, 'Hello')
+      expect(response.intercepted).toBe(true)
+    })
   })
 })

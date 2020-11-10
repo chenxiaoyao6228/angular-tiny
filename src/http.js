@@ -133,11 +133,16 @@ export default function $HttpProvider() {
           config.paramSerializer = $injector.get(config.paramSerializer)
         }
 
+        // 将config的处理作为一个链条
         let promise = $q.when(config)
         utils.forEach(interceptors, interceptor => {
           promise = promise.then(interceptor.request)
         })
-        return promise.then(serverRequest)
+        promise = promise.then(serverRequest)
+        _.forEachRight(interceptors, interceptor => {
+          promise = promise.then(interceptor.response)
+        })
+        return promise
       }
       // helpers
       function sendReq(config, reqData) {
