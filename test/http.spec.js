@@ -858,4 +858,25 @@ describe('$http', () => {
     jest.advanceTimersByTime(5001)
     expect(requests[0].aborted).toBe(true)
   })
+  describe('pending requests', () => {
+    it('are in the collection while pending', () => {
+      $http.get('http://chenxiaoyao6228.gitee.io')
+      $rootScope.$apply()
+      expect($http.pendingRequests).toBeDefined()
+      expect($http.pendingRequests.length).toBe(1)
+      expect($http.pendingRequests[0].url).toBe(
+        'http://chenxiaoyao6228.gitee.io'
+      )
+      requests[0].respond(200, {}, 'OK')
+      $rootScope.$apply()
+      expect($http.pendingRequests.length).toBe(0)
+    })
+    it('are also cleared on failure', () => {
+      $http.get('http://chenxiaoyao6228.gitee.io')
+      $rootScope.$apply()
+      requests[0].respond(404, {}, 'Not found')
+      $rootScope.$apply()
+      expect($http.pendingRequests.length).toBe(0)
+    })
+  })
 })

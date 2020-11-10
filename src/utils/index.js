@@ -160,6 +160,7 @@ function isDate(date) {
 }
 
 let transform = _.transform
+let remove = _.remove
 
 export default {
   times,
@@ -192,5 +193,6 @@ export default {
   forOwn,
   map,
   uniqueId,
-  transform
+  transform,
+  remove
 }

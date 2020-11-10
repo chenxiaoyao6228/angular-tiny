@@ -174,7 +174,15 @@ export default function $HttpProvider() {
       // helpers
       function sendReq(config, reqData) {
         let deferred = $q.defer()
-
+        $http.pendingRequests.push(config)
+        deferred.promise.then(
+          () => {
+            utils.remove($http.pendingRequests, config)
+          },
+          () => {
+            utils.remove($http.pendingRequests, config)
+          }
+        )
         let url = buildUrl(config.url, config.paramSerializer(config.params))
 
         function done(status, response, headerString, statusText) {
@@ -297,6 +305,7 @@ export default function $HttpProvider() {
         }
       }
       $http.defaults = defaults
+      $http.pendingRequests = []
       ;['get', 'head', 'delete'].forEach(method => {
         $http[method] = function(url, config) {
           return $http(
