@@ -142,7 +142,9 @@ export default function $HttpProvider() {
         })
         promise = promise.then(serverRequest)
         _.forEachRight(interceptors, interceptor => {
-          promise = promise.then(interceptor.response)
+          promise = promise
+            .then(interceptor.response)
+            .catch(interceptor.responseError)
         })
         return promise
       }
