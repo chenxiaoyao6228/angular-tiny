@@ -679,5 +679,27 @@ describe('$http', () => {
       requests[0].respond(200, {}, 'Hello')
       expect(response.intercepted).toBe(true)
     })
+    it('allows intercepting request errors', () => {
+      let requestErrorSpy = jest.fn()
+      let injector = createInjector([
+        'ng',
+        function($httpProvider) {
+          $httpProvider.interceptors.push(() => ({
+            request: function(config) {
+              throw 'fail'
+            }
+          }))
+          $httpProvider.interceptors.push(() => ({
+            requestError: requestErrorSpy
+          }))
+        }
+      ])
+      $http = injector.get('$http')
+      $rootScope = injector.get('$rootScope')
+      $http.get('http://teropa.info')
+      $rootScope.$apply()
+      expect(requests.length).toBe(0)
+      expect(requestErrorSpy).toHaveBeenCalledWith('fail')
+    })
   })
 })

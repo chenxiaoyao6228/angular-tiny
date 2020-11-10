@@ -136,7 +136,9 @@ export default function $HttpProvider() {
         // 将config的处理作为一个链条
         let promise = $q.when(config)
         utils.forEach(interceptors, interceptor => {
-          promise = promise.then(interceptor.request)
+          promise = promise
+            .then(interceptor.request)
+            .catch(interceptor.requestError)
         })
         promise = promise.then(serverRequest)
         _.forEachRight(interceptors, interceptor => {
