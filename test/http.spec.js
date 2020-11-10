@@ -39,17 +39,24 @@ describe('$http', () => {
     expect(result.then).toBeDefined()
   })
   it('makes an XMLHttpRequest to given URL', () => {
-    $http({ method: 'POST', url: 'http://teropa.info', data: 'hello' })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: 'hello'
+    })
     $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].method).toBe('POST')
-    expect(requests[0].url).toBe('http://teropa.info')
+    expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io')
     expect(requests[0].async).toBe(true)
     expect(requests[0].requestBody).toBe('hello')
   })
 
   it('resolves promise when XHR result received', () => {
-    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let requestConfig = {
+      method: 'GET',
+      url: 'http://chenxiaoyao6228.gitee.io'
+    }
     let response
     $http(requestConfig).then(r => {
       response = r
@@ -59,10 +66,13 @@ describe('$http', () => {
     expect(response.status).toBe(200)
     expect(response.statusText).toBe('OK')
     expect(response.data).toBe('Hello')
-    expect(response.config.url).toEqual('http://teropa.info')
+    expect(response.config.url).toEqual('http://chenxiaoyao6228.gitee.io')
   })
   it('rejects promise when XHR result received with error status', () => {
-    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let requestConfig = {
+      method: 'GET',
+      url: 'http://chenxiaoyao6228.gitee.io'
+    }
     let response
     $http(requestConfig).catch(r => {
       response = r
@@ -73,10 +83,13 @@ describe('$http', () => {
     expect(response.status).toBe(401)
     expect(response.statusText).toBe('Unauthorized')
     expect(response.data).toBe('Fail')
-    expect(response.config.url).toEqual('http://teropa.info')
+    expect(response.config.url).toEqual('http://chenxiaoyao6228.gitee.io')
   })
   it('rejects promise when XHR result errors/aborts', () => {
-    let requestConfig = { method: 'GET', url: 'http://teropa.info' }
+    let requestConfig = {
+      method: 'GET',
+      url: 'http://chenxiaoyao6228.gitee.io'
+    }
     let response
     $http(requestConfig).catch(r => {
       response = r
@@ -86,11 +99,11 @@ describe('$http', () => {
     expect(response).toBeDefined()
     expect(response.status).toBe(0)
     expect(response.data).toBe(null)
-    expect(response.config.url).toEqual('http://teropa.info')
+    expect(response.config.url).toEqual('http://chenxiaoyao6228.gitee.io')
   })
   it('use GET method as default method', () => {
     $http({
-      url: 'http://teropa.info'
+      url: 'http://chenxiaoyao6228.gitee.io'
     })
     $rootScope.$apply()
     expect(requests.length).toEqual(1)
@@ -98,7 +111,7 @@ describe('$http', () => {
   })
   it('sets headers on request', () => {
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       headers: { Accept: 'text/plain', 'Cache-Control': 'no-cache' }
     })
     $rootScope.$apply()
@@ -107,7 +120,7 @@ describe('$http', () => {
     expect(requests[0].requestHeaders['Cache-Control']).toBe('no-cache')
   })
   it('sets default headers on request', () => {
-    $http({ url: 'http://teropa.info' })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io' })
     $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders.Accept).toBe(
@@ -115,7 +128,11 @@ describe('$http', () => {
     )
   })
   it('sets method-specific default headers on request', () => {
-    $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: '42'
+    })
     $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
@@ -124,7 +141,11 @@ describe('$http', () => {
   })
   it('exposes default headers for overriding', () => {
     $http.defaults.headers.post['Content-Type'] = 'text/plain;charset=utf-8'
-    $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: '42'
+    })
     $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
@@ -141,7 +162,11 @@ describe('$http', () => {
     ])
     $http = injector.get('$http')
     $rootScope = injector.get('$rootScope')
-    $http({ method: 'POST', url: 'http://teropa.info', data: '42' })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: '42'
+    })
     $rootScope.$apply()
     expect(requests.length).toBe(1)
     expect(requests[0].requestHeaders['Content-Type']).toBe(
@@ -151,7 +176,7 @@ describe('$http', () => {
   it('merges default headers case-insensitively', () => {
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       data: '42',
       headers: { 'content-type': 'text/plain;charset=utf-8' }
     })
@@ -165,7 +190,7 @@ describe('$http', () => {
   it('does not send content-type header when no data', () => {
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       headers: { 'Content-Type': 'application/json;charset=utf-8' }
     })
     $rootScope.$apply()
@@ -177,7 +202,11 @@ describe('$http', () => {
   it('supports functions as header values', () => {
     let contentTypeSpy = jest.fn().mockReturnValue('text/plain;charset=utf-8')
     $http.defaults.headers.post['Content-Type'] = contentTypeSpy
-    let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
+    let request = {
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: 42
+    }
     $http(request)
     $rootScope.$apply()
     expect(contentTypeSpy).toHaveBeenCalledWith(request)
@@ -188,7 +217,11 @@ describe('$http', () => {
   it('ignores header function value when null/undefined', () => {
     let cacheControlSpy = jest.fn().mockReturnValue(null)
     $http.defaults.headers.post['Cache-Control'] = cacheControlSpy
-    let request = { method: 'POST', url: 'http://teropa.info', data: 42 }
+    let request = {
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: 42
+    }
     $http(request)
     $rootScope.$apply()
     expect(cacheControlSpy).toHaveBeenCalledWith(request)
@@ -196,7 +229,11 @@ describe('$http', () => {
   })
   it('makes response headers available', () => {
     let response
-    $http({ method: 'POST', url: 'http://teropa.info', data: 42 }).then(r => {
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: 42
+    }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -208,7 +245,11 @@ describe('$http', () => {
   })
   it('may returns all response headers', () => {
     let response
-    $http({ method: 'POST', url: 'http://teropa.info', data: 42 }).then(r => {
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: 42
+    }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -218,7 +259,7 @@ describe('$http', () => {
   it('allows setting withCredentials', () => {
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       data: 42,
       withCredentials: true
     })
@@ -227,14 +268,14 @@ describe('$http', () => {
   })
   it('allows setting withCredentials from defaults', () => {
     $http.defaults.withCredentials = true
-    $http({ method: 'POST', url: 'http://teropa.info', data: 42 })
+    $http({ method: 'POST', url: 'http://chenxiaoyao6228.gitee.io', data: 42 })
     $rootScope.$apply()
     expect(requests[0].withCredentials).toBe(true)
   })
   it('allows transforming requests with functions', () => {
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       data: 42,
       transformRequest: function(data) {
         return '*' + data + '*'
@@ -246,7 +287,7 @@ describe('$http', () => {
   it('allows multiple request transform functions', () => {
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       data: 42,
       transformRequest: [
         function(data) {
@@ -266,7 +307,7 @@ describe('$http', () => {
         return '*' + data + '*'
       }
     ]
-    $http({ method: 'POST', url: 'http://teropa.info', data: 42 })
+    $http({ method: 'POST', url: 'http://chenxiaoyao6228.gitee.io', data: 42 })
     $rootScope.$apply()
     expect(requests[0].requestBody).toBe('*42*')
   })
@@ -282,7 +323,7 @@ describe('$http', () => {
     ]
     $http({
       method: 'POST',
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       data: 42,
       headers: { 'content-type': 'text/emphasized' }
     })
@@ -292,7 +333,7 @@ describe('$http', () => {
   it('allows transforming responses with functions', () => {
     let response
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       transformResponse: function(data) {
         return '*' + data + '*'
       }
@@ -306,7 +347,7 @@ describe('$http', () => {
   it('passes response headers to transform functions', () => {
     let response
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       transformResponse: function(data, headers) {
         if (headers('content-type') === 'text/decorated') {
           return '*' + data + '*'
@@ -328,7 +369,7 @@ describe('$http', () => {
       }
     ]
     let response
-    $http({ url: 'http://teropa.info' }).then(r => {
+    $http({ url: 'http://chenxiaoyao6228.gitee.io' }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -338,7 +379,7 @@ describe('$http', () => {
   it('transforms error responses also', () => {
     let response
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       transformResponse: function(data) {
         return '*' + data + '*'
       }
@@ -352,7 +393,7 @@ describe('$http', () => {
   it('passes HTTP status to response transformers', () => {
     let response
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       transformResponse: function(data, headers, status) {
         if (status === 401) {
           return 'unauthorized'
@@ -368,25 +409,37 @@ describe('$http', () => {
     expect(response.data).toEqual('unauthorized')
   })
   it('serializes object data to JSON for requests', () => {
-    $http({ method: 'POST', url: 'http://teropa.info', data: { aKey: 42 } })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: { aKey: 42 }
+    })
     $rootScope.$apply()
     expect(requests[0].requestBody).toBe('{"aKey":42}')
   })
   it('serializes array data to JSON for requests', () => {
-    $http({ method: 'POST', url: 'http://teropa.info', data: [1, 'two', 3] })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: [1, 'two', 3]
+    })
     $rootScope.$apply()
     expect(requests[0].requestBody).toBe('[1,"two",3]')
   })
   it('does not serialize blobs for requests', () => {
     let Blob = window.Blob || window.WebKit || window.MozBlob || window.MSBlob
     let blob = new Blob(['hello'], { type: 'text/plain' })
-    $http({ method: 'POST', url: 'http://teropa.info', data: blob })
+    $http({
+      method: 'POST',
+      url: 'http://chenxiaoyao6228.gitee.io',
+      data: blob
+    })
     $rootScope.$apply()
     expect(requests[0].requestBody).toBe(blob)
   })
   it('parses JSON data for JSON responses', () => {
     let response
-    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+    $http({ method: 'GET', url: 'http://chenxiaoyao6228.gitee.io' }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -401,7 +454,7 @@ describe('$http', () => {
   })
   it('parses a JSON object response without content type', () => {
     let response
-    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+    $http({ method: 'GET', url: 'http://chenxiaoyao6228.gitee.io' }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -411,7 +464,7 @@ describe('$http', () => {
   })
   it('parses a JSON array response without content type', () => {
     let response
-    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+    $http({ method: 'GET', url: 'http://chenxiaoyao6228.gitee.io' }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -421,7 +474,7 @@ describe('$http', () => {
   })
   it('does not choke on response resembling JSON but not valid', () => {
     let response
-    $http({ method: 'GET', url: 'http://teropa.info' }).then(r => {
+    $http({ method: 'GET', url: 'http://chenxiaoyao6228.gitee.io' }).then(r => {
       response = r
     })
     $rootScope.$apply()
@@ -429,38 +482,45 @@ describe('$http', () => {
     expect(response.data).toEqual('{1, 2, 3]')
   })
   it('adds params to URL', () => {
-    $http({ url: 'http://teropa.info', params: { a: 42 } })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io', params: { a: 42 } })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info?a=42')
+    expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?a=42')
   })
   it('adds additional params to URL', () => {
-    $http({ url: 'http://teropa.info?a=42', params: { b: 42 } })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io?a=42', params: { b: 42 } })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info?a=42&b=42')
+    expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?a=42&b=42')
   })
   it('escapes url characters in params', () => {
-    $http({ url: 'http://teropa.info', params: { '==': '&&' } })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io', params: { '==': '&&' } })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info?%3D%3D=%26%26')
+    expect(requests[0].url).toBe(
+      'http://chenxiaoyao6228.gitee.io?%3D%3D=%26%26'
+    )
   })
   it('does not attach null or undefined params', () => {
-    $http({ url: 'http://teropa.info', params: { a: null, b: undefined } })
+    $http({
+      url: 'http://chenxiaoyao6228.gitee.io',
+      params: { a: null, b: undefined }
+    })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info')
+    expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io')
   })
   it('attaches multiple params from arrays', () => {
-    $http({ url: 'http://teropa.info', params: { a: [42, 43] } })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io', params: { a: [42, 43] } })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info?a=42&a=43')
+    expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?a=42&a=43')
   })
   it('serializes objects to json', () => {
-    $http({ url: 'http://teropa.info', params: { a: { b: 42 } } })
+    $http({ url: 'http://chenxiaoyao6228.gitee.io', params: { a: { b: 42 } } })
     $rootScope.$apply()
-    expect(requests[0].url).toBe('http://teropa.info?a=%7B%22b%22%3A42%7D')
+    expect(requests[0].url).toBe(
+      'http://chenxiaoyao6228.gitee.io?a=%7B%22b%22%3A42%7D'
+    )
   })
   it('allows substituting param serializer', () => {
     $http({
-      url: 'http://teropa.info',
+      url: 'http://chenxiaoyao6228.gitee.io',
       params: { a: 42, b: 43 },
       paramSerializer: function(params) {
         return utils
@@ -471,7 +531,9 @@ describe('$http', () => {
       }
     })
     $rootScope.$apply()
-    expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
+    expect(requests[0].url).toEqual(
+      'http://chenxiaoyao6228.gitee.io?a=42lol&b=43lol'
+    )
   })
   it('allows substituting param serializer through DI', () => {
     let injector = createInjector([
@@ -491,12 +553,14 @@ describe('$http', () => {
     $rootScope = injector.get('$rootScope')
     injector.invoke($http => {
       $http({
-        url: 'http://teropa.info',
+        url: 'http://chenxiaoyao6228.gitee.io',
         params: { a: 42, b: 43 },
         paramSerializer: 'mySpecialSerializer'
       })
       $rootScope.$apply()
-      expect(requests[0].url).toEqual('http://teropa.info?a=42lol&b=43lol')
+      expect(requests[0].url).toEqual(
+        'http://chenxiaoyao6228.gitee.io?a=42lol&b=43lol'
+      )
     })
   })
   it('makes default param serializer available through DI', () => {
@@ -509,80 +573,90 @@ describe('$http', () => {
   describe('JQ-like param serialization', () => {
     it('is possible', () => {
       $http({
-        url: 'http://teropa.info',
+        url: 'http://chenxiaoyao6228.gitee.io',
         params: { a: 42, b: 43 },
         paramSerializer: '$httpParamSerializerJQLike'
       })
       $rootScope.$apply()
-      expect(requests[0].url).toEqual('http://teropa.info?a=42&b=43')
+      expect(requests[0].url).toEqual(
+        'http://chenxiaoyao6228.gitee.io?a=42&b=43'
+      )
     })
     it('uses square brackets in arrays', () => {
       $http({
-        url: 'http://teropa.info',
+        url: 'http://chenxiaoyao6228.gitee.io',
         params: { a: [42, 43] },
         paramSerializer: '$httpParamSerializerJQLike'
       })
       $rootScope.$apply()
       expect(requests[0].url).toEqual(
-        'http://teropa.info?a%5B%5D=42&a%5B%5D=43'
+        'http://chenxiaoyao6228.gitee.io?a%5B%5D=42&a%5B%5D=43'
       )
     })
     it('uses square brackets in objects', () => {
       $http({
-        url: 'http://teropa.info',
+        url: 'http://chenxiaoyao6228.gitee.io',
         params: { a: { b: 42, c: 43 } },
         paramSerializer: '$httpParamSerializerJQLike'
       })
       $rootScope.$apply()
       expect(requests[0].url).toEqual(
-        'http://teropa.info?a%5Bb%5D=42&a%5Bc%5D=43'
+        'http://chenxiaoyao6228.gitee.io?a%5Bb%5D=42&a%5Bc%5D=43'
       )
     })
     it('supports nesting in objects', () => {
       $http({
-        url: 'http://teropa.info',
+        url: 'http://chenxiaoyao6228.gitee.io',
         params: { a: { b: { c: 42 } } },
         paramSerializer: '$httpParamSerializerJQLike'
       })
       $rootScope.$apply()
-      expect(requests[0].url).toEqual('http://teropa.info?a%5Bb%5D%5Bc%5D=42')
+      expect(requests[0].url).toEqual(
+        'http://chenxiaoyao6228.gitee.io?a%5Bb%5D%5Bc%5D=42'
+      )
     })
     it('supports shorthand method for GET', () => {
-      $http.get('http://teropa.info', { params: { q: 42 } })
+      $http.get('http://chenxiaoyao6228.gitee.io', { params: { q: 42 } })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('GET')
     })
     it('supports shorthand method for HEAD', () => {
-      $http.head('http://teropa.info', { params: { q: 42 } })
+      $http.head('http://chenxiaoyao6228.gitee.io', { params: { q: 42 } })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('HEAD')
     })
     it('supports shorthand method for DELETE', () => {
-      $http.delete('http://teropa.info', { params: { q: 42 } })
+      $http.delete('http://chenxiaoyao6228.gitee.io', { params: { q: 42 } })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('DELETE')
     })
     it('supports shorthand method for POST with data', () => {
-      $http.post('http://teropa.info', 'data', { params: { q: 42 } })
+      $http.post('http://chenxiaoyao6228.gitee.io', 'data', {
+        params: { q: 42 }
+      })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('POST')
       expect(requests[0].requestBody).toBe('data')
     })
     it('supports shorthand method for PUT with data', () => {
-      $http.put('http://teropa.info', 'data', { params: { q: 42 } })
+      $http.put('http://chenxiaoyao6228.gitee.io', 'data', {
+        params: { q: 42 }
+      })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('PUT')
       expect(requests[0].requestBody).toBe('data')
     })
     it('supports shorthand method for PATCH with data', () => {
-      $http.patch('http://teropa.info', 'data', { params: { q: 42 } })
+      $http.patch('http://chenxiaoyao6228.gitee.io', 'data', {
+        params: { q: 42 }
+      })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?q=42')
+      expect(requests[0].url).toBe('http://chenxiaoyao6228.gitee.io?q=42')
       expect(requests[0].method).toBe('PATCH')
       expect(requests[0].requestBody).toBe('data')
     })
@@ -642,9 +716,11 @@ describe('$http', () => {
       ])
       $http = injector.get('$http')
       $rootScope = injector.get('$rootScope')
-      $http.get('http://teropa.info', { params: {} })
+      $http.get('http://chenxiaoyao6228.gitee.io', { params: {} })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?intercepted=true')
+      expect(requests[0].url).toBe(
+        'http://chenxiaoyao6228.gitee.io?intercepted=true'
+      )
     })
     it('allows returning promises from request intercepts', () => {
       let injector = createInjector([
@@ -662,9 +738,11 @@ describe('$http', () => {
       ])
       $http = injector.get('$http')
       $rootScope = injector.get('$rootScope')
-      $http.get('http://teropa.info', { params: {} })
+      $http.get('http://chenxiaoyao6228.gitee.io', { params: {} })
       $rootScope.$apply()
-      expect(requests[0].url).toBe('http://teropa.info?intercepted=true')
+      expect(requests[0].url).toBe(
+        'http://chenxiaoyao6228.gitee.io?intercepted=true'
+      )
     })
     it('allows intercepting responses', () => {
       let injector = createInjector([
@@ -681,7 +759,7 @@ describe('$http', () => {
       $http = injector.get('$http')
       $rootScope = injector.get('$rootScope')
       let response
-      $http.get('http://teropa.info').then(r => {
+      $http.get('http://chenxiaoyao6228.gitee.io').then(r => {
         response = r
       })
       $rootScope.$apply()
@@ -705,7 +783,7 @@ describe('$http', () => {
       ])
       $http = injector.get('$http')
       $rootScope = injector.get('$rootScope')
-      $http.get('http://teropa.info')
+      $http.get('http://chenxiaoyao6228.gitee.io')
       $rootScope.$apply()
       expect(requests.length).toBe(0)
       expect(requestErrorSpy).toHaveBeenCalledWith('fail')
@@ -727,7 +805,7 @@ describe('$http', () => {
       ])
       $http = injector.get('$http')
       $rootScope = injector.get('$rootScope')
-      $http.get('http://teropa.info')
+      $http.get('http://chenxiaoyao6228.gitee.io')
       $rootScope.$apply()
       requests[0].respond(200, {}, 'Hello')
       $rootScope.$apply()
@@ -736,7 +814,7 @@ describe('$http', () => {
   })
   it('allows attaching success handlers', () => {
     let data, status, headers, config
-    $http.get('http://teropa.info').success((d, s, h, c) => {
+    $http.get('http://chenxiaoyao6228.gitee.io').success((d, s, h, c) => {
       data = d
       status = s
       headers = h
@@ -752,7 +830,7 @@ describe('$http', () => {
   })
   it('allows attaching error handlers', () => {
     let data, status, headers, config
-    $http.get('http://teropa.info').error((d, s, h, c) => {
+    $http.get('http://chenxiaoyao6228.gitee.io').error((d, s, h, c) => {
       data = d
       status = s
       headers = h
@@ -768,14 +846,14 @@ describe('$http', () => {
   })
   it('allows aborting a request with a Promise', () => {
     let timeout = $q.defer()
-    $http.get('http://teropa.info', { timeout: timeout.promise })
+    $http.get('http://chenxiaoyao6228.gitee.io', { timeout: timeout.promise })
     $rootScope.$apply()
     timeout.resolve()
     $rootScope.$apply()
     expect(requests[0].aborted).toBe(true)
   })
   it('allows aborting a request after a timeout', () => {
-    $http.get('http://teropa.info', { timeout: 5000 })
+    $http.get('http://chenxiaoyao6228.gitee.io', { timeout: 5000 })
     $rootScope.$apply()
     jest.advanceTimersByTime(5001)
     expect(requests[0].aborted).toBe(true)
