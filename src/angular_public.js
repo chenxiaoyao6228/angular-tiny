@@ -8,6 +8,7 @@ import $HttpProvider, {
   $HttpParamSerializerProvider,
   $HttpParamSerializerJQLikeProvider
 } from './http'
+import $CompileProvider from './compile'
 
 export function publishExternalAPI() {
   'use strict'
@@ -25,4 +26,5 @@ export function publishExternalAPI() {
     '$httpParamSerializerJQLike',
     $HttpParamSerializerJQLikeProvider
   )
+  ngModule.provider('$compile', $CompileProvider)
 }
