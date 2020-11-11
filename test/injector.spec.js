@@ -237,21 +237,21 @@ describe('injector', () => {
       expect(instance.result).toBe(3)
     })
     // TODO
-    // it('uses the prototype of the constructor when instantiating', () => {
-    //   function BaseType() {}
-    //   BaseType.prototype.getValue = () => 42
+    it.skip('uses the prototype of the constructor when instantiating', () => {
+      function BaseType() {}
+      BaseType.prototype.getValue = () => 42
 
-    //   function Type() {
-    //     this.v = this.getValue()
-    //   }
-    //   Type.prototype = BaseType.prototype
+      function Type() {
+        this.v = this.getValue()
+      }
+      Type.prototype = BaseType.prototype
 
-    //   angular.module('myModule', [])
-    //   let injector = createInjector(['myModule'])
+      angular.module('myModule', [])
+      let injector = createInjector(['myModule'])
 
-    //   let instance = injector.instantiate(Type)
-    //   expect(instance.v).toEqual(42)
-    // })
+      let instance = injector.instantiate(Type)
+      expect(instance.v).toEqual(42)
+    })
     it('supports locals when instantiating', () => {
       let module = angular.module('myModule', [])
       module.constant('a', 1)
