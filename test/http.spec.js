@@ -886,6 +886,7 @@ describe('$http', () => {
       $rootScope = injector.get('$rootScope')
     })
     // TODO
+    /* eslint-disable jest/no-disabled-tests */
     it.skip('does not resolve promise immediately when enabled', () => {
       let resolvedSpy = jest.fn()
       $http.get('http://chenxiaoyao6228.gitee.io').then(resolvedSpy)
