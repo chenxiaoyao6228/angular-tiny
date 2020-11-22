@@ -29,4 +29,12 @@ describe('$compile', () => {
       createInjector(['ng', 'myModule'])
     }).toThrow()
   })
+  it('allows creating directives with object notation', () => {
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive({ a: function() {}, b: function() {}, c: function() {} })
+    let injector = createInjector(['ng', 'myModule'])
+    expect(injector.has('aDirective')).toBe(true)
+    expect(injector.has('bDirective')).toBe(true)
+    expect(injector.has('cDirective')).toBe(true)
+  })
 })
