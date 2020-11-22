@@ -161,6 +161,7 @@ function isDate(date) {
 
 let transform = _.transform
 let remove = _.remove
+let camelCase = _.camelCase
 
 export default {
   times,
@@ -194,5 +195,6 @@ export default {
   map,
   uniqueId,
   transform,
-  remove
+  remove,
+  camelCase
 }

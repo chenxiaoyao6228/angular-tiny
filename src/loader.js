@@ -29,6 +29,12 @@ export function setupModuleLoader(window) {
       value: invokeLater('$provide', 'value', 'push', invokeQueue),
       service: invokeLater('$provide', 'service', 'push', invokeQueue),
       decorator: invokeLater('$provide', 'decorator', 'push', invokeQueue),
+      directive: invokeLater(
+        '$compileProvider',
+        'directive',
+        'push',
+        invokeQueue
+      ),
       filter: invokeLater('$filterProvider', 'register', 'push', invokeQueue),
       config: invokeLater('$injector', 'invoke', 'push', configBlocks),
       run: fn => {
