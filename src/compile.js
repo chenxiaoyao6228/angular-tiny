@@ -1,6 +1,9 @@
 export default function $CompileProvider($provide) {
   let hasDirectives = {}
   this.directive = function(name, directiveFactory) {
+    if (name === 'hasOwnProperty') {
+      throw 'hasOwnProperty is not a valid directive name'
+    }
     if (!Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
       hasDirectives[name] = []
       $provide.factory(name + 'Directive', [
