@@ -53,6 +53,12 @@ export default function $CompileProvider($provide) {
             nodeName(node).toLowerCase()
           )
           addDirective(directives, normalizedNodeName)
+          utils.forEach(node.attributes, attribute => {
+            let normalizedAttrName = directiveNormalize(
+              attribute.name.toLowerCase()
+            )
+            addDirective(directives, normalizedAttrName)
+          })
           return directives
         }
         function addDirective(directives, name) {

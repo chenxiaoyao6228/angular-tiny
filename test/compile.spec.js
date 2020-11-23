@@ -135,4 +135,80 @@ describe('$compile', () => {
       )
     })
   })
+  it('compiles attribute directives', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div my-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
+  it('compiles attribute directives with prefixes', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div x:my-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
+  it('compiles several attribute directives in an element', () => {
+    let injector = makeInjectorWithDirectives({
+      myDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('hasCompiled', true)
+          }
+        }
+      },
+      mySecondDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('secondCompiled', true)
+          }
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div my-directive my-second-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+      expect(el.data('secondCompiled')).toBe(true)
+    })
+  })
+  it('compiles both element and attributes directives in an element', () => {
+    let injector = makeInjectorWithDirectives({
+      myDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('hasCompiled', true)
+          }
+        }
+      },
+      mySecondDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('secondCompiled', true)
+          }
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<my-directive my-second-directive></my-directive>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+      expect(el.data('secondCompiled')).toBe(true)
+    })
+  })
 })
