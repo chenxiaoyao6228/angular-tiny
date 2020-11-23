@@ -1,4 +1,9 @@
 import utils from './utils'
+import $ from 'jquery'
+
+function nodeName(element) {
+  return element.nodeName ? element.nodeName : element[0].nodeName
+}
 export default function $CompileProvider($provide) {
   let hasDirectives = {}
   this.directive = function(name, directiveFactory) {
@@ -22,7 +27,40 @@ export default function $CompileProvider($provide) {
         this.directive(name, directiveFactory)
       })
     }
-    this.$get = function() {}
+    this.$get = [
+      '$injector',
+      function($injector) {
+        function compile($compileNodes) {
+          return compileNodes($compileNodes)
+        }
+        function compileNodes($compileNodes) {
+          utils.forEach($compileNodes, node => {
+            let directives = collectDirectives(node)
+            applyDirectivesToNode(directives, node)
+          })
+        }
+        function collectDirectives(node) {
+          let directives = []
+          let normalizedNodeName = utils.camelCase(nodeName(node).toLowerCase())
+          addDirective(directives, normalizedNodeName)
+          return directives
+        }
+        function addDirective(directives, name) {
+          if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
+            directives.push.apply(directives, $injector.get(name + 'Directive'))
+          }
+        }
+        function applyDirectivesToNode(directives, compileNode) {
+          let $compileNode = $(compileNode)
+          utils.forEach(directives, directive => {
+            if (directive.compile) {
+              directive.compile($compileNode)
+            }
+          })
+        }
+        return compile
+      }
+    ]
   }
 }
 $CompileProvider.$inject = ['$provide']
