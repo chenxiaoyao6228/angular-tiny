@@ -1,5 +1,6 @@
 import { publishExternalAPI } from '../src/angular_public'
 import { createInjector } from '../src/injector'
+import utils from '../src/utils'
 import $ from 'jquery'
 
 function makeInjectorWithDirectives(...args) {
@@ -109,6 +110,29 @@ describe('$compile', () => {
       expect(el.data('hasCompiled')).toBe(1)
       expect(el.find('> my-dir').data('hasCompiled')).toBe(2)
       expect(el.find('> my-dir > my-dir').data('hasCompiled')).toBe(3)
+    })
+  })
+  utils.forEach(['x', 'data'], prefix => {
+    utils.forEach([':', '-', '_'], delim => {
+      it(
+        'compiles element directives with ' + prefix + delim + ' prefix',
+        () => {
+          let injector = makeInjectorWithDirectives('myDir', () => {
+            return {
+              compile: function(element) {
+                element.data('hasCompiled', true)
+              }
+            }
+          })
+          injector.invoke($compile => {
+            let el = $(
+              '<' + prefix + delim + 'my-dir></' + prefix + delim + 'my-dir>'
+            )
+            $compile(el)
+            expect(el.data('hasCompiled')).toBe(true)
+          })
+        }
+      )
     })
   })
 })

@@ -1,5 +1,10 @@
 import utils from './utils'
 import $ from 'jquery'
+const PREFIX_REGEXP = /(x[:_-]|data[:_-])/i
+
+function directiveNormalize(name) {
+  return utils.camelCase(name.replace(PREFIX_REGEXP, ''))
+}
 
 function nodeName(element) {
   return element.nodeName ? element.nodeName : element[0].nodeName
@@ -44,7 +49,9 @@ export default function $CompileProvider($provide) {
         }
         function collectDirectives(node) {
           let directives = []
-          let normalizedNodeName = utils.camelCase(nodeName(node).toLowerCase())
+          let normalizedNodeName = directiveNormalize(
+            nodeName(node).toLowerCase()
+          )
           addDirective(directives, normalizedNodeName)
           return directives
         }
