@@ -525,4 +525,20 @@ describe('$compile', () => {
       expect(compilations).toEqual(['parent'])
     })
   })
+  it('allows applying a directive to multiple elements', () => {
+    let compileEl = false
+    let injector = makeInjectorWithDirectives('myDir', () => {
+      return {
+        multiElement: true,
+        compile: function(element) {
+          compileEl = element
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $(`<div my-dir-start></div><span></span><div my-dir-end></div>`)
+      $compile(el)
+      expect(compileEl.length).toBe(3)
+    })
+  })
 })

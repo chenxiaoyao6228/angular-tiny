@@ -110,15 +110,6 @@ function repeat(s, times) {
   return s.repeat(times)
 }
 
-function some(value, predicate) {
-  if (isArrayLike(value)) {
-    return Array.from(value).some(predicate)
-  } else {
-    // eslint-disable-next-line you-dont-need-lodash-underscore/some
-    return _.some(value, predicate)
-  }
-}
-
 function every(value, predicate) {
   if (isArrayLike(value)) {
     return Array.from(value).every(predicate)
@@ -162,6 +153,8 @@ function isDate(date) {
 let transform = _.transform
 let remove = _.remove
 let camelCase = _.camelCase
+let kebabCase = _.kebabCase
+let some = _.some
 
 export default {
   times,
@@ -196,5 +189,6 @@ export default {
   uniqueId,
   transform,
   remove,
-  camelCase
+  camelCase,
+  kebabCase
 }

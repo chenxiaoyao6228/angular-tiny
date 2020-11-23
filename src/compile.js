@@ -62,19 +62,38 @@ export default function $CompileProvider($provide) {
             )
             addDirective(directives, normalizedNodeName, 'E')
             // attribute directive
-            utils.forEach(node.attributes, attribute => {
-              let normalizedAttrName = directiveNormalize(
-                attribute.name.toLowerCase()
-              )
+            utils.forEach(node.attributes, attr => {
+              let attrStartName, attrEndName
+              let name = attr.name
+              let normalizedAttrName = directiveNormalize(name.toLowerCase())
               if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
-                normalizedAttrName =
+                name = utils.kebabCase(
                   normalizedAttrName[6].toLowerCase() +
-                  normalizedAttrName.substring(7)
+                    normalizedAttrName.substring(7)
+                )
               }
-              addDirective(directives, normalizedAttrName, 'A')
+              let directiveNName = normalizedAttrName.replace(
+                /(Start|End)$/,
+                ''
+              )
+              if (directiveIsMultiElement(directiveNName)) {
+                if (/Start$/.test(normalizedAttrName)) {
+                  attrStartName = name
+                  attrEndName = name.substring(0, name.length - 5) + 'end'
+                  name = name.substring(0, name.length - 6)
+                }
+              }
+              normalizedAttrName = directiveNormalize(name.toLowerCase())
+              addDirective(
+                directives,
+                normalizedAttrName,
+                'A',
+                attrStartName,
+                attrEndName
+              )
             })
             // class directive
-            node.classList.forEach(cls => {
+            utils.forEach(node.classList, cls => {
               let normalizedClassName = directiveNormalize(cls)
               addDirective(directives, normalizedClassName, 'C')
             })
@@ -98,20 +117,41 @@ export default function $CompileProvider($provide) {
           }
           return directives.sort(byPriority)
         }
-        function addDirective(directives, name, mode) {
+        function addDirective(
+          directives,
+          name,
+          mode,
+          attrStartName,
+          attrEndName
+        ) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
             let foundDirectives = $injector.get(name + 'Directive')
-            let applicableDirectives = foundDirectives.filter(directive => {
-              return directive.restrict.indexOf(mode) !== -1
+            let applicableDirectives = foundDirectives.filter(dir => {
+              return dir.restrict.indexOf(mode) !== -1
             })
-            directives.push.apply(directives, applicableDirectives)
+            applicableDirectives.forEach(directive => {
+              if (attrStartName) {
+                directive = Object.assign({}, directive, {
+                  $$start: attrStartName,
+                  $$end: attrEndName
+                })
+              }
+              directives.push(directive)
+            })
           }
         }
         function applyDirectivesToNode(directives, compileNode) {
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
-          utils.forEach(directives, directive => {
+          directives.forEach(directive => {
+            if (directive.$$start) {
+              $compileNode = groupScan(
+                compileNode,
+                directive.$$start,
+                directive.$$end
+              )
+            }
             if (directive.priority < terminalPriority) {
               return false
             }
@@ -119,11 +159,38 @@ export default function $CompileProvider($provide) {
               directive.compile($compileNode)
             }
             if (directive.terminal) {
+              terminal = true
               terminalPriority = directive.priority
-              terminal = directive.terminal
             }
           })
           return terminal
+        }
+        function directiveIsMultiElement(name) {
+          if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
+            let directives = $injector.get(name + 'Directive')
+            return utils.some(directives, { multiElement: true })
+          }
+          return false
+        }
+        function groupScan(node, startAttr, endAttr) {
+          let nodes = []
+          if (startAttr && node && node.hasAttribute(startAttr)) {
+            let depth = 0
+            do {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.hasAttribute(startAttr)) {
+                  depth++
+                } else if (node.hasAttribute(endAttr)) {
+                  depth--
+                }
+              }
+              nodes.push(node)
+              node = node.nextSibling
+            } while (depth > 0)
+          } else {
+            nodes.push(node)
+          }
+          return $(nodes)
         }
         return compile
       }
