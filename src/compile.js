@@ -22,7 +22,11 @@ export default function $CompileProvider($provide) {
           '$injector',
           function($injector) {
             let factories = hasDirectives[name]
-            return factories.map($injector.invoke)
+            return factories.map(factory => {
+              let directive = $injector.invoke(factory)
+              directive.restrict = directive.restrict || 'EA'
+              return directive
+            })
           }
         ])
       }
@@ -53,7 +57,7 @@ export default function $CompileProvider($provide) {
             let normalizedNodeName = directiveNormalize(
               nodeName(node).toLowerCase()
             )
-            addDirective(directives, normalizedNodeName)
+            addDirective(directives, normalizedNodeName, 'E')
             // attribute directive
             utils.forEach(node.attributes, attribute => {
               let normalizedAttrName = directiveNormalize(
@@ -64,25 +68,29 @@ export default function $CompileProvider($provide) {
                   normalizedAttrName[6].toLowerCase() +
                   normalizedAttrName.substring(7)
               }
-              addDirective(directives, normalizedAttrName)
+              addDirective(directives, normalizedAttrName, 'A')
             })
             // class directive
             node.classList.forEach(cls => {
               let normalizedClassName = directiveNormalize(cls)
-              addDirective(directives, normalizedClassName)
+              addDirective(directives, normalizedClassName, 'C')
             })
           } else if (node.nodeType === Node.COMMENT_NODE) {
             let match = /^\s*directive:\s*([\d\w\-_]+)/.exec(node.nodeValue)
             if (match) {
-              addDirective(directives, directiveNormalize(match[1]))
+              addDirective(directives, directiveNormalize(match[1]), 'M')
             }
           }
 
           return directives
         }
-        function addDirective(directives, name) {
+        function addDirective(directives, name, mode) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
-            directives.push.apply(directives, $injector.get(name + 'Directive'))
+            let foundDirectives = $injector.get(name + 'Directive')
+            let applicableDirectives = foundDirectives.filter(directive => {
+              return directive.restrict.indexOf(mode) !== -1
+            })
+            directives.push.apply(directives, applicableDirectives)
           }
         }
         function applyDirectivesToNode(directives, compileNode) {
