@@ -49,27 +49,35 @@ export default function $CompileProvider($provide) {
         }
         function collectDirectives(node) {
           let directives = []
-          let normalizedNodeName = directiveNormalize(
-            nodeName(node).toLowerCase()
-          )
-          addDirective(directives, normalizedNodeName)
-          // attribute directive
-          utils.forEach(node.attributes, attribute => {
-            let normalizedAttrName = directiveNormalize(
-              attribute.name.toLowerCase()
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            let normalizedNodeName = directiveNormalize(
+              nodeName(node).toLowerCase()
             )
-            if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
-              normalizedAttrName =
-                normalizedAttrName[6].toLowerCase() +
-                normalizedAttrName.substring(7)
+            addDirective(directives, normalizedNodeName)
+            // attribute directive
+            utils.forEach(node.attributes, attribute => {
+              let normalizedAttrName = directiveNormalize(
+                attribute.name.toLowerCase()
+              )
+              if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
+                normalizedAttrName =
+                  normalizedAttrName[6].toLowerCase() +
+                  normalizedAttrName.substring(7)
+              }
+              addDirective(directives, normalizedAttrName)
+            })
+            // class directive
+            node.classList.forEach(cls => {
+              let normalizedClassName = directiveNormalize(cls)
+              addDirective(directives, normalizedClassName)
+            })
+          } else if (node.nodeType === Node.COMMENT_NODE) {
+            let match = /^\s*directive:\s*([\d\w\-_]+)/.exec(node.nodeValue)
+            if (match) {
+              addDirective(directives, directiveNormalize(match[1]))
             }
-            addDirective(directives, normalizedAttrName)
-          })
-          // class directive
-          node.classList.forEach(cls => {
-            let normalizedClassName = directiveNormalize(cls)
-            addDirective(directives, normalizedClassName)
-          })
+          }
+
           return directives
         }
         function addDirective(directives, name) {
