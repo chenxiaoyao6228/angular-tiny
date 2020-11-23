@@ -57,6 +57,11 @@ export default function $CompileProvider($provide) {
             let normalizedAttrName = directiveNormalize(
               attribute.name.toLowerCase()
             )
+            if (/^ngAttr[A-Z]/.test(normalizedAttrName)) {
+              normalizedAttrName =
+                normalizedAttrName[6].toLowerCase() +
+                normalizedAttrName.substring(7)
+            }
             addDirective(directives, normalizedAttrName)
           })
           return directives

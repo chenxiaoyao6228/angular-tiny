@@ -211,4 +211,32 @@ describe('$compile', () => {
       expect(el.data('secondCompiled')).toBe(true)
     })
   })
+  it('compiles attribute directives with ng-attr prefix', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div ng-attr-my-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
+  it('compiles attribute directives with data:ng-attr prefix', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div data:ng-attr-my-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
 })
