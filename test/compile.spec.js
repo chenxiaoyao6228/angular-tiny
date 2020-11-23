@@ -239,4 +239,56 @@ describe('$compile', () => {
       expect(el.data('hasCompiled')).toBe(true)
     })
   })
+  it('compiles class directives', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div class="my-directive"></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
+  it('compiles several class directives in an element', () => {
+    let injector = makeInjectorWithDirectives({
+      myDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('hasCompiled', true)
+          }
+        }
+      },
+      mySecondDirective: function() {
+        return {
+          compile: function(element) {
+            element.data('secondCompiled', true)
+          }
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div class="my-directive my-second-directive"></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+      expect(el.data('secondCompiled')).toBe(true)
+    })
+  })
+  it('compiles class directives with prefixes', () => {
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', true)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div class="x-my-directive"></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(true)
+    })
+  })
 })
