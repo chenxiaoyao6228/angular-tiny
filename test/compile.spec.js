@@ -370,4 +370,81 @@ describe('$compile', () => {
       })
     }
   )
+  it('applies in priority order', () => {
+    let compilations = []
+    let injector = makeInjectorWithDirectives({
+      lowerDirective: function() {
+        return {
+          priority: 1,
+          compile: function(element) {
+            compilations.push('lower')
+          }
+        }
+      },
+      higherDirective: function() {
+        return {
+          priority: 2,
+          compile: function(element) {
+            compilations.push('higher')
+          }
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div lower-directive higher-directive></div>')
+      $compile(el)
+      expect(compilations).toEqual(['higher', 'lower'])
+    })
+  })
+  it('applies in registration order when names are the same', () => {
+    let compilations = []
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive('aDirective', () => {
+      return {
+        priority: 1,
+        compile: function(element) {
+          compilations.push('first')
+        }
+      }
+    })
+    myModule.directive('aDirective', () => {
+      return {
+        priority: 1,
+        compile: function(element) {
+          compilations.push('second')
+        }
+      }
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    injector.invoke($compile => {
+      let el = $('<div a-directive></div>')
+      $compile(el)
+      expect(compilations).toEqual(['first', 'second'])
+    })
+  })
+  it('uses default priority when one not given', () => {
+    let compilations = []
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive('firstDirective', () => {
+      return {
+        priority: 1,
+        compile: function(element) {
+          compilations.push('first')
+        }
+      }
+    })
+    myModule.directive('secondDirective', () => {
+      return {
+        compile: function(element) {
+          compilations.push('second')
+        }
+      }
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    injector.invoke($compile => {
+      let el = $('<div second-directive first-directive></div>')
+      $compile(el)
+      expect(compilations).toEqual(['first', 'second'])
+    })
+  })
 })

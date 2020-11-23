@@ -22,9 +22,12 @@ export default function $CompileProvider($provide) {
           '$injector',
           function($injector) {
             let factories = hasDirectives[name]
-            return factories.map(factory => {
+            return factories.map((factory, i) => {
               let directive = $injector.invoke(factory)
               directive.restrict = directive.restrict || 'EA'
+              directive.name = directive.name || name
+              directive.priority = directive.priority || 0
+              directive.index = i
               return directive
             })
           }
@@ -81,8 +84,19 @@ export default function $CompileProvider($provide) {
               addDirective(directives, directiveNormalize(match[1]), 'M')
             }
           }
-
-          return directives
+          function byPriority(a, b) {
+            let diff = b.priority - a.priority
+            if (diff !== 0) {
+              return diff
+            } else {
+              if (a.name !== b.name) {
+                return a.name < b.name ? -1 : 1
+              } else {
+                return a.index - b.index
+              }
+            }
+          }
+          return directives.sort(byPriority)
         }
         function addDirective(directives, name, mode) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
