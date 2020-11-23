@@ -48,8 +48,8 @@ export default function $CompileProvider($provide) {
         function compileNodes($compileNodes) {
           utils.forEach($compileNodes, node => {
             let directives = collectDirectives(node)
-            applyDirectivesToNode(directives, node)
-            if (node.childNodes && node.childNodes.length) {
+            let terminal = applyDirectivesToNode(directives, node)
+            if (!terminal && node.childNodes && node.childNodes.length) {
               compileNodes(node.childNodes)
             }
           })
@@ -109,11 +109,21 @@ export default function $CompileProvider($provide) {
         }
         function applyDirectivesToNode(directives, compileNode) {
           let $compileNode = $(compileNode)
+          let terminalPriority = -Number.MAX_VALUE
+          let terminal = false
           utils.forEach(directives, directive => {
+            if (directive.priority < terminalPriority) {
+              return false
+            }
             if (directive.compile) {
               directive.compile($compileNode)
             }
+            if (directive.terminal) {
+              terminalPriority = directive.priority
+              terminal = directive.terminal
+            }
           })
+          return terminal
         }
         return compile
       }

@@ -2,7 +2,6 @@ import { publishExternalAPI } from '../src/angular_public'
 import { createInjector } from '../src/injector'
 import utils from '../src/utils'
 import $ from 'jquery'
-import _ from 'lodash'
 
 function makeInjectorWithDirectives(...args) {
   return createInjector([
@@ -445,6 +444,85 @@ describe('$compile', () => {
       let el = $('<div second-directive first-directive></div>')
       $compile(el)
       expect(compilations).toEqual(['first', 'second'])
+    })
+  })
+  it('stops compiling at a terminal directive', () => {
+    let compilations = []
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive('firstDirective', () => {
+      return {
+        priority: 1,
+        terminal: true,
+        compile: function(element) {
+          compilations.push('first')
+        }
+      }
+    })
+    myModule.directive('secondDirective', () => {
+      return {
+        priority: 0,
+        compile: function(element) {
+          compilations.push('second')
+        }
+      }
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    injector.invoke($compile => {
+      let el = $('<div first-directive second-directive></div>')
+      $compile(el)
+      expect(compilations).toEqual(['first'])
+    })
+  })
+  it('still compiles directives with same priority after terminal', () => {
+    let compilations = []
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive('firstDirective', () => {
+      return {
+        priority: 1,
+        terminal: true,
+        compile: function(element) {
+          compilations.push('first')
+        }
+      }
+    })
+    myModule.directive('secondDirective', () => {
+      return {
+        priority: 1,
+        compile: function(element) {
+          compilations.push('second')
+        }
+      }
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    injector.invoke($compile => {
+      let el = $('<div first-directive second-directive></div>')
+      $compile(el)
+      expect(compilations).toEqual(['first', 'second'])
+    })
+  })
+  it('stops child compilation after a terminal directive', () => {
+    let compilations = []
+    let myModule = window.angular.module('myModule', [])
+    myModule.directive('parentDirective', () => {
+      return {
+        terminal: true,
+        compile: function(element) {
+          compilations.push('parent')
+        }
+      }
+    })
+    myModule.directive('childDirective', () => {
+      return {
+        compile: function(element) {
+          compilations.push('child')
+        }
+      }
+    })
+    let injector = createInjector(['ng', 'myModule'])
+    injector.invoke($compile => {
+      let el = $('<div parent-directive><div child-directive></div></div>')
+      $compile(el)
+      expect(compilations).toEqual(['parent'])
     })
   })
 })
