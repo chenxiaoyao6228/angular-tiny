@@ -336,7 +336,7 @@ describe('$compile', () => {
       EAM: { element: true, attribute: true, class: false, comment: true },
       EACM: { element: true, attribute: true, class: true, comment: true }
     },
-    (restrict, expected) => {
+    (expected, restrict) => {
       describe('restricted to ' + restrict, () => {
         utils.forEach(
           {
@@ -345,7 +345,7 @@ describe('$compile', () => {
             class: '<div class="my-directive"></div>',
             comment: '<!-- directive: my-directive -->'
           },
-          (type, dom) => {
+          (dom, type) => {
             it(
               (expected[type] ? 'matches' : 'does not match') + ' on ' + type,
               () => {

@@ -32,7 +32,7 @@ export default function $CompileProvider($provide) {
       }
       hasDirectives[name].push(directiveFactory)
     } else {
-      utils.forEach(name, (name, directiveFactory) => {
+      utils.forEach(name, (directiveFactory, name) => {
         this.directive(name, directiveFactory)
       })
     }

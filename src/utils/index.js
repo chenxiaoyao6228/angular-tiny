@@ -61,12 +61,12 @@ function isPlainObject(obj) {
 }
 
 function forEach(value, operator) {
-  if (isArrayLike(value)) {
+  if (_.isArrayLikeObject(value)) {
     return Array.from(value).forEach(operator)
   } else if (isObject(value)) {
     return Object.entries(value).forEach(v => {
       let [key, val] = v
-      return operator(key, val)
+      return operator(val, key, value)
     })
   }
 }
