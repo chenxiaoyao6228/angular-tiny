@@ -37,6 +37,9 @@ export default function $CompileProvider($provide) {
           utils.forEach($compileNodes, node => {
             let directives = collectDirectives(node)
             applyDirectivesToNode(directives, node)
+            if (node.childNodes && node.childNodes.length) {
+              compileNodes(node.childNodes)
+            }
           })
         }
         function collectDirectives(node) {

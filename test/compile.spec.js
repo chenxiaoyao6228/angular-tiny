@@ -78,4 +78,37 @@ describe('$compile', () => {
       expect(el.eq(1).data('hasCompiled')).toBe(2)
     })
   })
+  it('compiles element directives from child elements', () => {
+    let idx = 1
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', idx++)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<div><my-directive></my-directive></div>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBeUndefined()
+      expect(el.find('> my-directive').data('hasCompiled')).toBe(1)
+    })
+  })
+  it('compiles nested directives', () => {
+    let idx = 1
+    let injector = makeInjectorWithDirectives('myDir', () => {
+      return {
+        compile: function(element) {
+          element.data('hasCompiled', idx++)
+        }
+      }
+    })
+    injector.invoke($compile => {
+      let el = $('<my-dir><my-dir><my-dir/></my-dir></my-dir>')
+      $compile(el)
+      expect(el.data('hasCompiled')).toBe(1)
+      expect(el.find('> my-dir').data('hasCompiled')).toBe(2)
+      expect(el.find('> my-dir > my-dir').data('hasCompiled')).toBe(3)
+    })
+  })
 })
