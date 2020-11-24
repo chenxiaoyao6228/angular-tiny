@@ -1,9 +1,30 @@
 import utils from './utils'
 import $ from 'jquery'
 const PREFIX_REGEXP = /(x[:_-]|data[:_-])/i
+let BOOLEAN_ATTRS = {
+  multiple: true,
+  selected: true,
+  checked: true,
+  disabled: true,
+  readOnly: true,
+  required: true,
+  open: true
+}
+let BOOLEAN_ELEMENTS = {
+  INPUT: true,
+  SELECT: true,
+  OPTION: true,
+  TEXTAREA: true,
+  BUTTON: true,
+  FORM: true,
+  DETAILS: true
+}
 
 function directiveNormalize(name) {
   return utils.camelCase(name.replace(PREFIX_REGEXP, ''))
+}
+function isBooleanAttribute(node, attrName) {
+  return BOOLEAN_ATTRS[attrName] && BOOLEAN_ELEMENTS[node.nodeName]
 }
 
 function nodeName(element) {
@@ -93,6 +114,9 @@ export default function $CompileProvider($provide) {
                 attrEndName
               )
               attrs[normalizedAttrName] = attr.value.trim()
+              if (isBooleanAttribute(node, normalizedAttrName)) {
+                attrs[normalizedAttrName] = true
+              }
             })
             // class directive
             utils.forEach(node.classList, cls => {
