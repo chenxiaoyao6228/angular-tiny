@@ -664,5 +664,15 @@ describe('$compile', () => {
         }
       )
     })
+    it('does not use ng-attr- prefix in denormalized names', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive ng-attr-some-attribute="42"></my-directive>',
+        (element, attrs) => {
+          attrs.$set('someAttribute', 43)
+          expect(element.attr('some-attribute')).toEqual('43')
+        }
+      )
+    })
   })
 })

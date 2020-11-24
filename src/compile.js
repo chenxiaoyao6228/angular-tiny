@@ -65,6 +65,7 @@ export default function $CompileProvider($provide) {
       function($injector) {
         function Attributes(element) {
           this.$$element = element
+          this.$attr = {}
         }
         Attributes.prototype.$set = function(key, value, writeAttr, attrName) {
           this[key] = value
@@ -72,8 +73,10 @@ export default function $CompileProvider($provide) {
             this.$$element.prop(key, value)
           }
           if (!attrName) {
-            if (!attrName) {
-              attrName = utils.kebabCase(key, '-')
+            if (this.$attr[key]) {
+              attrName = this.$attr[key]
+            } else {
+              attrName = this.$attr[key] = utils.kebabCase(key)
             }
           }
           if (writeAttr !== false) {
@@ -129,6 +132,8 @@ export default function $CompileProvider($provide) {
                   normalizedAttrName[6].toLowerCase() +
                     normalizedAttrName.substring(7)
                 )
+                normalizedAttrName = directiveNormalize(name.toLowerCase())
+                attrs.$attr[normalizedAttrName] = name
               }
               addDirective(
                 directives,
