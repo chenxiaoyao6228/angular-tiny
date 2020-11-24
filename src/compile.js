@@ -47,14 +47,15 @@ export default function $CompileProvider($provide) {
         }
         function compileNodes($compileNodes) {
           utils.forEach($compileNodes, node => {
-            let directives = collectDirectives(node)
-            let terminal = applyDirectivesToNode(directives, node)
+            let attrs = {}
+            let directives = collectDirectives(node, attrs)
+            let terminal = applyDirectivesToNode(directives, node, attrs)
             if (!terminal && node.childNodes && node.childNodes.length) {
               compileNodes(node.childNodes)
             }
           })
         }
-        function collectDirectives(node) {
+        function collectDirectives(node, attrs) {
           let directives = []
           if (node.nodeType === Node.ELEMENT_NODE) {
             let normalizedNodeName = directiveNormalize(
@@ -91,6 +92,7 @@ export default function $CompileProvider($provide) {
                 attrStartName,
                 attrEndName
               )
+              attrs[normalizedAttrName] = attr.value.trim()
             })
             // class directive
             utils.forEach(node.classList, cls => {
@@ -140,7 +142,7 @@ export default function $CompileProvider($provide) {
             })
           }
         }
-        function applyDirectivesToNode(directives, compileNode) {
+        function applyDirectivesToNode(directives, compileNode, attrs) {
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
@@ -156,7 +158,7 @@ export default function $CompileProvider($provide) {
               return false
             }
             if (directive.compile) {
-              directive.compile($compileNode)
+              directive.compile($compileNode, attrs)
             }
             if (directive.terminal) {
               terminal = true
@@ -197,4 +199,5 @@ export default function $CompileProvider($provide) {
     ]
   }
 }
+
 $CompileProvider.$inject = ['$provide']
