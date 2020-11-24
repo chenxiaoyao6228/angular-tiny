@@ -66,13 +66,18 @@ export default function $CompileProvider($provide) {
         function Attributes(element) {
           this.$$element = element
         }
-        Attributes.prototype.$set = function(key, value, writeAttr) {
+        Attributes.prototype.$set = function(key, value, writeAttr, attrName) {
           this[key] = value
           if (isBooleanAttribute(this.$$element[0], key)) {
             this.$$element.prop(key, value)
           }
+          if (!attrName) {
+            if (!attrName) {
+              attrName = utils.kebabCase(key, '-')
+            }
+          }
           if (writeAttr !== false) {
-            this.$$element.attr(key, value)
+            this.$$element.attr(attrName, value)
           }
         }
         function compile($compileNodes) {

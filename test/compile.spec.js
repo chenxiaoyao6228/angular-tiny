@@ -644,5 +644,25 @@ describe('$compile', () => {
         }
       )
     })
+    it('denormalizes attribute name when explicitly given', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive some-attribute="42"></my-directive>',
+        (element, attrs) => {
+          attrs.$set('someAttribute', 43, true, 'some-attribute')
+          expect(element.attr('some-attribute')).toEqual('43')
+        }
+      )
+    })
+    it('denormalizes attribute by snake-casing', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive some-attribute="42"></my-directive>',
+        (element, attrs) => {
+          attrs.$set('someAttribute', 43)
+          expect(element.attr('some-attribute')).toEqual('43')
+        }
+      )
+    })
   })
 })
