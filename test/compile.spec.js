@@ -595,5 +595,14 @@ describe('$compile', () => {
         }
       )
     })
+    it('overrides attributes with ng-attr- versions', () => {
+      registerAndCompile(
+        'myDirective',
+        '<input my-directive ng-attr-whatever="42" whatever="41">',
+        (element, attrs) => {
+          expect(attrs.whatever).toEqual('42')
+        }
+      )
+    })
   })
 })

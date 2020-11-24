@@ -106,6 +106,13 @@ export default function $CompileProvider($provide) {
                 }
               }
               normalizedAttrName = directiveNormalize(name.toLowerCase())
+              let isNgAttr = /^ngAttr[A-Z]/.test(normalizedAttrName)
+              if (isNgAttr) {
+                name = utils.kebabCase(
+                  normalizedAttrName[6].toLowerCase() +
+                    normalizedAttrName.substring(7)
+                )
+              }
               addDirective(
                 directives,
                 normalizedAttrName,
@@ -113,9 +120,14 @@ export default function $CompileProvider($provide) {
                 attrStartName,
                 attrEndName
               )
-              attrs[normalizedAttrName] = attr.value.trim()
-              if (isBooleanAttribute(node, normalizedAttrName)) {
-                attrs[normalizedAttrName] = true
+              if (
+                isNgAttr ||
+                !Object.prototype.hasOwnProperty.call(attrs, normalizedAttrName)
+              ) {
+                attrs[normalizedAttrName] = attr.value.trim()
+                if (isBooleanAttribute(node, normalizedAttrName)) {
+                  attrs[normalizedAttrName] = true
+                }
               }
             })
             // class directive
