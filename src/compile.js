@@ -68,6 +68,7 @@ export default function $CompileProvider($provide) {
         }
         Attributes.prototype.$set = function(key, value) {
           this[key] = value
+          this.$$element.attr(key, value)
         }
         function compile($compileNodes) {
           return compileNodes($compileNodes)
