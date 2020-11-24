@@ -72,13 +72,17 @@ export default function $CompileProvider($provide) {
           if (isBooleanAttribute(this.$$element[0], key)) {
             this.$$element.prop(key, value)
           }
+
           if (!attrName) {
             if (this.$attr[key]) {
               attrName = this.$attr[key]
             } else {
               attrName = this.$attr[key] = utils.kebabCase(key)
             }
+          } else {
+            this.$attr[key] = attrName
           }
+
           if (writeAttr !== false) {
             this.$$element.attr(attrName, value)
           }
