@@ -614,5 +614,15 @@ describe('$compile', () => {
         }
       )
     })
+    it('does not set attributes to DOM when flag is false', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive attr="true"></my-directive>',
+        (element, attrs) => {
+          attrs.$set('attr', 'false', false)
+          expect(element.attr('attr')).toEqual('true')
+        }
+      )
+    })
   })
 })
