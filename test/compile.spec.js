@@ -604,5 +604,15 @@ describe('$compile', () => {
         }
       )
     })
+    it('allows setting attributes', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive attr="true"></my-directive>',
+        (element, attrs) => {
+          attrs.$set('attr', 'false')
+          expect(attrs.attr).toEqual('false')
+        }
+      )
+    })
   })
 })

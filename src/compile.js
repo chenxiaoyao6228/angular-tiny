@@ -63,12 +63,18 @@ export default function $CompileProvider($provide) {
     this.$get = [
       '$injector',
       function($injector) {
+        function Attributes(element) {
+          this.$$element = element
+        }
+        Attributes.prototype.$set = function(key, value) {
+          this[key] = value
+        }
         function compile($compileNodes) {
           return compileNodes($compileNodes)
         }
         function compileNodes($compileNodes) {
           utils.forEach($compileNodes, node => {
-            let attrs = {}
+            let attrs = new Attributes($(node))
             let directives = collectDirectives(node, attrs)
             let terminal = applyDirectivesToNode(directives, node, attrs)
             if (!terminal && node.childNodes && node.childNodes.length) {
