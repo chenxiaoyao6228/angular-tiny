@@ -542,38 +542,40 @@ describe('$compile', () => {
     })
   })
   describe('attributes', () => {
-    it('passes the element attributes to the compile function', () => {
-      let injector = makeInjectorWithDirectives('myDirective', () => {
+    function registerAndCompile(dirName, domString, callback) {
+      let givenAttrs
+      let injector = makeInjectorWithDirectives(dirName, () => {
         return {
-          restrict: 'E',
+          restrict: 'EACM',
           compile: function(element, attrs) {
-            element.data('givenAttrs', attrs)
+            givenAttrs = attrs
           }
         }
       })
       injector.invoke($compile => {
-        let el = $(
-          '<my-directive my-attr="1" my-other-attr="two"></my-directive>'
-        )
+        let el = $(domString)
         $compile(el)
-        expect(el.data('givenAttrs').myAttr).toEqual('1')
-        expect(el.data('givenAttrs').myOtherAttr).toEqual('two')
+        callback(el, givenAttrs)
       })
+    }
+    it('passes the element attributes to the compile function', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive my-attr="1" my-other-attr="two"></my-directive>',
+        (element, attrs) => {
+          expect(attrs.myAttr).toEqual('1')
+          expect(attrs.myOtherAttr).toEqual('two')
+        }
+      )
     })
     it('trims attribute values', () => {
-      let injector = makeInjectorWithDirectives('myDirective', () => {
-        return {
-          restrict: 'E',
-          compile: function(element, attrs) {
-            element.data('givenAttrs', attrs)
-          }
+      registerAndCompile(
+        'myDirective',
+        '<my-directive my-attr=" val "></my-directive>',
+        (element, attrs) => {
+          expect(attrs.myAttr).toEqual('val')
         }
-      })
-      injector.invoke($compile => {
-        let el = $('<my-directive my-attr=" val "></my-directive>')
-        $compile(el)
-        expect(el.data('givenAttrs').myAttr).toEqual('val')
-      })
+      )
     })
   })
 })
