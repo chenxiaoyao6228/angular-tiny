@@ -686,5 +686,19 @@ describe('$compile', () => {
         }
       )
     })
+    it('calls observer immediately when attribute is $set', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive some-attribute="42"></my-directive>',
+        (element, attrs) => {
+          let gotValue
+          attrs.$observe('someAttribute', value => {
+            gotValue = value
+          })
+          attrs.$set('someAttribute', '43')
+          expect(gotValue).toEqual('43')
+        }
+      )
+    })
   })
 })

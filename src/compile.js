@@ -86,6 +86,21 @@ export default function $CompileProvider($provide) {
           if (writeAttr !== false) {
             this.$$element.attr(attrName, value)
           }
+
+          if (this.$$observers) {
+            utils.forEach(this.$$observers[key], observer => {
+              try {
+                observer(value)
+              } catch (e) {
+                console.log(e)
+              }
+            })
+          }
+        }
+        Attributes.prototype.$observe = function(key, fn) {
+          this.$$observers = this.$$observers || Object.create(null)
+          this.$$observers[key] = this.$$observers[key] || []
+          this.$$observers[key].push(fn)
         }
         function compile($compileNodes) {
           return compileNodes($compileNodes)
