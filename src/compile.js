@@ -135,7 +135,9 @@ export default function $CompileProvider($provide) {
         }
         function compile($compileNodes) {
           compileNodes($compileNodes)
-          return function publicLinkFn() {}
+          return function publicLinkFn($scope) {
+            $compileNodes.data('$scope', $rootScope)
+          }
         }
         function compileNodes($compileNodes) {
           utils.forEach($compileNodes, node => {

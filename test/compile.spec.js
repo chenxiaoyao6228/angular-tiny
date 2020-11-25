@@ -828,4 +828,16 @@ describe('$compile', () => {
       })
     })
   })
+  describe('linking', () => {
+    it('takes a scope and attaches it to elements', () => {
+      let injector = makeInjectorWithDirectives('myDirective', () => {
+        return { compile: () => {} }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        $compile(el)($rootScope)
+        expect(el.data('$scope')).toBe($rootScope)
+      })
+    })
+  })
 })
