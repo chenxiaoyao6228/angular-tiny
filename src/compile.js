@@ -107,6 +107,12 @@ export default function $CompileProvider($provide) {
           $rootScope.$evalAsync(() => {
             fn(self[key])
           })
+          return () => {
+            let index = self.$$observers[key].indexOf(fn)
+            if (index > -1) {
+              this.$$observers[key].splice(index, 1)
+            }
+          }
         }
         function compile($compileNodes) {
           return compileNodes($compileNodes)

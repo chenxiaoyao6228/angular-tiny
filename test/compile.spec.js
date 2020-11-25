@@ -714,5 +714,22 @@ describe('$compile', () => {
         }
       )
     })
+    it('lets observers be deregistered', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive some-attribute="42"></my-directive>',
+        (element, attrs) => {
+          let gotValue
+          let remove = attrs.$observe('someAttribute', value => {
+            gotValue = value
+          })
+          attrs.$set('someAttribute', '43')
+          expect(gotValue).toEqual('43')
+          remove()
+          attrs.$set('someAttribute', '44')
+          expect(gotValue).toEqual('43')
+        }
+      )
+    })
   })
 })
