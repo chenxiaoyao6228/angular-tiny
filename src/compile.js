@@ -114,6 +114,12 @@ export default function $CompileProvider($provide) {
             }
           }
         }
+        Attributes.prototype.$addClass = function(classVal) {
+          this.$$element.addClass(classVal)
+        }
+        Attributes.prototype.$removeClass = function(classVal) {
+          this.$$element.removeClass(classVal)
+        }
         function compile($compileNodes) {
           return compileNodes($compileNodes)
         }
@@ -205,9 +211,7 @@ export default function $CompileProvider($provide) {
               }
             }
           } else if (node.nodeType === Node.COMMENT_NODE) {
-            match = /^\s*directive\:\s*([\d\w\-_]+)\s*(.*)$/.exec(
-              node.nodeValue
-            )
+            match = /^\s*directive:\s*([\d\w\-_]+)\s*(.*)$/.exec(node.nodeValue)
             if (match) {
               let normalizedName = directiveNormalize(match[1])
               if (addDirective(directives, normalizedName, 'M')) {
