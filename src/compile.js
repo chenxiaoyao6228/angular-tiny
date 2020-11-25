@@ -128,6 +128,7 @@ export default function $CompileProvider($provide) {
           })
         }
         function collectDirectives(node, attrs) {
+          let match
           let directives = []
           if (node.nodeType === Node.ELEMENT_NODE) {
             let normalizedNodeName = directiveNormalize(
@@ -190,6 +191,19 @@ export default function $CompileProvider($provide) {
                 attrs[normalizedClassName] = undefined
               }
             })
+
+            let className = node.className
+            if (utils.isString(className) && !utils.isEmpty(className)) {
+              while ((match = /([\d\w\-_]+)(?::([^;]+))?;?/.exec(className))) {
+                let normalizedClassName = directiveNormalize(match[1])
+                if (addDirective(directives, normalizedClassName, 'C')) {
+                  attrs[normalizedClassName] = match[2]
+                    ? match[2].trim()
+                    : undefined
+                }
+                className = className.substr(match.index + match[0].length)
+              }
+            }
           } else if (node.nodeType === Node.COMMENT_NODE) {
             let match = /^\s*directive:\s*([\d\w\-_]+)/.exec(node.nodeValue)
             if (match) {
