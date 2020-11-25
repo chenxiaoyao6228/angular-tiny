@@ -120,6 +120,19 @@ export default function $CompileProvider($provide) {
         Attributes.prototype.$removeClass = function(classVal) {
           this.$$element.removeClass(classVal)
         }
+        Attributes.prototype.$updateClass = function(newClassVal, oldClassVal) {
+          let self = this
+          let newClasses = newClassVal.split(/\s+/)
+          let oldClasses = oldClassVal.split(/\s+/)
+          let addedClasses = utils.difference(newClasses, oldClasses)
+          let removedClasses = utils.difference(oldClasses, newClasses)
+          if (addedClasses.length) {
+            this.$addClass(addedClasses.join(' '))
+          }
+          if (removedClasses.length) {
+            this.$removeClass(removedClasses.join(' '))
+          }
+        }
         function compile($compileNodes) {
           return compileNodes($compileNodes)
         }
