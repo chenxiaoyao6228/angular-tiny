@@ -187,6 +187,7 @@ export default function $CompileProvider($provide) {
             utils.forEach(node.classList, cls => {
               let normalizedClassName = directiveNormalize(cls)
               addDirective(directives, normalizedClassName, 'C')
+              attrs[normalizedClassName] = undefined
             })
           } else if (node.nodeType === Node.COMMENT_NODE) {
             let match = /^\s*directive:\s*([\d\w\-_]+)/.exec(node.nodeValue)

@@ -731,5 +731,16 @@ describe('$compile', () => {
         }
       )
     })
+    it('adds an attribute from a class directive', () => {
+      registerAndCompile(
+        'myDirective',
+        '<div class="my-directive"></div>',
+        (element, attrs) => {
+          expect(
+            Object.prototype.hasOwnProperty.call(attrs, 'myDirective')
+          ).toBe(true)
+        }
+      )
+    })
   })
 })
