@@ -771,5 +771,17 @@ describe('$compile', () => {
         }
       )
     })
+    it('adds an attribute with a value from a comment directive', () => {
+      registerAndCompile(
+        'myDirective',
+        '<!-- directive: my-directive and the attribute value -->',
+        (element, attrs) => {
+          expect(
+            Object.prototype.hasOwnProperty.call(attrs, 'myDirective')
+          ).toBe(true)
+          expect(attrs.myDirective).toEqual('and the attribute value')
+        }
+      )
+    })
   })
 })
