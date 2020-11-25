@@ -186,8 +186,9 @@ export default function $CompileProvider($provide) {
             // class directive
             utils.forEach(node.classList, cls => {
               let normalizedClassName = directiveNormalize(cls)
-              addDirective(directives, normalizedClassName, 'C')
-              attrs[normalizedClassName] = undefined
+              if (addDirective(directives, normalizedClassName, 'C')) {
+                attrs[normalizedClassName] = undefined
+              }
             })
           } else if (node.nodeType === Node.COMMENT_NODE) {
             let match = /^\s*directive:\s*([\d\w\-_]+)/.exec(node.nodeValue)
@@ -216,6 +217,7 @@ export default function $CompileProvider($provide) {
           attrStartName,
           attrEndName
         ) {
+          let match
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
             let foundDirectives = $injector.get(name + 'Directive')
             let applicableDirectives = foundDirectives.filter(dir => {
@@ -229,8 +231,10 @@ export default function $CompileProvider($provide) {
                 })
               }
               directives.push(directive)
+              match = directive
             })
           }
+          return match
         }
         function applyDirectivesToNode(directives, compileNode, attrs) {
           let $compileNode = $(compileNode)

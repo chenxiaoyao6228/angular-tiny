@@ -742,5 +742,16 @@ describe('$compile', () => {
         }
       )
     })
+    it('does not add attribute from class without a directive', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive class="some-class"></my-directive>',
+        (element, attrs) => {
+          expect(Object.prototype.hasOwnProperty.call(attrs, 'someClass')).toBe(
+            false
+          )
+        }
+      )
+    })
   })
 })
