@@ -816,5 +816,16 @@ describe('$compile', () => {
         }
       )
     })
+    it('returns a public link function from compile', () => {
+      let injector = makeInjectorWithDirectives('myDirective', () => {
+        return { compile: () => {} }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive></div>')
+        let linkFn = $compile(el)
+        expect(linkFn).toBeDefined()
+        expect(utils.isFunction(linkFn)).toBe(true)
+      })
+    })
   })
 })

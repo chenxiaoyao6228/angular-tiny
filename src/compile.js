@@ -134,7 +134,8 @@ export default function $CompileProvider($provide) {
           }
         }
         function compile($compileNodes) {
-          return compileNodes($compileNodes)
+          compileNodes($compileNodes)
+          return function publicLinkFn() {}
         }
         function compileNodes($compileNodes) {
           utils.forEach($compileNodes, node => {
