@@ -41,6 +41,7 @@ export default function $CompileProvider($provide) {
         hasDirectives[name] = []
         $provide.factory(name + 'Directive', [
           '$injector',
+          '$rootScope',
           function($injector) {
             let factories = hasDirectives[name]
             return factories.map((factory, i) => {
@@ -62,7 +63,8 @@ export default function $CompileProvider($provide) {
     }
     this.$get = [
       '$injector',
-      function($injector) {
+      '$rootScope',
+      function($injector, $rootScope) {
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -98,9 +100,13 @@ export default function $CompileProvider($provide) {
           }
         }
         Attributes.prototype.$observe = function(key, fn) {
+          let self = this
           this.$$observers = this.$$observers || Object.create(null)
           this.$$observers[key] = this.$$observers[key] || []
           this.$$observers[key].push(fn)
+          $rootScope.$evalAsync(() => {
+            fn(self[key])
+          })
         }
         function compile($compileNodes) {
           return compileNodes($compileNodes)

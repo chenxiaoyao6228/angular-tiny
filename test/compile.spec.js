@@ -552,10 +552,10 @@ describe('$compile', () => {
           }
         }
       })
-      injector.invoke($compile => {
+      injector.invoke(($compile, $rootScope) => {
         let el = $(domString)
         $compile(el)
-        callback(el, givenAttrs)
+        callback(el, givenAttrs, $rootScope)
       })
     }
     it('passes the element attributes to the compile function', () => {
@@ -697,6 +697,20 @@ describe('$compile', () => {
           })
           attrs.$set('someAttribute', '43')
           expect(gotValue).toEqual('43')
+        }
+      )
+    })
+    it('calls observer on next $digest after registration', () => {
+      registerAndCompile(
+        'myDirective',
+        '<my-directive some-attribute="42"></my-directive>',
+        (element, attrs, $rootScope) => {
+          let gotValue
+          attrs.$observe('someAttribute', value => {
+            gotValue = value
+          })
+          $rootScope.$digest()
+          expect(gotValue).toEqual('42')
         }
       )
     })
