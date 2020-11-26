@@ -134,20 +134,40 @@ export default function $CompileProvider($provide) {
           }
         }
         function compile($compileNodes) {
-          compileNodes($compileNodes)
-          return function publicLinkFn($scope) {
+          let compositeLinkFn = compileNodes($compileNodes)
+          return function publicLinkFn(scope) {
             $compileNodes.data('$scope', $rootScope)
+            compositeLinkFn(scope, $compileNodes)
           }
         }
         function compileNodes($compileNodes) {
-          utils.forEach($compileNodes, node => {
+          let linkFns = []
+          utils.forEach($compileNodes, (node, i) => {
             let attrs = new Attributes($(node))
             let directives = collectDirectives(node, attrs)
-            let terminal = applyDirectivesToNode(directives, node, attrs)
-            if (!terminal && node.childNodes && node.childNodes.length) {
+            let nodeLinkFn
+            if (directives.length) {
+              nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
+              if (nodeLinkFn) {
+                linkFns.push({
+                  nodeLinkFn: nodeLinkFn,
+                  idx: i
+                })
+              }
+            }
+            if (
+              (!nodeLinkFn || !nodeLinkFn.terminal) &&
+              node.childNodes &&
+              node.childNodes.length
+            ) {
               compileNodes(node.childNodes)
             }
           })
+          return function compositeLinkFn(scope, linkNodes) {
+            utils.forEach(linkFns, linkFn => {
+              linkFn.nodeLinkFn(scope, linkNodes[linkFn.idx])
+            })
+          }
         }
         function collectDirectives(node, attrs) {
           let match
@@ -279,6 +299,7 @@ export default function $CompileProvider($provide) {
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
+          let linkFns = []
           directives.forEach(directive => {
             if (directive.$$start) {
               $compileNode = groupScan(
@@ -291,14 +312,24 @@ export default function $CompileProvider($provide) {
               return false
             }
             if (directive.compile) {
-              directive.compile($compileNode, attrs)
+              let linkFn = directive.compile($compileNode, attrs)
+              if (linkFn) {
+                linkFns.push(linkFn)
+              }
             }
             if (directive.terminal) {
               terminal = true
               terminalPriority = directive.priority
             }
           })
-          return terminal
+          function nodeLinkFn(scope, linkNode) {
+            utils.forEach(linkFns, linkFn => {
+              let $element = $(linkNode)
+              linkFn(scope, $element, attrs)
+            })
+          }
+          nodeLinkFn.terminal = terminal
+          return nodeLinkFn
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
