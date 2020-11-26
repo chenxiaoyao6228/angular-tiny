@@ -898,4 +898,21 @@ describe('$compile', () => {
       expect(givenElements[0][0]).toBe(el[0].firstChild)
     })
   })
+  it('supports link function objects', () => {
+    let linked
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        link: {
+          post: function(scope, element, attrs) {
+            linked = true
+          }
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div><div my-directive></div></div>')
+      $compile(el)($rootScope)
+      expect(linked).toBe(true)
+    })
+  })
 })

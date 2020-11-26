@@ -341,8 +341,10 @@ export default function $CompileProvider($provide) {
             }
             if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
-              if (linkFn) {
+              if (utils.isFunction(linkFn)) {
                 linkFns.push(linkFn)
+              } else if (linkFn) {
+                linkFns.push(linkFn.post)
               }
             }
             if (directive.terminal) {
