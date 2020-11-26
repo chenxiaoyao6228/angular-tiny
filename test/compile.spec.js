@@ -862,4 +862,24 @@ describe('$compile', () => {
       expect(givenAttrs.myDirective).toBeDefined()
     })
   })
+  it('supports link function in directive definition object', () => {
+    let givenScope, givenElement, givenAttrs
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        link: function(scope, element, attrs) {
+          givenScope = scope
+          givenElement = element
+          givenAttrs = attrs
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(givenScope).toBe($rootScope)
+      expect(givenElement[0]).toBe(el[0])
+      expect(givenAttrs).toBeDefined()
+      expect(givenAttrs.myDirective).toBeDefined()
+    })
+  })
 })
