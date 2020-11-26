@@ -981,4 +981,24 @@ describe('$compile', () => {
       ])
     })
   })
+  it('stabilizes node list during linking', () => {
+    let givenElements = []
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        link: function(scope, element, attrs) {
+          givenElements.push(element[0])
+          element.after('<div></div>')
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div><div my-directive></div><div my-directive></div></div>')
+      let el1 = el[0].childNodes[0],
+        el2 = el[0].childNodes[1]
+      $compile(el)($rootScope)
+      expect(givenElements.length).toBe(2)
+      expect(givenElements[0]).toBe(el1)
+      expect(givenElements[1]).toBe(el2)
+    })
+  })
 })

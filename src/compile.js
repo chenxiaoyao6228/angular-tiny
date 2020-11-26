@@ -168,15 +168,21 @@ export default function $CompileProvider($provide) {
             }
           })
           function compositeLinkFn(scope, linkNodes) {
+            let stableNodeList = []
+            utils.forEach(linkFns, linkFn => {
+              let nodeIdx = linkFn.idx
+
+              stableNodeList[nodeIdx] = linkNodes[nodeIdx]
+            })
             utils.forEach(linkFns, linkFn => {
               if (linkFn.nodeLinkFn) {
                 linkFn.nodeLinkFn(
                   linkFn.childLinkFn,
                   scope,
-                  linkNodes[linkFn.idx]
+                  stableNodeList[linkFn.idx]
                 )
               } else {
-                linkFn.childLinkFn(scope, linkNodes[linkFn.idx].childNodes)
+                linkFn.childLinkFn(scope, stableNodeList[linkFn.idx].childNodes)
               }
             })
           }
