@@ -159,32 +159,39 @@ export default function $CompileProvider($provide) {
         }
         function compileNodes($compileNodes) {
           let linkFns = []
-          utils.forEach($compileNodes, (node, i) => {
+          utils.forEach($compileNodes, (node, idx) => {
             let attrs = new Attributes($(node))
             let directives = collectDirectives(node, attrs)
             let nodeLinkFn
             if (directives.length) {
               nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
-              if (nodeLinkFn) {
-                linkFns.push({
-                  nodeLinkFn: nodeLinkFn,
-                  idx: i
-                })
-              }
             }
+            let childLinkFn
             if (
               (!nodeLinkFn || !nodeLinkFn.terminal) &&
               node.childNodes &&
               node.childNodes.length
             ) {
-              compileNodes(node.childNodes)
+              childLinkFn = compileNodes(node.childNodes)
+            }
+            if (nodeLinkFn || childLinkFn) {
+              linkFns.push({
+                nodeLinkFn: nodeLinkFn,
+                childLinkFn: childLinkFn,
+                idx: idx
+              })
             }
           })
-          return function compositeLinkFn(scope, linkNodes) {
+          function compositeLinkFn(scope, linkNodes) {
             utils.forEach(linkFns, linkFn => {
-              linkFn.nodeLinkFn(scope, linkNodes[linkFn.idx])
+              linkFn.nodeLinkFn(
+                linkFn.childLinkFn,
+                scope,
+                linkNodes[linkFn.idx]
+              )
             })
           }
+          return compositeLinkFn
         }
         function collectDirectives(node, attrs) {
           let match
@@ -339,7 +346,10 @@ export default function $CompileProvider($provide) {
               terminalPriority = directive.priority
             }
           })
-          function nodeLinkFn(scope, linkNode) {
+          function nodeLinkFn(childLinkFn, scope, linkNode) {
+            if (childLinkFn) {
+              childLinkFn(scope, linkNode.childNodes)
+            }
             utils.forEach(linkFns, linkFn => {
               let $element = $(linkNode)
               linkFn(scope, $element, attrs)
