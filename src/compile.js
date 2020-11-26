@@ -327,7 +327,8 @@ export default function $CompileProvider($provide) {
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
-          let linkFns = []
+          let preLinkFns = [],
+            postLinkFns = []
           directives.forEach(directive => {
             if (directive.$$start) {
               $compileNode = groupScan(
@@ -342,9 +343,14 @@ export default function $CompileProvider($provide) {
             if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
               if (utils.isFunction(linkFn)) {
-                linkFns.push(linkFn)
+                postLinkFns.push(linkFn)
               } else if (linkFn) {
-                linkFns.push(linkFn.post)
+                if (linkFn.pre) {
+                  preLinkFns.push(linkFn.pre)
+                }
+                if (linkFn.post) {
+                  postLinkFns.push(linkFn.post)
+                }
               }
             }
             if (directive.terminal) {
@@ -353,11 +359,16 @@ export default function $CompileProvider($provide) {
             }
           })
           function nodeLinkFn(childLinkFn, scope, linkNode) {
+            let $element = $(linkNode)
+
+            utils.forEach(preLinkFns, linkFn => {
+              linkFn(scope, $element, attrs)
+            })
+
             if (childLinkFn) {
               childLinkFn(scope, linkNode.childNodes)
             }
-            utils.forEach(linkFns, linkFn => {
-              let $element = $(linkNode)
+            utils.forEach(postLinkFns, linkFn => {
               linkFn(scope, $element, attrs)
             })
           }

@@ -915,4 +915,28 @@ describe('$compile', () => {
       expect(linked).toBe(true)
     })
   })
+  it('supports prelinking and postlinking', () => {
+    let linkings = []
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        link: {
+          pre: function(scope, element) {
+            linkings.push(['pre', element[0]])
+          },
+          post: function(scope, element) {
+            linkings.push(['post', element[0]])
+          }
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive><div my-directive></div></div>')
+      $compile(el)($rootScope)
+      expect(linkings.length).toBe(4)
+      expect(linkings[0]).toEqual(['pre', el[0]])
+      expect(linkings[1]).toEqual(['pre', el[0].firstChild])
+      expect(linkings[2]).toEqual(['post', el[0].firstChild])
+      expect(linkings[3]).toEqual(['post', el[0]])
+    })
+  })
 })
