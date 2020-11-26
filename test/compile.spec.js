@@ -939,4 +939,46 @@ describe('$compile', () => {
       expect(linkings[3]).toEqual(['post', el[0]])
     })
   })
+  it('reverses priority for postlink functions', () => {
+    let linkings = []
+    let injector = makeInjectorWithDirectives({
+      firstDirective: function() {
+        return {
+          priority: 2,
+          link: {
+            pre: function(scope, element) {
+              linkings.push('first-pre')
+            },
+            post: function(scope, element) {
+              linkings.push('first-post')
+            }
+          }
+        }
+      },
+      secondDirective: function() {
+        return {
+          priority: 1,
+          link: {
+            pre: function(scope, element) {
+              linkings.push('second-pre')
+            },
+            post: function(scope, element) {
+              linkings.push('second-post')
+            }
+          }
+        }
+      }
+      // debugger
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div first-directive second-directive></div>')
+      $compile(el)($rootScope)
+      expect(linkings).toEqual([
+        'first-pre',
+        'second-pre',
+        'second-post',
+        'first-post'
+      ])
+    })
+  })
 })
