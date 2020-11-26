@@ -184,11 +184,15 @@ export default function $CompileProvider($provide) {
           })
           function compositeLinkFn(scope, linkNodes) {
             utils.forEach(linkFns, linkFn => {
-              linkFn.nodeLinkFn(
-                linkFn.childLinkFn,
-                scope,
-                linkNodes[linkFn.idx]
-              )
+              if (linkFn.nodeLinkFn) {
+                linkFn.nodeLinkFn(
+                  linkFn.childLinkFn,
+                  scope,
+                  linkNodes[linkFn.idx]
+                )
+              } else {
+                linkFn.childLinkFn(scope, linkNodes[linkFn.idx].childNodes)
+              }
             })
           }
           return compositeLinkFn
