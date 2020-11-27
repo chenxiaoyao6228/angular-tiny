@@ -1001,4 +1001,24 @@ describe('$compile', () => {
       expect(givenElements[1]).toBe(el2)
     })
   })
+  it('invokes multi-element directive link functions with whole group', () => {
+    let givenElements
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        multiElement: true,
+        link: function(scope, element, attrs) {
+          givenElements = element
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $(
+        '<div my-directive-start></div>' +
+          '<p></p>' +
+          '<div my-directive-end></div>'
+      )
+      $compile(el)($rootScope)
+      expect(givenElements.length).toBe(3)
+    })
+  })
 })

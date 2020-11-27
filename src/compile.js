@@ -320,6 +320,7 @@ export default function $CompileProvider($provide) {
           let terminal = false
           let preLinkFns = [],
             postLinkFns = []
+
           directives.forEach(directive => {
             if (directive.$$start) {
               $compileNode = groupScan(
@@ -333,15 +334,12 @@ export default function $CompileProvider($provide) {
             }
             if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
+              let attrStart = directive.$$start
+              let attrEnd = directive.$$end
               if (utils.isFunction(linkFn)) {
-                postLinkFns.push(linkFn)
+                addLinkFns(null, linkFn, attrStart, attrEnd)
               } else if (linkFn) {
-                if (linkFn.pre) {
-                  preLinkFns.push(linkFn.pre)
-                }
-                if (linkFn.post) {
-                  postLinkFns.push(linkFn.post)
-                }
+                addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd)
               }
             }
             if (directive.terminal) {
@@ -349,6 +347,37 @@ export default function $CompileProvider($provide) {
               terminalPriority = directive.priority
             }
           })
+          nodeLinkFn.terminal = terminal
+          return nodeLinkFn
+
+          function addLinkFns(preLinkFn, postLinkFn, attrStart, attrEnd) {
+            if (preLinkFn) {
+              if (attrStart) {
+                preLinkFn = groupElementsLinkFnWrapper(
+                  preLinkFn,
+                  attrStart,
+                  attrEnd
+                )
+              }
+              preLinkFns.push(preLinkFn)
+            }
+            if (postLinkFn) {
+              if (attrStart) {
+                postLinkFn = groupElementsLinkFnWrapper(
+                  postLinkFn,
+                  attrStart,
+                  attrEnd
+                )
+              }
+              postLinkFns.push(postLinkFn)
+            }
+          }
+          function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
+            return function(scope, element, attrs) {
+              let group = groupScan(element[0], attrStart, attrEnd)
+              return linkFn(scope, group, attrs)
+            }
+          }
           function nodeLinkFn(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
 
@@ -363,8 +392,6 @@ export default function $CompileProvider($provide) {
               linkFn(scope, $element, attrs)
             })
           }
-          nodeLinkFn.terminal = terminal
-          return nodeLinkFn
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
