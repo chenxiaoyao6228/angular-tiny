@@ -1077,4 +1077,36 @@ describe('$compile', () => {
       expect(givenScope).toBe($rootScope)
     })
   })
+  it('does not allow two isolate scope directives on an element', () => {
+    let injector = makeInjectorWithDirectives({
+      myDirective: function() {
+        return { scope: {} }
+      },
+      myOtherDirective: function() {
+        return { scope: {} }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-other-directive></div>')
+      expect(() => {
+        $compile(el)
+      }).toThrow()
+    })
+  })
+  it('does not allow both isolate and inherited scopes on an element', () => {
+    let injector = makeInjectorWithDirectives({
+      myDirective: function() {
+        return { scope: {} }
+      },
+      myOtherDirective: function() {
+        return { scope: true }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-other-directive></div>')
+      expect(() => {
+        $compile(el)
+      }).toThrow()
+    })
+  })
 })

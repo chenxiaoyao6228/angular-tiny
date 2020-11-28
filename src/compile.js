@@ -340,8 +340,14 @@ export default function $CompileProvider($provide) {
 
             if (directive.scope) {
               if (utils.isObject(directive.scope)) {
+                if (newIsolateScopeDirective || newScopeDirective) {
+                  throw 'Multiple directives asking for new/inherited scope'
+                }
                 newIsolateScopeDirective = directive
               } else {
+                if (newIsolateScopeDirective) {
+                  throw 'Multiple directives asking for new/inherited scope'
+                }
                 newScopeDirective = newScopeDirective || directive
               }
             }
