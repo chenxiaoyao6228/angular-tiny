@@ -160,6 +160,9 @@ export default function $CompileProvider($provide) {
               childLinkFn = compileNodes(node.childNodes)
             }
             if (nodeLinkFn || childLinkFn) {
+              attrs.$$element.addClass('ng-scope')
+            }
+            if (nodeLinkFn || childLinkFn) {
               linkFns.push({
                 nodeLinkFn: nodeLinkFn,
                 childLinkFn: childLinkFn,
@@ -175,14 +178,15 @@ export default function $CompileProvider($provide) {
               stableNodeList[nodeIdx] = linkNodes[nodeIdx]
             })
             utils.forEach(linkFns, linkFn => {
+              let node = stableNodeList[linkFn.idx]
               if (linkFn.nodeLinkFn) {
-                linkFn.nodeLinkFn(
-                  linkFn.childLinkFn,
-                  scope,
-                  stableNodeList[linkFn.idx]
-                )
+                if (linkFn.nodeLinkFn.scope) {
+                  scope = scope.$new()
+                  $(node).data('$scope', scope)
+                }
+                linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
               } else {
-                linkFn.childLinkFn(scope, stableNodeList[linkFn.idx].childNodes)
+                linkFn.childLinkFn(scope, node.childNodes)
               }
             })
           }
@@ -320,6 +324,7 @@ export default function $CompileProvider($provide) {
           let terminal = false
           let preLinkFns = [],
             postLinkFns = []
+          let newScopeDirective, newIsolateScopeDirective
 
           directives.forEach(directive => {
             if (directive.$$start) {
@@ -332,25 +337,49 @@ export default function $CompileProvider($provide) {
             if (directive.priority < terminalPriority) {
               return false
             }
+
+            if (directive.scope) {
+              if (utils.isObject(directive.scope)) {
+                newIsolateScopeDirective = directive
+              } else {
+                newScopeDirective = newScopeDirective || directive
+              }
+            }
+
             if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
+              let isolateScope = directive === newIsolateScopeDirective
               let attrStart = directive.$$start
               let attrEnd = directive.$$end
               if (utils.isFunction(linkFn)) {
-                addLinkFns(null, linkFn, attrStart, attrEnd)
+                addLinkFns(null, linkFn, attrStart, attrEnd, isolateScope)
               } else if (linkFn) {
-                addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd)
+                addLinkFns(
+                  linkFn.pre,
+                  linkFn.post,
+                  attrStart,
+                  attrEnd,
+                  isolateScope
+                )
               }
             }
+
             if (directive.terminal) {
               terminal = true
               terminalPriority = directive.priority
             }
           })
           nodeLinkFn.terminal = terminal
+          nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
           return nodeLinkFn
 
-          function addLinkFns(preLinkFn, postLinkFn, attrStart, attrEnd) {
+          function addLinkFns(
+            preLinkFn,
+            postLinkFn,
+            attrStart,
+            attrEnd,
+            isolateScope
+          ) {
             if (preLinkFn) {
               if (attrStart) {
                 preLinkFn = groupElementsLinkFnWrapper(
@@ -359,6 +388,7 @@ export default function $CompileProvider($provide) {
                   attrEnd
                 )
               }
+              preLinkFn.isolateScope = isolateScope
               preLinkFns.push(preLinkFn)
             }
             if (postLinkFn) {
@@ -369,6 +399,7 @@ export default function $CompileProvider($provide) {
                   attrEnd
                 )
               }
+              postLinkFn.isolateScope = isolateScope
               postLinkFns.push(postLinkFn)
             }
           }
@@ -380,16 +411,27 @@ export default function $CompileProvider($provide) {
           }
           function nodeLinkFn(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
-
+            let isolateScope
+            if (newIsolateScopeDirective) {
+              isolateScope = scope.$new(true)
+            }
             utils.forEach(preLinkFns, linkFn => {
-              linkFn(scope, $element, attrs)
+              linkFn(
+                linkFn.isolateScope ? isolateScope : scope,
+                $element,
+                attrs
+              )
             })
 
             if (childLinkFn) {
               childLinkFn(scope, linkNode.childNodes)
             }
             utils.forEachRight(postLinkFns, linkFn => {
-              linkFn(scope, $element, attrs)
+              linkFn(
+                linkFn.isolateScope ? isolateScope : scope,
+                $element,
+                attrs
+              )
             })
           }
         }
