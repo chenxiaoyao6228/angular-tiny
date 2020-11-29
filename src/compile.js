@@ -33,8 +33,12 @@ function nodeName(element) {
 function parseIsolateBindings(scope) {
   let bindings = {}
   utils.forEach(scope, (definition, scopeName) => {
-    let match = definition.match(/\s*([@=])\s*(\w*)\s*/)
-    bindings[scopeName] = { mode: match[1], attrName: match[2] || scopeName }
+    let match = definition.match(/\s*(@|=(\*?))\s*(\w*)\s*/)
+    bindings[scopeName] = {
+      mode: match[1][0],
+      collection: match[2] === '*',
+      attrName: match[3] || scopeName
+    }
   })
   return bindings
 }
@@ -467,7 +471,14 @@ export default function $CompileProvider($provide) {
                         lastValue = parentValue
                         return lastValue
                       }
-                      scope.$watch(parentValueWatch)
+                      if (definition.collection) {
+                        scope.$watchCollection(
+                          attrs[attrName],
+                          parentValueWatch
+                        )
+                      } else {
+                        scope.$watch(parentValueWatch)
+                      }
                       break
                     }
                   }

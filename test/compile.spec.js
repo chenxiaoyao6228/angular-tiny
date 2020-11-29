@@ -1282,4 +1282,45 @@ describe('$compile', () => {
       expect(givenScope.myAttr).toBe(42)
     })
   })
+  it('throws when isolate scope expression returns new arrays', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      $rootScope.parentFunction = function() {
+        return [1, 2, 3]
+      }
+      let el = $('<div my-directive my-attr="parentFunction()"></div>')
+      $compile(el)($rootScope)
+      expect(() => {
+        $rootScope.$digest()
+      }).toThrow()
+    })
+  })
+  it('can watch isolated scope expressions as collections', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=*' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      $rootScope.parentFunction = function() {
+        return [1, 2, 3]
+      }
+      let el = $('<div my-directive my-attr="parentFunction()"></div>')
+      $compile(el)($rootScope)
+      $rootScope.$digest()
+      expect(givenScope.myAttr).toEqual([1, 2, 3])
+    })
+  })
 })
