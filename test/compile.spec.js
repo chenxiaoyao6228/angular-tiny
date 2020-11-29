@@ -1323,4 +1323,20 @@ describe('$compile', () => {
       expect(givenScope.myAttr).toEqual([1, 2, 3])
     })
   })
+  it('does not watch optional missing isolate scope expressions', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=?' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect($rootScope.$$watchers.length).toBe(0)
+    })
+  })
 })
