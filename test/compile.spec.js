@@ -1109,4 +1109,22 @@ describe('$compile', () => {
       }).toThrow()
     })
   })
+  it('adds class and data for element with isolated scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: {},
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(el.hasClass('ng-isolate-scope')).toBe(true)
+      expect(el.hasClass('ng-scope')).toBe(false)
+      expect(el.data('$isolateScope')).toBe(givenScope)
+    })
+  })
 })

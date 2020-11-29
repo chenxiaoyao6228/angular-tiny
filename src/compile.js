@@ -30,6 +30,13 @@ function isBooleanAttribute(node, attrName) {
 function nodeName(element) {
   return element.nodeName ? element.nodeName : element[0].nodeName
 }
+function parseIsolateBindings(scope) {
+  let bindings = {}
+  utils.forEach(scope, (definition, scopeName) => {
+    bindings[scopeName] = { mode: definition }
+  })
+  return bindings
+}
 export default function $CompileProvider($provide) {
   let hasDirectives = {}
   this.directive = function(name, directiveFactory) {
@@ -49,6 +56,11 @@ export default function $CompileProvider($provide) {
               directive.priority = directive.priority || 0
               if (directive.link && !directive.compile) {
                 directive.compile = () => directive.link
+              }
+              if (utils.isObject(directive.scope)) {
+                directive.$$isolateBindings = parseIsolateBindings(
+                  directive.scope
+                )
               }
               directive.name = directive.name || name
               directive.index = i
@@ -159,7 +171,7 @@ export default function $CompileProvider($provide) {
             ) {
               childLinkFn = compileNodes(node.childNodes)
             }
-            if (nodeLinkFn || childLinkFn) {
+            if (nodeLinkFn && nodeLinkFn.scope) {
               attrs.$$element.addClass('ng-scope')
             }
             if (nodeLinkFn || childLinkFn) {
@@ -181,7 +193,7 @@ export default function $CompileProvider($provide) {
               let node = stableNodeList[linkFn.idx]
               if (linkFn.nodeLinkFn) {
                 if (linkFn.nodeLinkFn.scope) {
-                  scope = scope.$new()
+                  scope = scope.$new(true)
                   $(node).data('$scope', scope)
                 }
                 linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
@@ -420,6 +432,20 @@ export default function $CompileProvider($provide) {
             let isolateScope
             if (newIsolateScopeDirective) {
               isolateScope = scope.$new(true)
+              $element.addClass('ng-isolate-scope')
+              $element.data('$isolateScope', isolateScope)
+              utils.forEach(
+                newIsolateScopeDirective.$$isolateBindings,
+                (definition, scopeName) => {
+                  switch (definition.mode) {
+                    case '@':
+                      attrs.$observe(scopeName, newAttrValue => {
+                        isolateScope[scopeName] = newAttrValue
+                      })
+                      break
+                  }
+                }
+              )
             }
             utils.forEach(preLinkFns, linkFn => {
               linkFn(
