@@ -1127,4 +1127,22 @@ describe('$compile', () => {
       expect(el.data('$isolateScope')).toBe(givenScope)
     })
   })
+  it('allows observing attribute to the isolate scope', () => {
+    let givenScope, givenAttrs
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { anAttr: '@' },
+        link: function(scope, element, attrs) {
+          givenScope = scope
+          givenAttrs = attrs
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      givenAttrs.$set('anAttr', '42')
+      expect(givenScope.anAttr).toEqual('42')
+    })
+  })
 })
