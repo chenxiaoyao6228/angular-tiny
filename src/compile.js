@@ -33,7 +33,8 @@ function nodeName(element) {
 function parseIsolateBindings(scope) {
   let bindings = {}
   utils.forEach(scope, (definition, scopeName) => {
-    bindings[scopeName] = { mode: definition }
+    let match = definition.match(/\s*@\s*(\w*)\s*/)
+    bindings[scopeName] = { mode: '@', attrName: match[1] || scopeName }
   })
   return bindings
 }
@@ -437,11 +438,15 @@ export default function $CompileProvider($provide) {
               utils.forEach(
                 newIsolateScopeDirective.$$isolateBindings,
                 (definition, scopeName) => {
+                  let attrName = definition.attrName
                   switch (definition.mode) {
                     case '@':
-                      attrs.$observe(scopeName, newAttrValue => {
+                      attrs.$observe(attrName, newAttrValue => {
                         isolateScope[scopeName] = newAttrValue
                       })
+                      if (attrs[attrName]) {
+                        isolateScope[scopeName] = attrs[attrName]
+                      }
                       break
                   }
                 }

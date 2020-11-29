@@ -1145,4 +1145,36 @@ describe('$compile', () => {
       expect(givenScope.anAttr).toEqual('42')
     })
   })
+  it('sets initial value of observed attr to the isolate scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { anAttr: '@' },
+        link: function(scope, element, attrs) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive an-attr="42"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.anAttr).toEqual('42')
+    })
+  })
+  it('allows aliasing observed attribute', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { aScopeAttr: '@anAttr' },
+        link: function(scope, element, attrs) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive an-attr="42"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.aScopeAttr).toEqual('42')
+    })
+  })
 })
