@@ -452,6 +452,9 @@ export default function $CompileProvider($provide) {
                     case '=': {
                       let parentGet = $parse(attrs[attrName])
                       isolateScope[scopeName] = parentGet(scope)
+                      scope.$watch(parentGet, newValue => {
+                        isolateScope[scopeName] = newValue
+                      })
                       break
                     }
                   }
