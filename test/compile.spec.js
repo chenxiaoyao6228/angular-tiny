@@ -1177,4 +1177,53 @@ describe('$compile', () => {
       expect(givenScope.aScopeAttr).toEqual('42')
     })
   })
+  it('allows binding expression to isolate scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { anAttr: '=' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive an-attr="42"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.anAttr).toBe(42)
+    })
+  })
+  it('allows aliasing expression attribute on isolate scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=theAttr' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive the-attr="42"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.myAttr).toBe(42)
+    })
+  })
+  it('evaluates isolate scope expression on parent scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      $rootScope.parentAttr = 41
+      let el = $('<div my-directive my-attr="parentAttr + 1"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.myAttr).toBe(42)
+    })
+  })
 })

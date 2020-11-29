@@ -33,8 +33,8 @@ function nodeName(element) {
 function parseIsolateBindings(scope) {
   let bindings = {}
   utils.forEach(scope, (definition, scopeName) => {
-    let match = definition.match(/\s*@\s*(\w*)\s*/)
-    bindings[scopeName] = { mode: '@', attrName: match[1] || scopeName }
+    let match = definition.match(/\s*([@=])\s*(\w*)\s*/)
+    bindings[scopeName] = { mode: match[1], attrName: match[2] || scopeName }
   })
   return bindings
 }
@@ -78,8 +78,9 @@ export default function $CompileProvider($provide) {
     }
     this.$get = [
       '$injector',
+      '$parse',
       '$rootScope',
-      function($injector, $rootScope) {
+      function($injector, $parse, $rootScope) {
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -448,6 +449,11 @@ export default function $CompileProvider($provide) {
                         isolateScope[scopeName] = attrs[attrName]
                       }
                       break
+                    case '=': {
+                      let parentGet = $parse(attrs[attrName])
+                      isolateScope[scopeName] = parentGet(scope)
+                      break
+                    }
                   }
                 }
               )
