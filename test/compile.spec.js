@@ -1244,4 +1244,42 @@ describe('$compile', () => {
       expect(givenScope.myAttr).toBe(42)
     })
   })
+  it('allows assigning to isolated scope expressions', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-attr="parentAttr"></div>')
+      $compile(el)($rootScope)
+      givenScope.myAttr = 42
+      $rootScope.$digest()
+      expect($rootScope.parentAttr).toBe(42)
+    })
+  })
+  it('gives parent change precedence when both parent and child change', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myAttr: '=' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-attr="parentAttr"></div>')
+      $compile(el)($rootScope)
+      $rootScope.parentAttr = 42
+      givenScope.myAttr = 43
+      $rootScope.$digest()
+      expect($rootScope.parentAttr).toBe(42)
+      expect(givenScope.myAttr).toBe(42)
+    })
+  })
 })
