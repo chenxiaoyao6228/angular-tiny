@@ -246,4 +246,22 @@ describe('$controller', () => {
       expect(gotAttrs.anAttr).toEqual('abc')
     })
   })
+  it('can be attached on the scope', () => {
+    function MyController() {}
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return { controller: 'MyController', controllerAs: 'myCtrl' }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect($rootScope.myCtrl).toBeDefined()
+      expect($rootScope.myCtrl instanceof MyController).toBe(true)
+    })
+  })
 })

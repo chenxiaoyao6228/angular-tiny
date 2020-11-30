@@ -15,7 +15,7 @@ function $ControllerProvider() {
   this.$get = [
     '$injector',
     function($injector) {
-      return function(ctrl, locals) {
+      return function(ctrl, locals, identifier) {
         if (utils.isString(ctrl)) {
           if (Object.prototype.hasOwnProperty.call(controllers, ctrl)) {
             ctrl = controllers[ctrl]
@@ -23,7 +23,21 @@ function $ControllerProvider() {
             ctrl = window[ctrl]
           }
         }
-        return $injector.instantiate(ctrl, locals)
+        let instance = $injector.instantiate(ctrl, locals)
+        if (identifier) {
+          addToScope(locals, identifier, instance)
+        }
+        return instance
+
+        function addToScope(locals, identifier, instance) {
+          if (locals && utils.isObject(locals.$scope)) {
+            locals.$scope[identifier] = instance
+          } else {
+            throw 'Cannot export controller as ' +
+              identifier +
+              '! No $scope object provided via locals'
+          }
+        }
       }
     }
   ]
