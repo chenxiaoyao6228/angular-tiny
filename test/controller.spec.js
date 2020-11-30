@@ -221,4 +221,29 @@ describe('$controller', () => {
       expect(controllerInvoked).toBe(true)
     })
   })
+  it('gets scope, element, and attrs through DI', () => {
+    let gotScope, gotElement, gotAttrs
+    function MyController($element, $scope, $attrs) {
+      gotElement = $element
+      gotScope = $scope
+      gotAttrs = $attrs
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return { controller: 'MyController' }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive an-attr="abc"></div>')
+      $compile(el)($rootScope)
+      expect(gotElement[0]).toBe(el[0])
+      expect(gotScope).toBe($rootScope)
+      expect(gotAttrs).toBeDefined()
+      expect(gotAttrs.anAttr).toEqual('abc')
+    })
+  })
 })

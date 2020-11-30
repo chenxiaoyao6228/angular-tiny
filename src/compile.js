@@ -455,11 +455,16 @@ export default function $CompileProvider($provide) {
 
             if (controllerDirectives) {
               utils.forEach(controllerDirectives, directive => {
+                let locals = {
+                  $scope: scope,
+                  $element: $element,
+                  $attrs: attrs
+                }
                 let controllerName = directive.controller
                 if (controllerName === '@') {
                   controllerName = attrs[directive.name]
                 }
-                $controller(controllerName)
+                $controller(controllerName, locals)
               })
             }
 
