@@ -1,5 +1,6 @@
 import utils from './utils'
 import $ from 'jquery'
+import $ControllerProvider from './controller'
 const PREFIX_REGEXP = /(x[:_-]|data[:_-])/i
 let BOOLEAN_ATTRS = {
   multiple: true,
@@ -68,6 +69,14 @@ export default function $CompileProvider($provide) {
                   directive.scope
                 )
               }
+              if (directive.controller) {
+                let controller
+                if (utils.isString(controller)) {
+                  $injector.invoke(controller)
+                } else if (utils.isFunction(controller)) {
+                  controller()
+                }
+              }
               directive.name = directive.name || name
               directive.index = i
               return directive
@@ -84,8 +93,9 @@ export default function $CompileProvider($provide) {
     this.$get = [
       '$injector',
       '$parse',
+      '$controller',
       '$rootScope',
-      function($injector, $parse, $rootScope) {
+      function($injector, $parse, $controller, $rootScope) {
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -344,6 +354,7 @@ export default function $CompileProvider($provide) {
           let preLinkFns = [],
             postLinkFns = []
           let newScopeDirective, newIsolateScopeDirective
+          let controllerDirectives
 
           directives.forEach(directive => {
             if (directive.$$start) {
@@ -393,6 +404,11 @@ export default function $CompileProvider($provide) {
               terminal = true
               terminalPriority = directive.priority
             }
+
+            if (directive.controller) {
+              controllerDirectives = controllerDirectives || {}
+              controllerDirectives[directive.name] = directive
+            }
           })
           nodeLinkFn.terminal = terminal
           nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
@@ -436,6 +452,13 @@ export default function $CompileProvider($provide) {
           }
           function nodeLinkFn(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
+
+            if (controllerDirectives) {
+              utils.forEach(controllerDirectives, directive => {
+                $controller(directive.controller)
+              })
+            }
+
             let isolateScope
             if (newIsolateScopeDirective) {
               isolateScope = scope.$new(true)
