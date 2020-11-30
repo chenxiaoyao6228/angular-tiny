@@ -264,4 +264,24 @@ describe('$controller', () => {
       expect($rootScope.myCtrl instanceof MyController).toBe(true)
     })
   })
+  it('gets isolate scope as injected $scope', () => {
+    let gotScope
+    function MyController($scope) {
+      gotScope = $scope
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return { scope: {}, controller: 'MyController' }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(gotScope).not.toBe($rootScope)
+    })
+  })
 })

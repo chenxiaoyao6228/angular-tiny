@@ -452,11 +452,14 @@ export default function $CompileProvider($provide) {
           }
           function nodeLinkFn(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
-
+            let isolateScope
             if (controllerDirectives) {
               utils.forEach(controllerDirectives, directive => {
                 let locals = {
-                  $scope: scope,
+                  $scope:
+                    directive === newIsolateScopeDirective
+                      ? isolateScope
+                      : scope,
                   $element: $element,
                   $attrs: attrs
                 }
@@ -468,7 +471,6 @@ export default function $CompileProvider($provide) {
               })
             }
 
-            let isolateScope
             if (newIsolateScopeDirective) {
               isolateScope = scope.$new(true)
               $element.addClass('ng-isolate-scope')
