@@ -31,4 +31,13 @@ describe('$controller', () => {
     let controller = $controller(MyController)
     expect(controller.theDep).toBe(42)
   })
+  it('allows injecting locals to controller functions', () => {
+    let injector = createInjector(['ng'])
+    let $controller = injector.get('$controller')
+    function MyController(aDep) {
+      this.theDep = aDep
+    }
+    let controller = $controller(MyController, { aDep: 42 })
+    expect(controller.theDep).toBe(42)
+  })
 })
