@@ -40,4 +40,35 @@ describe('$controller', () => {
     let controller = $controller(MyController, { aDep: 42 })
     expect(controller.theDep).toBe(42)
   })
+  it('allows registering controllers at config time', () => {
+    function MyController() {}
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.register('MyController', MyController)
+      }
+    ])
+    let $controller = injector.get('$controller')
+    let controller = $controller('MyController')
+    expect(controller).toBeDefined()
+    expect(controller instanceof MyController).toBe(true)
+  })
+  it('allows registering several controllers in an object', () => {
+    function MyController() {}
+    function MyOtherController() {}
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.register({
+          MyController: MyController,
+          MyOtherController: MyOtherController
+        })
+      }
+    ])
+    let $controller = injector.get('$controller')
+    let controller = $controller('MyController')
+    let otherController = $controller('MyOtherController')
+    expect(controller instanceof MyController).toBe(true)
+    expect(otherController instanceof MyOtherController).toBe(true)
+  })
 })
