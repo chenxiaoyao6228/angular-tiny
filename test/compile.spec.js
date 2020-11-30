@@ -1339,4 +1339,23 @@ describe('$compile', () => {
       expect($rootScope.$$watchers.length).toBe(0)
     })
   })
+  it('allows binding an invokable expression on the parent scope', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myExpr: '&' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      $rootScope.parentFunction = function() {
+        return 42
+      }
+      let el = $('<div my-directive my-expr="parentFunction() + 1"></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.myExpr()).toBe(43)
+    })
+  })
 })
