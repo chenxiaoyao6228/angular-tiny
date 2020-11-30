@@ -201,4 +201,24 @@ describe('$controller', () => {
       expect(invocations).toBe(2)
     })
   })
+  it('can be aliased with @ when given in directive attribute', () => {
+    let controllerInvoked
+    function MyController() {
+      controllerInvoked = true
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return { controller: '@' }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive="MyController"></div>')
+      $compile(el)($rootScope)
+      expect(controllerInvoked).toBe(true)
+    })
+  })
 })
