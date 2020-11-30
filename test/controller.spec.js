@@ -71,4 +71,12 @@ describe('$controller', () => {
     expect(controller instanceof MyController).toBe(true)
     expect(otherController instanceof MyOtherController).toBe(true)
   })
+  it('allows registering controllers through modules', () => {
+    let module = angular.module('myModule', [])
+    module.controller('MyController', function MyController() {})
+    let injector = createInjector(['ng', 'myModule'])
+    let $controller = injector.get('$controller')
+    let controller = $controller('MyController')
+    expect(controller).toBeDefined()
+  })
 })
