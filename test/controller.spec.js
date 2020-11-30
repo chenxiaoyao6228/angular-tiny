@@ -79,4 +79,25 @@ describe('$controller', () => {
     let controller = $controller('MyController')
     expect(controller).toBeDefined()
   })
+  it('does not normally look controllers up from window', () => {
+    window.MyController = function MyController() {}
+    let injector = createInjector(['ng'])
+    let $controller = injector.get('$controller')
+    expect(() => {
+      $controller('MyController')
+    }).toThrow()
+  })
+  it('looks up controllers from window when so configured', () => {
+    window.MyController = function MyController() {}
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.allowGlobals()
+      }
+    ])
+    let $controller = injector.get('$controller')
+    let controller = $controller('MyController')
+    expect(controller).toBeDefined()
+    expect(controller instanceof window.MyController).toBe(true)
+  })
 })
