@@ -489,6 +489,9 @@ export default function $CompileProvider($provide) {
                     }
                     case '&': {
                       let parentExpr = $parse(attrs[attrName])
+                      if (parentExpr === utils.noop && definition.optional) {
+                        break
+                      }
                       isolateScope[scopeName] = function(locals) {
                         return parentExpr(scope, locals)
                       }

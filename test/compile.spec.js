@@ -313,7 +313,7 @@ describe('$compile', () => {
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         restrict: 'M',
-        compile: function(element) {
+        compile: function() {
           hasCompiled = true
         }
       }
@@ -352,7 +352,7 @@ describe('$compile', () => {
                 let injector = makeInjectorWithDirectives('myDirective', () => {
                   return {
                     restrict: restrict,
-                    compile: function(element) {
+                    compile: function() {
                       hasCompiled = true
                     }
                   }
@@ -375,7 +375,7 @@ describe('$compile', () => {
       lowerDirective: function() {
         return {
           priority: 1,
-          compile: function(element) {
+          compile: function() {
             compilations.push('lower')
           }
         }
@@ -383,7 +383,7 @@ describe('$compile', () => {
       higherDirective: function() {
         return {
           priority: 2,
-          compile: function(element) {
+          compile: function() {
             compilations.push('higher')
           }
         }
@@ -401,7 +401,7 @@ describe('$compile', () => {
     myModule.directive('aDirective', () => {
       return {
         priority: 1,
-        compile: function(element) {
+        compile: function() {
           compilations.push('first')
         }
       }
@@ -409,7 +409,7 @@ describe('$compile', () => {
     myModule.directive('aDirective', () => {
       return {
         priority: 1,
-        compile: function(element) {
+        compile: function() {
           compilations.push('second')
         }
       }
@@ -427,14 +427,14 @@ describe('$compile', () => {
     myModule.directive('firstDirective', () => {
       return {
         priority: 1,
-        compile: function(element) {
+        compile: function() {
           compilations.push('first')
         }
       }
     })
     myModule.directive('secondDirective', () => {
       return {
-        compile: function(element) {
+        compile: function() {
           compilations.push('second')
         }
       }
@@ -453,7 +453,7 @@ describe('$compile', () => {
       return {
         priority: 1,
         terminal: true,
-        compile: function(element) {
+        compile: function() {
           compilations.push('first')
         }
       }
@@ -461,7 +461,7 @@ describe('$compile', () => {
     myModule.directive('secondDirective', () => {
       return {
         priority: 0,
-        compile: function(element) {
+        compile: function() {
           compilations.push('second')
         }
       }
@@ -480,7 +480,7 @@ describe('$compile', () => {
       return {
         priority: 1,
         terminal: true,
-        compile: function(element) {
+        compile: function() {
           compilations.push('first')
         }
       }
@@ -488,7 +488,7 @@ describe('$compile', () => {
     myModule.directive('secondDirective', () => {
       return {
         priority: 1,
-        compile: function(element) {
+        compile: function() {
           compilations.push('second')
         }
       }
@@ -506,14 +506,14 @@ describe('$compile', () => {
     myModule.directive('parentDirective', () => {
       return {
         terminal: true,
-        compile: function(element) {
+        compile: function() {
           compilations.push('parent')
         }
       }
     })
     myModule.directive('childDirective', () => {
       return {
-        compile: function(element) {
+        compile: function() {
           compilations.push('child')
         }
       }
@@ -886,7 +886,7 @@ describe('$compile', () => {
     let givenElements = []
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           givenElements.push(element)
         }
       }
@@ -903,7 +903,7 @@ describe('$compile', () => {
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         link: {
-          post: function(scope, element, attrs) {
+          post: function() {
             linked = true
           }
         }
@@ -946,10 +946,10 @@ describe('$compile', () => {
         return {
           priority: 2,
           link: {
-            pre: function(scope, element) {
+            pre: function() {
               linkings.push('first-pre')
             },
-            post: function(scope, element) {
+            post: function() {
               linkings.push('first-post')
             }
           }
@@ -959,10 +959,10 @@ describe('$compile', () => {
         return {
           priority: 1,
           link: {
-            pre: function(scope, element) {
+            pre: function() {
               linkings.push('second-pre')
             },
-            post: function(scope, element) {
+            post: function() {
               linkings.push('second-post')
             }
           }
@@ -984,7 +984,7 @@ describe('$compile', () => {
     let givenElements = []
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           givenElements.push(element[0])
           element.after('<div></div>')
         }
@@ -1005,7 +1005,7 @@ describe('$compile', () => {
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         multiElement: true,
-        link: function(scope, element, attrs) {
+        link: function(scope, element) {
           givenElements = element
         }
       }
@@ -1086,7 +1086,7 @@ describe('$compile', () => {
         return { scope: {} }
       }
     })
-    injector.invoke(($compile, $rootScope) => {
+    injector.invoke($compile => {
       let el = $('<div my-directive my-other-directive></div>')
       expect(() => {
         $compile(el)
@@ -1102,7 +1102,7 @@ describe('$compile', () => {
         return { scope: true }
       }
     })
-    injector.invoke(($compile, $rootScope) => {
+    injector.invoke($compile => {
       let el = $('<div my-directive my-other-directive></div>')
       expect(() => {
         $compile(el)
@@ -1150,7 +1150,7 @@ describe('$compile', () => {
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         scope: { anAttr: '@' },
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           givenScope = scope
         }
       }
@@ -1166,7 +1166,7 @@ describe('$compile', () => {
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         scope: { aScopeAttr: '@anAttr' },
-        link: function(scope, element, attrs) {
+        link: function(scope) {
           givenScope = scope
         }
       }
@@ -1283,13 +1283,10 @@ describe('$compile', () => {
     })
   })
   it('throws when isolate scope expression returns new arrays', () => {
-    let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         scope: { myAttr: '=' },
-        link: function(scope) {
-          givenScope = scope
-        }
+        link: function(scope) {}
       }
     })
     injector.invoke(($compile, $rootScope) => {
@@ -1324,13 +1321,10 @@ describe('$compile', () => {
     })
   })
   it('does not watch optional missing isolate scope expressions', () => {
-    let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
         scope: { myAttr: '=?' },
-        link: function(scope) {
-          givenScope = scope
-        }
+        link: function(scope) {}
       }
     })
     injector.invoke(($compile, $rootScope) => {
@@ -1379,6 +1373,26 @@ describe('$compile', () => {
       $compile(el)($rootScope)
       givenScope.myExpr({ argFromChild: 42 })
       expect(gotArg).toBe(42)
+    })
+  })
+  it('sets missing optional parent scope expression to undefined', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myExpr: '&?' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let gotArg
+      $rootScope.parentFunction = function(arg) {
+        gotArg = arg
+      }
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(givenScope.myExpr).toBeUndefined()
     })
   })
 })
