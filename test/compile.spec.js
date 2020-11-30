@@ -1358,4 +1358,27 @@ describe('$compile', () => {
       expect(givenScope.myExpr()).toBe(43)
     })
   })
+  it('allows passing arguments to parent scope expression', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: { myExpr: '&' },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let gotArg
+      $rootScope.parentFunction = function(arg) {
+        gotArg = arg
+      }
+      let el = $(
+        '<div my-directive my-expr="parentFunction(argFromChild)"></div>'
+      )
+      $compile(el)($rootScope)
+      givenScope.myExpr({ argFromChild: 42 })
+      expect(gotArg).toBe(42)
+    })
+  })
 })
