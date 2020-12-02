@@ -284,4 +284,97 @@ describe('$controller', () => {
       expect(gotScope).not.toBe($rootScope)
     })
   })
+  it('has isolate scope bindings available during construction', () => {
+    let gotMyAttr
+    function MyController($scope) {
+      gotMyAttr = $scope.myAttr
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return {
+            scope: { myAttr: '@myDirective' },
+            controller: 'MyController'
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive="abc"></div>')
+      $compile(el)($rootScope)
+      expect(gotMyAttr).toEqual('abc')
+    })
+  })
+  it('can bind isolate scope bindings directly to self', () => {
+    let gotMyAttr
+    function MyController() {
+      gotMyAttr = this.myAttr
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider, $compileProvider) {
+        $controllerProvider.register('MyController', MyController)
+        $compileProvider.directive('myDirective', () => {
+          return {
+            scope: { myAttr: '@myDirective' },
+            controller: 'MyController',
+            bindToController: true
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive="abc"></div>')
+      $compile(el)($rootScope)
+      expect(gotMyAttr).toEqual('abc')
+    })
+  })
+  it('can return a semi-constructed controller', () => {
+    let injector = createInjector(['ng'])
+    let $controller = injector.get('$controller')
+    function MyController() {
+      this.constructed = true
+      this.myAttrWhenConstructed = this.myAttr
+    }
+    let controller = $controller(MyController, null, true)
+    expect(controller.constructed).toBeUndefined()
+    expect(controller.instance).toBeDefined()
+    controller.instance.myAttr = 42
+    let actualController = controller()
+    expect(actualController.constructed).toBeDefined()
+    expect(actualController.myAttrWhenConstructed).toBe(42)
+  })
+  it('can return a semi-constructed ctrl when using array injection', () => {
+    let injector = createInjector([
+      'ng',
+      function($provide) {
+        $provide.constant('aDep', 42)
+      }
+    ])
+    let $controller = injector.get('$controller')
+    function MyController(aDep) {
+      this.aDep = aDep
+      this.constructed = true
+    }
+    let controller = $controller(['aDep', MyController], null, true)
+    expect(controller.constructed).toBeUndefined()
+    let actualController = controller() // 调用之后才会实例化
+    expect(actualController.constructed).toBeDefined()
+    expect(actualController.aDep).toBe(42)
+  })
+  it('can bind semi-constructed controller to scope', () => {
+    let injector = createInjector(['ng'])
+    let $controller = injector.get('$controller')
+    function MyController() {}
+    let scope = {} // 需要往scope上做手脚
+    let controller = $controller(
+      MyController,
+      { $scope: scope },
+      true,
+      'myCtrl'
+    )
+    expect(scope.myCtrl).toBe(controller.instance)
+  })
 })

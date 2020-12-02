@@ -15,7 +15,7 @@ function $ControllerProvider() {
   this.$get = [
     '$injector',
     function($injector) {
-      return function(ctrl, locals, identifier) {
+      return function(ctrl, locals, later, identifier) {
         if (utils.isString(ctrl)) {
           if (Object.prototype.hasOwnProperty.call(controllers, ctrl)) {
             ctrl = controllers[ctrl]
@@ -23,11 +23,27 @@ function $ControllerProvider() {
             ctrl = window[ctrl]
           }
         }
-        let instance = $injector.instantiate(ctrl, locals)
-        if (identifier) {
-          addToScope(locals, identifier, instance)
+        let instance
+        if (later) {
+          let ctrlConstructor = utils.isArray(ctrl) ? utils.last(ctrl) : ctrl
+          instance = Object.create(ctrlConstructor.prototype)
+          if (identifier) {
+            addToScope(locals, identifier, instance)
+          }
+          return utils.extend(
+            () => {
+              $injector.invoke(ctrl, instance, locals)
+              return instance
+            },
+            { instance: instance }
+          )
+        } else {
+          instance = $injector.instantiate(ctrl, locals)
+          if (identifier) {
+            addToScope(locals, identifier, instance)
+          }
+          return instance
         }
-        return instance
 
         function addToScope(locals, identifier, instance) {
           if (locals && utils.isObject(locals.$scope)) {
