@@ -405,7 +405,7 @@ export default function $CompileProvider($provide) {
               let isolateScope = directive === newIsolateScopeDirective
               let attrStart = directive.$$start
               let attrEnd = directive.$$end
-              let require = directive.require
+              let require = directive.require || (directive.controller && name)
               if (utils.isFunction(linkFn)) {
                 addLinkFns(
                   null,
