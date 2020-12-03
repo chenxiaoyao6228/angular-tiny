@@ -632,9 +632,12 @@ export default function $CompileProvider($provide) {
               return require.map(getControllers)
             } else {
               let value
-              let match = require.match(/^(\^)?/)
+              let match = require.match(/^(\^\^?)?/)
               require = require.substring(match[0].length)
               if (match[1]) {
+                if (match[1] === '^^') {
+                  $element = $element.parent()
+                }
                 while ($element.length) {
                   value = $element.data('$' + require + 'Controller')
                   if (value) {
