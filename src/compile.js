@@ -405,15 +405,24 @@ export default function $CompileProvider($provide) {
               let isolateScope = directive === newIsolateScopeDirective
               let attrStart = directive.$$start
               let attrEnd = directive.$$end
+              let require = directive.require
               if (utils.isFunction(linkFn)) {
-                addLinkFns(null, linkFn, attrStart, attrEnd, isolateScope)
+                addLinkFns(
+                  null,
+                  linkFn,
+                  attrStart,
+                  attrEnd,
+                  isolateScope,
+                  require
+                )
               } else if (linkFn) {
                 addLinkFns(
                   linkFn.pre,
                   linkFn.post,
                   attrStart,
                   attrEnd,
-                  isolateScope
+                  isolateScope,
+                  require
                 )
               }
             }
@@ -437,17 +446,20 @@ export default function $CompileProvider($provide) {
             postLinkFn,
             attrStart,
             attrEnd,
-            isolateScope
+            isolateScope,
+            require
           ) {
             if (preLinkFn) {
               if (attrStart) {
                 preLinkFn = groupElementsLinkFnWrapper(
                   preLinkFn,
                   attrStart,
-                  attrEnd
+                  attrEnd,
+                  require
                 )
               }
               preLinkFn.isolateScope = isolateScope
+              preLinkFn.require = require
               preLinkFns.push(preLinkFn)
             }
             if (postLinkFn) {
@@ -455,10 +467,12 @@ export default function $CompileProvider($provide) {
                 postLinkFn = groupElementsLinkFnWrapper(
                   postLinkFn,
                   attrStart,
-                  attrEnd
+                  attrEnd,
+                  require
                 )
               }
               postLinkFn.isolateScope = isolateScope
+              postLinkFn.require = require
               postLinkFns.push(postLinkFn)
             }
           }
@@ -590,7 +604,8 @@ export default function $CompileProvider($provide) {
               linkFn(
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
-                attrs
+                attrs,
+                linkFn.require && getControllers(linkFn.length)
               )
             })
 
@@ -602,9 +617,22 @@ export default function $CompileProvider($provide) {
               linkFn(
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
-                attrs
+                attrs,
+                linkFn.require && getControllers(linkFn.require)
               )
             })
+          }
+          function getControllers(require) {
+            let value
+            if (controllers[require]) {
+              value = controllers[require].instance
+            }
+            if (!value) {
+              throw 'Controller ' +
+                require +
+                ' required by directive, cannot be found'
+            }
+            return value
           }
         }
         function directiveIsMultiElement(name) {
