@@ -504,11 +504,16 @@ export default function $CompileProvider($provide) {
                 if (controllerName === '@') {
                   controllerName = attrs[directive.name]
                 }
-                controllers[directive.name] = $controller(
+                let controller = (controllers[directive.name] = $controller(
                   controllerName,
                   locals,
                   true,
                   directive.controllerAs
+                ))
+                controllers[directive.name] = controller
+                $element.data(
+                  '$' + directive.name + 'Controller',
+                  controller.instance
                 )
               })
             }
@@ -605,7 +610,7 @@ export default function $CompileProvider($provide) {
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
-                linkFn.require && getControllers(linkFn.require)
+                linkFn.require && getControllers(linkFn.require, $element)
               )
             })
 
@@ -618,17 +623,30 @@ export default function $CompileProvider($provide) {
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
-                linkFn.require && getControllers(linkFn.require)
+                linkFn.require && getControllers(linkFn.require, $element)
               )
             })
           }
-          function getControllers(require) {
+          function getControllers(require, $element) {
             if (utils.isArray(require)) {
               return require.map(getControllers)
             } else {
               let value
-              if (controllers[require]) {
-                value = controllers[require].instance
+              let match = require.match(/^(\^)?/)
+              require = require.substring(match[0].length)
+              if (match[1]) {
+                while ($element.length) {
+                  value = $element.data('$' + require + 'Controller')
+                  if (value) {
+                    break
+                  } else {
+                    $element = $element.parent()
+                  }
+                }
+              } else {
+                if (controllers[require]) {
+                  value = controllers[require].instance
+                }
               }
               if (!value) {
                 throw 'Controller ' +

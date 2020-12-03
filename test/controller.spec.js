@@ -484,4 +484,56 @@ describe('$controller', () => {
       expect(gotMyController instanceof MyController).toBe(true)
     })
   })
+  it('can be required from a parent directive', () => {
+    function MyController() {}
+    let gotMyController
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return { scope: {}, controller: MyController }
+        })
+        $compileProvider.directive('myOtherDirective', () => {
+          return {
+            require: '^myDirective',
+            link: function(scope, element, attrs, myController) {
+              gotMyController = myController
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive><div my-other-directive></div></div>')
+      $compile(el)($rootScope)
+      expect(gotMyController).toBeDefined()
+      expect(gotMyController instanceof MyController).toBe(true)
+    })
+  })
+  it('finds from sibling directive when requiring with parent prefix', () => {
+    function MyController() {}
+    let gotMyController
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return { scope: {}, controller: MyController }
+        })
+        $compileProvider.directive('myOtherDirective', () => {
+          return {
+            require: '^myDirective',
+            link: function(scope, element, attrs, myController) {
+              gotMyController = myController
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-other-directive></div>')
+      $compile(el)($rootScope)
+      expect(gotMyController).toBeDefined()
+      expect(gotMyController instanceof MyController).toBe(true)
+    })
+  })
 })
