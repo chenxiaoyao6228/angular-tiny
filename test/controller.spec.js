@@ -459,4 +459,29 @@ describe('$controller', () => {
       expect(gotMyController instanceof MyController).toBe(true)
     })
   })
+  it('is passed through grouped link wrapper', () => {
+    function MyController() {}
+    let gotMyController
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return {
+            multiElement: true,
+            scope: {},
+            controller: MyController,
+            link: function(scope, element, attrs, myController) {
+              gotMyController = myController
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive-start></div><div my-directive-end></div>')
+      $compile(el)($rootScope)
+      expect(gotMyController).toBeDefined()
+      expect(gotMyController instanceof MyController).toBe(true)
+    })
+  })
 })
