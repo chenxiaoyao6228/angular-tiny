@@ -605,7 +605,7 @@ export default function $CompileProvider($provide) {
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
-                linkFn.require && getControllers(linkFn.length)
+                linkFn.require && getControllers(linkFn.require)
               )
             })
 
