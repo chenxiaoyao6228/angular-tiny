@@ -116,8 +116,6 @@ describe('$controller', () => {
       let injector = makeInjectorWithDirectives('myDirective', () => {
         return {
           controller: function MyController() {
-            // eslint-disable-next-line
-            console.log('111', 111);
             controllerInvoked = true
           }
         }

@@ -58,7 +58,7 @@ export default function $CompileProvider($provide) {
           function($injector) {
             let factories = hasDirectives[name]
             return utils.map(factories, (factory, i) => {
-              let directive = $injector.invoke(factory)
+              let directive = $injector.invoke(factory) // 获得我们写的directiveObject对象,并往里面添加其他属性
               directive.restrict = directive.restrict || 'EA'
               directive.priority = directive.priority || 0
               if (directive.link && !directive.compile) {
@@ -77,7 +77,7 @@ export default function $CompileProvider($provide) {
                   controller()
                 }
               }
-              directive.$$bindings = parseDirectiveBindings(directive)
+              directive.$$bindings = parseDirectiveBindings(directive) // 处理上面的scope对象
               directive.name = directive.name || name
               directive.index = i
               return directive
@@ -190,8 +190,8 @@ export default function $CompileProvider($provide) {
         function compileNodes($compileNodes) {
           let linkFns = []
           utils.forEach($compileNodes, (node, idx) => {
-            let attrs = new Attributes($(node))
-            let directives = collectDirectives(node, attrs)
+            let attrs = new Attributes($(node)) // 具体的类来处理,监听
+            let directives = collectDirectives(node, attrs) // directives对象的数组
             let nodeLinkFn
             if (directives.length) {
               nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
@@ -227,7 +227,7 @@ export default function $CompileProvider($provide) {
               if (linkFn.nodeLinkFn) {
                 if (linkFn.nodeLinkFn.scope) {
                   scope = scope.$new(true)
-                  $(node).data('$scope', scope)
+                  $(node).data('$scope', scope) // 把当前的scope挂载到dom上
                 }
                 linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
               } else {
@@ -386,6 +386,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.scope) {
+              // 有scope的话证明是isolateScope
               if (utils.isObject(directive.scope)) {
                 if (newIsolateScopeDirective || newScopeDirective) {
                   throw 'Multiple directives asking for new/inherited scope'

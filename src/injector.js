@@ -111,6 +111,7 @@ export function createInjector(modulesToLoad, strictDi) {
       }
     }
     function invoke(fn, self, locals) {
+      // 获取函数的的参数,并且从cache中查找相应的Provider函数
       let args = annotate(fn).map(token => {
         if (utils.isString(token)) {
           if (locals && Object.prototype.hasOwnProperty.call(locals, token)) {
