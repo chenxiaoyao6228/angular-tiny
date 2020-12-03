@@ -623,16 +623,20 @@ export default function $CompileProvider($provide) {
             })
           }
           function getControllers(require) {
-            let value
-            if (controllers[require]) {
-              value = controllers[require].instance
+            if (utils.isArray(require)) {
+              return require.map(getControllers)
+            } else {
+              let value
+              if (controllers[require]) {
+                value = controllers[require].instance
+              }
+              if (!value) {
+                throw 'Controller ' +
+                  require +
+                  ' required by directive, cannot be found'
+              }
+              return value
             }
-            if (!value) {
-              throw 'Controller ' +
-                require +
-                ' required by directive, cannot be found'
-            }
-            return value
           }
         }
         function directiveIsMultiElement(name) {

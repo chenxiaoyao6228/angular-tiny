@@ -401,4 +401,38 @@ describe('$controller', () => {
       expect(gotMyController instanceof MyController).toBe(true)
     })
   })
+  it('can be required from multiple sibling directives', () => {
+    function MyController() {}
+    function MyOtherController() {}
+    let gotControllers
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return { scope: true, controller: MyController }
+        })
+        $compileProvider.directive('myOtherDirective', () => {
+          return { scope: true, controller: MyOtherController }
+        })
+        $compileProvider.directive('myThirdDirective', () => {
+          return {
+            require: ['myDirective', 'myOtherDirective'],
+            link: function(scope, element, attrs, controllers) {
+              gotControllers = controllers
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $(
+        '<div my-directive my-other-directive my-third-directive></div>'
+      )
+      $compile(el)($rootScope)
+      expect(gotControllers).toBeDefined()
+      expect(gotControllers.length).toBe(2)
+      expect(gotControllers[0] instanceof MyController).toBe(true)
+      expect(gotControllers[1] instanceof MyOtherController).toBe(true)
+    })
+  })
 })
