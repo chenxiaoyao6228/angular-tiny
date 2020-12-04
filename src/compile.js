@@ -632,10 +632,13 @@ export default function $CompileProvider($provide) {
               return require.map(getControllers)
             } else {
               let value
-              let match = require.match(/^(\^\^?)?(\?)?/)
+              let match = require.match(/^(\^\^?)?(\?)?(\^\^?)?/)
               let optional = match[2]
               require = require.substring(match[0].length)
-              if (match[1]) {
+              if (match[1] || match[3]) {
+                if (match[3] && !match[1]) {
+                  match[1] = match[3]
+                }
                 if (match[1] === '^^') {
                   $element = $element.parent()
                 }

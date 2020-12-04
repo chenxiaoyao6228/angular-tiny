@@ -606,4 +606,51 @@ describe('$controller', () => {
       expect(gotCtrl).toBe(null)
     })
   })
+  it('allows optional marker after parent marker', () => {
+    let gotCtrl
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return {
+            require: '^?noSuchDirective',
+            link: function(scope, element, attrs, ctrl) {
+              gotCtrl = ctrl
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(gotCtrl).toBe(null)
+    })
+  })
+  it('allows optional marker before parent marker', () => {
+    function MyController() {}
+    let gotMyController
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return { scope: {}, controller: MyController }
+        })
+        $compileProvider.directive('myOtherDirective', () => {
+          return {
+            require: '?^myDirective',
+            link: function(scope, element, attrs, ctrl) {
+              gotMyController = ctrl
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive my-other-directive></div>')
+      $compile(el)($rootScope)
+      expect(gotMyController).toBeDefined()
+      expect(gotMyController instanceof MyController).toBe(true)
+    })
+  })
 })
