@@ -1,6 +1,5 @@
 import utils from './utils'
 import $ from 'jquery'
-import $ControllerProvider from './controller'
 const PREFIX_REGEXP = /(x[:_-]|data[:_-])/i
 let BOOLEAN_ATTRS = {
   multiple: true,
