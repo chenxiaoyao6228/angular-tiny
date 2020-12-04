@@ -632,7 +632,8 @@ export default function $CompileProvider($provide) {
               return require.map(getControllers)
             } else {
               let value
-              let match = require.match(/^(\^\^?)?/)
+              let match = require.match(/^(\^\^?)?(\?)?/)
+              let optional = match[2]
               require = require.substring(match[0].length)
               if (match[1]) {
                 if (match[1] === '^^') {
@@ -651,12 +652,12 @@ export default function $CompileProvider($provide) {
                   value = controllers[require].instance
                 }
               }
-              if (!value) {
+              if (!value && !optional) {
                 throw 'Controller ' +
                   require +
                   ' required by directive, cannot be found'
               }
-              return value
+              return value || null
             }
           }
         }

@@ -585,4 +585,25 @@ describe('$controller', () => {
       }).toThrow()
     })
   })
+  it('does not throw on required missing controller when optional', () => {
+    let gotCtrl
+    let injector = createInjector([
+      'ng',
+      function($compileProvider) {
+        $compileProvider.directive('myDirective', () => {
+          return {
+            require: '?noSuchDirective',
+            link: function(scope, element, attrs, ctrl) {
+              gotCtrl = ctrl
+            }
+          }
+        })
+      }
+    ])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect(gotCtrl).toBe(null)
+    })
+  })
 })
