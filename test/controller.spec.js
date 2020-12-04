@@ -714,5 +714,23 @@ describe('$controller', () => {
         expect(gotScope.$parent).toBe($rootScope)
       })
     })
+    it('allows aliasing controller in expression', () => {
+      let gotScope
+      function MyController($scope) {
+        gotScope = $scope
+      }
+      let injector = createInjector([
+        'ng',
+        function($controllerProvider) {
+          $controllerProvider.register('MyController', MyController)
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div ng-controller="MyController as myCtrl"></div>')
+        $compile(el)($rootScope)
+        expect(gotScope.myCtrl).toBeDefined()
+        expect(gotScope.myCtrl instanceof MyController).toBe(true)
+      })
+    })
   })
 })

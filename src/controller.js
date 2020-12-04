@@ -17,6 +17,9 @@ function $ControllerProvider() {
     function($injector) {
       return function(ctrl, locals, later, identifier) {
         if (utils.isString(ctrl)) {
+          let match = ctrl.match(/^(\S+)(\s+as\s+(\w+))?/)
+          ctrl = match[1]
+          identifier = identifier || match[3]
           if (Object.prototype.hasOwnProperty.call(controllers, ctrl)) {
             ctrl = controllers[ctrl]
           } else if (globals) {
