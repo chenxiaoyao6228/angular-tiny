@@ -1466,5 +1466,25 @@ describe('$compile', () => {
         expect(templateSpy.mock.calls[0][1].myDirective).toBeDefined()
       })
     })
+    it('uses isolate scope for template contents', () => {
+      let linkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            scope: { isoValue: '=myDirective' },
+            template: '<div my-other-directive></div>'
+          }
+        },
+        myOtherDirective: function() {
+          return { link: linkSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive="42"></div>')
+        $compile(el)($rootScope)
+        expect(linkSpy.mock.calls[0][0]).not.toBe($rootScope)
+        expect(linkSpy.mock.calls[0][0].isoValue).toBe(42)
+      })
+    })
   })
 })

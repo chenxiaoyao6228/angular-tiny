@@ -627,7 +627,14 @@ export default function $CompileProvider($provide) {
             })
 
             if (childLinkFn) {
-              childLinkFn(scope, linkNode.childNodes)
+              let scopeToChild = scope
+              if (
+                newIsolateScopeDirective &&
+                newIsolateScopeDirective.template
+              ) {
+                scopeToChild = isolateScope
+              }
+              childLinkFn(scopeToChild, linkNode.childNodes)
             }
 
             utils.forEachRight(postLinkFns, linkFn => {
