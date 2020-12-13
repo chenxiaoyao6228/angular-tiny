@@ -1604,5 +1604,23 @@ describe('$compile', () => {
         expect(otherCompileSpy).toHaveBeenCalled()
       })
     })
+    it('resumes child compilation after template received', () => {
+      let otherCompileSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        },
+        myOtherDirective: function() {
+          return { compile: otherCompileSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div my-other-directive></div>')
+        expect(otherCompileSpy).toHaveBeenCalled()
+      })
+    })
   })
 })

@@ -693,7 +693,8 @@ export default function $CompileProvider($provide) {
           $http.get(oriAsyncDirective.templateUrl).success(template => {
             delete oriAsyncDirective.templateUrl
             $compileNode.html(template)
-            return applyDirectivesToNode(directives, $compileNode, attrs)
+            applyDirectivesToNode(directives, $compileNode, attrs)
+            compileNodes($compileNode[0].childNodes)
           })
         }
         function directiveIsMultiElement(name) {
