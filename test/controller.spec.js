@@ -712,6 +712,7 @@ describe('$controller', () => {
         $compile(el)($rootScope)
         expect(gotScope).not.toBe($rootScope)
         expect(gotScope.$parent).toBe($rootScope)
+        expect(Object.getPrototypeOf(gotScope)).toBe($rootScope)
       })
     })
     it('allows aliasing controller in expression', () => {

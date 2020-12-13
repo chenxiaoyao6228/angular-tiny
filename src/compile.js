@@ -225,7 +225,7 @@ export default function $CompileProvider($provide) {
               let node = stableNodeList[linkFn.idx]
               if (linkFn.nodeLinkFn) {
                 if (linkFn.nodeLinkFn.scope) {
-                  scope = scope.$new(true)
+                  scope = scope.$new()
                   $(node).data('$scope', scope) // 把当前的scope挂载到dom上
                 }
                 linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
@@ -426,14 +426,14 @@ export default function $CompileProvider($provide) {
               }
             }
 
-            if (directive.terminal) {
-              terminal = true
-              terminalPriority = directive.priority
-            }
-
             if (directive.controller) {
               controllerDirectives = controllerDirectives || {}
               controllerDirectives[directive.name] = directive
+            }
+
+            if (directive.terminal) {
+              terminal = true
+              terminalPriority = directive.priority
             }
           })
           nodeLinkFn.terminal = terminal
