@@ -371,6 +371,7 @@ export default function $CompileProvider($provide) {
             controllers = {}
           let newScopeDirective, newIsolateScopeDirective
           let controllerDirectives
+          let templateDirective
 
           directives.forEach(directive => {
             if (directive.$$start) {
@@ -432,6 +433,10 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.template) {
+              if (templateDirective) {
+                throw new Error('Multiple directives asking for template')
+              }
+              templateDirective = directive
               $compileNode.html(directive.template)
             }
 

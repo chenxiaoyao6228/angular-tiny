@@ -1432,5 +1432,21 @@ describe('$compile', () => {
         expect(compileSpy).toHaveBeenCalled()
       })
     })
+    it('does not allow two directives with templates', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { template: '<div></div>' }
+        },
+        myOtherDirective: function() {
+          return { template: '<div></div>' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive my-other-directive></div>')
+        expect(() => {
+          $compile(el)
+        }).toThrow()
+      })
+    })
   })
 })
