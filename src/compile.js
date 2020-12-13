@@ -373,7 +373,7 @@ export default function $CompileProvider($provide) {
           let controllerDirectives
           let templateDirective
 
-          directives.forEach(directive => {
+          for (let directive of directives) {
             if (directive.$$start) {
               $compileNode = groupScan(
                 compileNode,
@@ -444,11 +444,15 @@ export default function $CompileProvider($provide) {
               )
             }
 
+            if (directive.templateUrl) {
+              return true // 跳出循环
+            }
+
             if (directive.terminal) {
               terminal = true
               terminalPriority = directive.priority
             }
-          })
+          }
           nodeLinkFn.terminal = terminal
           nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
           return nodeLinkFn
