@@ -1517,5 +1517,17 @@ describe('$compile', () => {
         expect(compileSpy).not.toHaveBeenCalled()
       })
     })
+    it('immediately empties out the element', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive>Hello</div>')
+        $compile(el)
+        expect(el.is(':empty')).toBe(true)
+      })
+    })
   })
 })

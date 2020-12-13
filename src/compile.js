@@ -418,6 +418,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.templateUrl) {
+              compileTemplateUrl($compileNode)
               return true // 跳出循环
             } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
@@ -684,6 +685,9 @@ export default function $CompileProvider($provide) {
               return value || null
             }
           }
+        }
+        function compileTemplateUrl($compileNode) {
+          $compileNode.empty()
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
