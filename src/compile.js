@@ -689,7 +689,9 @@ export default function $CompileProvider($provide) {
         }
         function compileTemplateUrl(directive, $compileNode) {
           $compileNode.empty()
-          $http.get(directive.templateUrl)
+          $http.get(directive.templateUrl).success(template => {
+            $compileNode.html(template)
+          })
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {

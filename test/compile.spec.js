@@ -1541,6 +1541,7 @@ describe('$compile', () => {
         expect(el.is(':empty')).toBe(true)
       })
     })
+    // fetch和populate分成了两步
     it('fetches the template', () => {
       let injector = makeInjectorWithDirectives({
         myDirective: function() {
@@ -1556,6 +1557,19 @@ describe('$compile', () => {
         expect(requests[0].url).toBe('/my_directive.html')
       })
     })
-    it('populates element with template', function() { var injector = makeInjectorWithDirectives({ myDirective: function() { return {templateUrl: '/my_directive.html'}; } }); injector.invoke(function($compile, $rootScope) { var el = $('<div my-directive></div>'); $compile(el); $rootScope.$apply(); requests[0].respond(200, {}, '<div class="from-template"></div>'); expect(el.find('> .from-template').length).toBe(1); }); });
+    it('populates element with template', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div class="from-template"></div>')
+        expect(el.find('> .from-template').length).toBe(1)
+      })
+    })
   })
 })
