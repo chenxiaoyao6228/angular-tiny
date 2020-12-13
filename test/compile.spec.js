@@ -1622,5 +1622,21 @@ describe('$compile', () => {
         expect(otherCompileSpy).toHaveBeenCalled()
       })
     })
+    it('supports functions as values', () => {
+      let templateUrlSpy = jest.fn().mockReturnValue('/my_directive.html')
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: templateUrlSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        $rootScope.$apply()
+        expect(requests[0].url).toBe('/my_directive.html')
+        expect(templateUrlSpy.mock.calls[0][0][0]).toBe(el[0])
+        expect(templateUrlSpy.mock.calls[0][1].myDirective).toBeDefined()
+      })
+    })
   })
 })

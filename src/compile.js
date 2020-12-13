@@ -689,8 +689,11 @@ export default function $CompileProvider($provide) {
         }
         function compileTemplateUrl(directives, $compileNode, attrs) {
           let oriAsyncDirective = directives[0]
+          let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
+            ? oriAsyncDirective.templateUrl($compileNode, attrs)
+            : oriAsyncDirective.templateUrl
           $compileNode.empty()
-          $http.get(oriAsyncDirective.templateUrl).success(template => {
+          $http.get(templateUrl).success(template => {
             delete oriAsyncDirective.templateUrl
             $compileNode.html(template)
             applyDirectivesToNode(directives, $compileNode, attrs)
