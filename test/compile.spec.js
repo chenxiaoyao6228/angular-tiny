@@ -1504,5 +1504,18 @@ describe('$compile', () => {
         expect(otherCompileSpy).not.toHaveBeenCalled()
       })
     })
+    it('defers current directive compilation', () => {
+      let compileSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html', compile: compileSpy }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        expect(compileSpy).not.toHaveBeenCalled()
+      })
+    })
   })
 })

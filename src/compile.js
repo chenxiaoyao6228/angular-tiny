@@ -400,7 +400,26 @@ export default function $CompileProvider($provide) {
               }
             }
 
-            if (directive.compile) {
+            if (directive.controller) {
+              controllerDirectives = controllerDirectives || {}
+              controllerDirectives[directive.name] = directive
+            }
+
+            if (directive.template) {
+              if (templateDirective) {
+                throw new Error('Multiple directives asking for template')
+              }
+              templateDirective = directive
+              $compileNode.html(
+                utils.isFunction(directive.template)
+                  ? directive.template($compileNode, attrs)
+                  : directive.template
+              )
+            }
+
+            if (directive.templateUrl) {
+              return true // 跳出循环
+            } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
               let isolateScope = directive === newIsolateScopeDirective
               let attrStart = directive.$$start
@@ -425,27 +444,6 @@ export default function $CompileProvider($provide) {
                   require
                 )
               }
-            }
-
-            if (directive.controller) {
-              controllerDirectives = controllerDirectives || {}
-              controllerDirectives[directive.name] = directive
-            }
-
-            if (directive.template) {
-              if (templateDirective) {
-                throw new Error('Multiple directives asking for template')
-              }
-              templateDirective = directive
-              $compileNode.html(
-                utils.isFunction(directive.template)
-                  ? directive.template($compileNode, attrs)
-                  : directive.template
-              )
-            }
-
-            if (directive.templateUrl) {
-              return true // 跳出循环
             }
 
             if (directive.terminal) {
