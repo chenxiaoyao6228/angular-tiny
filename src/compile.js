@@ -363,7 +363,13 @@ export default function $CompileProvider($provide) {
           }
           return match
         }
-        function applyDirectivesToNode(directives, compileNode, attrs) {
+        function applyDirectivesToNode(
+          directives,
+          compileNode,
+          attrs,
+          previousCompileContext
+        ) {
+          previousCompileContext = previousCompileContext || {}
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
@@ -372,7 +378,7 @@ export default function $CompileProvider($provide) {
             controllers = {}
           let newScopeDirective, newIsolateScopeDirective
           let controllerDirectives
-          let templateDirective
+          let templateDirective = previousCompileContext.templateDirective
 
           for (let [i, directive] of directives.entries()) {
             if (directive.$$start) {
@@ -416,10 +422,19 @@ export default function $CompileProvider($provide) {
                   ? directive.template($compileNode, attrs)
                   : directive.template
               )
-            }
-
-            if (directive.templateUrl) {
-              compileTemplateUrl(utils.drop(directives, i), $compileNode, attrs)
+            } else if (directive.templateUrl) {
+              if (templateDirective) {
+                throw new Error('Multiple directives asking for template')
+              }
+              templateDirective = directive
+              compileTemplateUrl(
+                utils.drop(directives, i),
+                $compileNode,
+                attrs,
+                {
+                  templateDirective
+                }
+              )
               return true // 跳出循环
             } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
@@ -687,7 +702,12 @@ export default function $CompileProvider($provide) {
             }
           }
         }
-        function compileTemplateUrl(directives, $compileNode, attrs) {
+        function compileTemplateUrl(
+          directives,
+          $compileNode,
+          attrs,
+          previousCompileContext
+        ) {
           let oriAsyncDirective = directives[0]
           let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
             ? oriAsyncDirective.templateUrl($compileNode, attrs)
@@ -696,7 +716,12 @@ export default function $CompileProvider($provide) {
           $http.get(templateUrl).success(template => {
             delete oriAsyncDirective.templateUrl
             $compileNode.html(template)
-            applyDirectivesToNode(directives, $compileNode, attrs)
+            applyDirectivesToNode(
+              directives,
+              $compileNode,
+              attrs,
+              previousCompileContext
+            )
             compileNodes($compileNode[0].childNodes)
           })
         }

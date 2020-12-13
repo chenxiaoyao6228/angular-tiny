@@ -1638,5 +1638,38 @@ describe('$compile', () => {
         expect(templateUrlSpy.mock.calls[0][1].myDirective).toBeDefined()
       })
     })
+    it('does not allow templateUrl directive after template directive', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { template: '<div></div>' }
+        },
+        myOtherDirective: function() {
+          return { templateUrl: '/my_other_directive.html' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive my-other-directive></div>')
+        expect(() => {
+          $compile(el)
+        }).toThrow()
+      })
+    })
+    it('does not allow template directive after templateUrl directive', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        },
+        myOtherDirective: function() {
+          return { template: '<div></div>' }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive my-other-directive></div>')
+        $compile(el)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div class="replacement"></div>')
+        expect(el.find('> .replacement').length).toBe(1)
+      })
+    })
   })
 })
