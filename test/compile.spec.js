@@ -1448,5 +1448,23 @@ describe('$compile', () => {
         }).toThrow()
       })
     })
+    it('supports functions as template values', () => {
+      let templateSpy = jest
+        .fn()
+        .mockReturnValue('<div class="from-template"></div>')
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { template: templateSpy }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        expect(el.find('> .from-template').length).toBe(1)
+        // Check that template function was called with element and attrs
+        expect(templateSpy.mock.calls[0][0][0]).toBe(el[0])
+        expect(templateSpy.mock.calls[0][1].myDirective).toBeDefined()
+      })
+    })
   })
 })

@@ -437,7 +437,11 @@ export default function $CompileProvider($provide) {
                 throw new Error('Multiple directives asking for template')
               }
               templateDirective = directive
-              $compileNode.html(directive.template)
+              $compileNode.html(
+                utils.isFunction(directive.template)
+                  ? directive.template($compileNode, attrs)
+                  : directive.template
+              )
             }
 
             if (directive.terminal) {
