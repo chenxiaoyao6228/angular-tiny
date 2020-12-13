@@ -431,6 +431,10 @@ export default function $CompileProvider($provide) {
               controllerDirectives[directive.name] = directive
             }
 
+            if (directive.template) {
+              $compileNode.html(directive.template)
+            }
+
             if (directive.terminal) {
               terminal = true
               terminalPriority = directive.priority
