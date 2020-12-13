@@ -2,6 +2,7 @@ import { publishExternalAPI } from '../src/angular_public'
 import { createInjector } from '../src/injector'
 import utils from '../src/utils'
 import $ from 'jquery'
+const sinon = require('sinon')
 
 function makeInjectorWithDirectives(...args) {
   return createInjector([
@@ -1488,6 +1489,17 @@ describe('$compile', () => {
     })
   })
   describe('templateUrl', () => {
+    let xhr, requests
+    beforeEach(() => {
+      xhr = sinon.useFakeXMLHttpRequest()
+      requests = []
+      xhr.onCreate = function(req) {
+        requests.push(req)
+      }
+    })
+    afterEach(() => {
+      xhr.restore()
+    })
     it('defers remaining directive compilation', () => {
       let otherCompileSpy = jest.fn()
       let injector = makeInjectorWithDirectives({
@@ -1529,5 +1541,21 @@ describe('$compile', () => {
         expect(el.is(':empty')).toBe(true)
       })
     })
+    it('fetches the template', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        $compile(el)
+        $rootScope.$apply()
+        expect(requests.length).toBe(1)
+        expect(requests[0].method).toBe('GET')
+        expect(requests[0].url).toBe('/my_directive.html')
+      })
+    })
+    it('populates element with template', function() { var injector = makeInjectorWithDirectives({ myDirective: function() { return {templateUrl: '/my_directive.html'}; } }); injector.invoke(function($compile, $rootScope) { var el = $('<div my-directive></div>'); $compile(el); $rootScope.$apply(); requests[0].respond(200, {}, '<div class="from-template"></div>'); expect(el.find('> .from-template').length).toBe(1); }); });
   })
 })

@@ -110,7 +110,8 @@ export default function $CompileProvider($provide) {
       '$parse',
       '$controller',
       '$rootScope',
-      function($injector, $parse, $controller, $rootScope) {
+      '$http',
+      function($injector, $parse, $controller, $rootScope, $http) {
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -418,7 +419,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.templateUrl) {
-              compileTemplateUrl($compileNode)
+              compileTemplateUrl(directive, $compileNode)
               return true // 跳出循环
             } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
@@ -686,8 +687,9 @@ export default function $CompileProvider($provide) {
             }
           }
         }
-        function compileTemplateUrl($compileNode) {
+        function compileTemplateUrl(directive, $compileNode) {
           $compileNode.empty()
+          $http.get(directive.templateUrl)
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
