@@ -701,6 +701,7 @@ describe('$controller', () => {
       function MyController($scope, $element, $attrs) {
         gotScope = $scope
       }
+
       let injector = createInjector([
         'ng',
         function($controllerProvider) {
@@ -728,6 +729,20 @@ describe('$controller', () => {
       ])
       injector.invoke(($compile, $rootScope) => {
         let el = $('<div ng-controller="MyController as myCtrl"></div>')
+        $compile(el)($rootScope)
+        expect(gotScope.myCtrl).toBeDefined()
+        expect(gotScope.myCtrl instanceof MyController).toBe(true)
+      })
+    })
+    it('allows looking up controller from surrounding scope', () => {
+      let gotScope
+      function MyController($scope) {
+        gotScope = $scope
+      }
+      let injector = createInjector(['ng'])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div ng-controller="MyCtrlOnScope as myCtrl"></div>')
+        $rootScope.MyCtrlOnScope = MyController
         $compile(el)($rootScope)
         expect(gotScope.myCtrl).toBeDefined()
         expect(gotScope.myCtrl instanceof MyController).toBe(true)
