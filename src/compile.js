@@ -374,7 +374,7 @@ export default function $CompileProvider($provide) {
           let controllerDirectives
           let templateDirective
 
-          for (let directive of directives) {
+          for (let [i, directive] of directives.entries()) {
             if (directive.$$start) {
               $compileNode = groupScan(
                 compileNode,
@@ -419,7 +419,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.templateUrl) {
-              compileTemplateUrl(directive, $compileNode)
+              compileTemplateUrl(utils.drop(directives, i), $compileNode, attrs)
               return true // 跳出循环
             } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs)
@@ -687,10 +687,13 @@ export default function $CompileProvider($provide) {
             }
           }
         }
-        function compileTemplateUrl(directive, $compileNode) {
+        function compileTemplateUrl(directives, $compileNode, attrs) {
+          let oriAsyncDirective = directives[0]
           $compileNode.empty()
-          $http.get(directive.templateUrl).success(template => {
+          $http.get(oriAsyncDirective.templateUrl).success(template => {
+            delete oriAsyncDirective.templateUrl
             $compileNode.html(template)
+            return applyDirectivesToNode(directives, $compileNode, attrs)
           })
         }
         function directiveIsMultiElement(name) {

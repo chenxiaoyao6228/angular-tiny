@@ -157,6 +157,7 @@ let kebabCase = _.kebabCase
 let some = _.some
 let difference = _.difference
 let noop = _.noop
+let drop = _.drop
 
 export default {
   times,
@@ -194,5 +195,6 @@ export default {
   camelCase,
   kebabCase,
   difference,
-  noop
+  noop,
+  drop
 }
