@@ -386,8 +386,8 @@ export default function $CompileProvider($provide) {
           let $compileNode = $(compileNode)
           let terminalPriority = -Number.MAX_VALUE
           let terminal = false
-          let preLinkFns = [],
-            postLinkFns = [],
+          let preLinkFns = previousCompileContext.preLinkFns || [],
+            postLinkFns = previousCompileContext.postLinkFns || [],
             controllers = {}
           let newScopeDirective, newIsolateScopeDirective
           let controllerDirectives
@@ -597,7 +597,9 @@ export default function $CompileProvider($provide) {
                 $compileNode,
                 attrs,
                 {
-                  templateDirective
+                  templateDirective,
+                  preLinkFns,
+                  postLinkFns
                 }
               )
               return nodeLinkFn
