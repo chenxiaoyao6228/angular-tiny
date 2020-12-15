@@ -392,7 +392,7 @@ export default function $CompileProvider($provide) {
           let newScopeDirective
           let newIsolateScopeDirective =
             previousCompileContext.newIsolateScopeDirective
-          let controllerDirectives
+          let controllerDirectives = previousCompileContext.controllerDirectives
           let templateDirective = previousCompileContext.templateDirective
           let nodeLinkFn = function(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
@@ -601,6 +601,7 @@ export default function $CompileProvider($provide) {
                 {
                   templateDirective,
                   newIsolateScopeDirective,
+                  controllerDirectives,
                   preLinkFns,
                   postLinkFns
                 }

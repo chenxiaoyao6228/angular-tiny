@@ -1774,5 +1774,34 @@ describe('$compile', () => {
         expect(linkSpy.mock.calls[0][0].val).toBe(42)
       })
     })
+    it('sets up controllers for all controller directives', () => {
+      let myDirectiveControllerInstantiated,
+        myOtherDirectiveControllerInstantiated
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            controller: function MyDirectiveController() {
+              myDirectiveControllerInstantiated = true
+            }
+          }
+        },
+        myOtherDirective: function() {
+          return {
+            templateUrl: '/my_other_directive.html',
+            controller: function MyOtherDirectiveController() {
+              myOtherDirectiveControllerInstantiated = true
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive my-other-directive></div>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div></div>')
+        expect(myDirectiveControllerInstantiated).toBe(true)
+        expect(myOtherDirectiveControllerInstantiated).toBe(true)
+      })
+    })
   })
 })
