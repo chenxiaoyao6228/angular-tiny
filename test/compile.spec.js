@@ -1671,5 +1671,24 @@ describe('$compile', () => {
         expect(el.find('> .replacement').length).toBe(1)
       })
     })
+    it('links the directive when public link function is invoked', () => {
+      let linkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html', link: linkSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        let linkFunction = $compile(el)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div></div>')
+        linkFunction($rootScope)
+        expect(linkSpy).toHaveBeenCalled()
+        expect(linkSpy.mock.calls[0][0]).toBe($rootScope)
+        expect(linkSpy.mock.calls[0][1][0]).toBe(el[0])
+        expect(linkSpy.mock.calls[0][2].myDirective).toBeDefined()
+      })
+    })
   })
 })

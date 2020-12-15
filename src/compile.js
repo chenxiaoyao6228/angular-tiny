@@ -183,11 +183,22 @@ export default function $CompileProvider($provide) {
         function compile($compileNodes) {
           let compositeLinkFn = compileNodes($compileNodes)
           return function publicLinkFn(scope) {
+            // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
             compositeLinkFn(scope, $compileNodes)
           }
         }
         function compileNodes($compileNodes) {
+          /* 形成这样的树结构
+          [
+            {
+              childLinkFn: 
+              [
+                {childLinkFn: []}
+              ]
+            },
+          ]
+          */
           let linkFns = []
           utils.forEach($compileNodes, (node, idx) => {
             let attrs = new Attributes($(node)) // 具体的类来处理,监听
@@ -202,7 +213,7 @@ export default function $CompileProvider($provide) {
               node.childNodes &&
               node.childNodes.length
             ) {
-              childLinkFn = compileNodes(node.childNodes)
+              childLinkFn = compileNodes(node.childNodes) // preOrder BFS, 递归对子节点进行处理,
             }
             if (nodeLinkFn && nodeLinkFn.scope) {
               attrs.$$element.addClass('ng-scope')
@@ -224,10 +235,11 @@ export default function $CompileProvider($provide) {
             })
             utils.forEach(linkFns, linkFn => {
               let node = stableNodeList[linkFn.idx]
+              // 把当前的scope挂载到dom上
               if (linkFn.nodeLinkFn) {
                 if (linkFn.nodeLinkFn.scope) {
                   scope = scope.$new()
-                  $(node).data('$scope', scope) // 把当前的scope挂载到dom上
+                  $(node).data('$scope', scope)
                 }
                 linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
               } else {
@@ -363,6 +375,7 @@ export default function $CompileProvider($provide) {
           }
           return match
         }
+        // 遍历每个指令, 将指令中的compile, controller, terminal等属性一一处理, 同时返回nodeLink函数
         function applyDirectivesToNode(
           directives,
           compileNode,
@@ -379,141 +392,7 @@ export default function $CompileProvider($provide) {
           let newScopeDirective, newIsolateScopeDirective
           let controllerDirectives
           let templateDirective = previousCompileContext.templateDirective
-
-          for (let [i, directive] of directives.entries()) {
-            if (directive.$$start) {
-              $compileNode = groupScan(
-                compileNode,
-                directive.$$start,
-                directive.$$end
-              )
-            }
-            if (directive.priority < terminalPriority) {
-              return false
-            }
-
-            if (directive.scope) {
-              // 有scope的话证明是isolateScope
-              if (utils.isObject(directive.scope)) {
-                if (newIsolateScopeDirective || newScopeDirective) {
-                  throw 'Multiple directives asking for new/inherited scope'
-                }
-                newIsolateScopeDirective = directive
-              } else {
-                if (newIsolateScopeDirective) {
-                  throw 'Multiple directives asking for new/inherited scope'
-                }
-                newScopeDirective = newScopeDirective || directive
-              }
-            }
-
-            if (directive.controller) {
-              controllerDirectives = controllerDirectives || {}
-              controllerDirectives[directive.name] = directive
-            }
-
-            if (directive.template) {
-              if (templateDirective) {
-                throw new Error('Multiple directives asking for template')
-              }
-              templateDirective = directive
-              $compileNode.html(
-                utils.isFunction(directive.template)
-                  ? directive.template($compileNode, attrs)
-                  : directive.template
-              )
-            } else if (directive.templateUrl) {
-              if (templateDirective) {
-                throw new Error('Multiple directives asking for template')
-              }
-              templateDirective = directive
-              compileTemplateUrl(
-                utils.drop(directives, i),
-                $compileNode,
-                attrs,
-                {
-                  templateDirective
-                }
-              )
-              return true // 跳出循环
-            } else if (directive.compile) {
-              let linkFn = directive.compile($compileNode, attrs)
-              let isolateScope = directive === newIsolateScopeDirective
-              let attrStart = directive.$$start
-              let attrEnd = directive.$$end
-              let require = directive.require || (directive.controller && name)
-              if (utils.isFunction(linkFn)) {
-                addLinkFns(
-                  null,
-                  linkFn,
-                  attrStart,
-                  attrEnd,
-                  isolateScope,
-                  require
-                )
-              } else if (linkFn) {
-                addLinkFns(
-                  linkFn.pre,
-                  linkFn.post,
-                  attrStart,
-                  attrEnd,
-                  isolateScope,
-                  require
-                )
-              }
-            }
-
-            if (directive.terminal) {
-              terminal = true
-              terminalPriority = directive.priority
-            }
-          }
-          nodeLinkFn.terminal = terminal
-          nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
-          return nodeLinkFn
-
-          function addLinkFns(
-            preLinkFn,
-            postLinkFn,
-            attrStart,
-            attrEnd,
-            isolateScope,
-            require
-          ) {
-            if (preLinkFn) {
-              if (attrStart) {
-                preLinkFn = groupElementsLinkFnWrapper(
-                  preLinkFn,
-                  attrStart,
-                  attrEnd,
-                  require
-                )
-              }
-              preLinkFn.isolateScope = isolateScope
-              preLinkFn.require = require
-              preLinkFns.push(preLinkFn)
-            }
-            if (postLinkFn) {
-              if (attrStart) {
-                postLinkFn = groupElementsLinkFnWrapper(
-                  postLinkFn,
-                  attrStart,
-                  attrEnd,
-                  require
-                )
-              }
-              postLinkFn.isolateScope = isolateScope
-              postLinkFn.require = require
-              postLinkFns.push(postLinkFn)
-            }
-          }
-          function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
-            return function(scope, element, attrs, ctrl) {
-              let group = groupScan(element[0], attrStart, attrEnd)
-              return linkFn(scope, group, attrs, ctrl)
-            }
-          }
-          function nodeLinkFn(childLinkFn, scope, linkNode) {
+          let nodeLinkFn = function(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
             let isolateScope
             if (newIsolateScopeDirective) {
@@ -665,6 +544,140 @@ export default function $CompileProvider($provide) {
               )
             })
           }
+
+          for (let [i, directive] of directives.entries()) {
+            if (directive.$$start) {
+              $compileNode = groupScan(
+                compileNode,
+                directive.$$start,
+                directive.$$end
+              )
+            }
+            if (directive.priority < terminalPriority) {
+              return false
+            }
+
+            if (directive.scope) {
+              // 有scope的话证明是isolateScope
+              if (utils.isObject(directive.scope)) {
+                if (newIsolateScopeDirective || newScopeDirective) {
+                  throw 'Multiple directives asking for new/inherited scope'
+                }
+                newIsolateScopeDirective = directive
+              } else {
+                if (newIsolateScopeDirective) {
+                  throw 'Multiple directives asking for new/inherited scope'
+                }
+                newScopeDirective = newScopeDirective || directive
+              }
+            }
+
+            if (directive.controller) {
+              controllerDirectives = controllerDirectives || {}
+              controllerDirectives[directive.name] = directive
+            }
+
+            if (directive.template) {
+              if (templateDirective) {
+                throw new Error('Multiple directives asking for template')
+              }
+              templateDirective = directive
+              $compileNode.html(
+                utils.isFunction(directive.template)
+                  ? directive.template($compileNode, attrs)
+                  : directive.template
+              )
+            } else if (directive.templateUrl) {
+              if (templateDirective) {
+                throw new Error('Multiple directives asking for template')
+              }
+              templateDirective = directive
+              nodeLinkFn = compileTemplateUrl(
+                utils.drop(directives, i),
+                $compileNode,
+                attrs,
+                {
+                  templateDirective
+                }
+              )
+              return nodeLinkFn
+            } else if (directive.compile) {
+              let linkFn = directive.compile($compileNode, attrs)
+              let isolateScope = directive === newIsolateScopeDirective
+              let attrStart = directive.$$start
+              let attrEnd = directive.$$end
+              let require = directive.require || (directive.controller && name)
+              if (utils.isFunction(linkFn)) {
+                addLinkFns(
+                  null,
+                  linkFn,
+                  attrStart,
+                  attrEnd,
+                  isolateScope,
+                  require
+                )
+              } else if (linkFn) {
+                addLinkFns(
+                  linkFn.pre,
+                  linkFn.post,
+                  attrStart,
+                  attrEnd,
+                  isolateScope,
+                  require
+                )
+              }
+            }
+
+            if (directive.terminal) {
+              terminal = true
+              terminalPriority = directive.priority
+            }
+          }
+          nodeLinkFn.terminal = terminal
+          nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
+          return nodeLinkFn
+
+          function addLinkFns(
+            preLinkFn,
+            postLinkFn,
+            attrStart,
+            attrEnd,
+            isolateScope,
+            require
+          ) {
+            if (preLinkFn) {
+              if (attrStart) {
+                preLinkFn = groupElementsLinkFnWrapper(
+                  preLinkFn,
+                  attrStart,
+                  attrEnd,
+                  require
+                )
+              }
+              preLinkFn.isolateScope = isolateScope
+              preLinkFn.require = require
+              preLinkFns.push(preLinkFn)
+            }
+            if (postLinkFn) {
+              if (attrStart) {
+                postLinkFn = groupElementsLinkFnWrapper(
+                  postLinkFn,
+                  attrStart,
+                  attrEnd,
+                  require
+                )
+              }
+              postLinkFn.isolateScope = isolateScope
+              postLinkFn.require = require
+              postLinkFns.push(postLinkFn)
+            }
+          }
+          function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
+            return function(scope, element, attrs, ctrl) {
+              let group = groupScan(element[0], attrStart, attrEnd)
+              return linkFn(scope, group, attrs, ctrl)
+            }
+          }
           function getControllers(require, $element) {
             if (utils.isArray(require)) {
               return require.map(getControllers)
@@ -712,18 +725,27 @@ export default function $CompileProvider($provide) {
           let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
             ? oriAsyncDirective.templateUrl($compileNode, attrs)
             : oriAsyncDirective.templateUrl
+          let afterTemplateNodeLinkFn, afterTemplateChildLinkFn
           $compileNode.empty()
+          // 递归中断如何保存上下文
           $http.get(templateUrl).success(template => {
             delete oriAsyncDirective.templateUrl
             $compileNode.html(template)
-            applyDirectivesToNode(
+            afterTemplateNodeLinkFn = applyDirectivesToNode(
               directives,
               $compileNode,
               attrs,
               previousCompileContext
             )
-            compileNodes($compileNode[0].childNodes)
+            afterTemplateChildLinkFn = compileNodes($compileNode[0].childNodes)
           })
+          return function delayedNodeLinkFn(
+            _ignoreChildLinkFn, // 前面已经调用empty()清空了子节点
+            scope,
+            linkNode
+          ) {
+            afterTemplateNodeLinkFn(afterTemplateChildLinkFn, scope, linkNode)
+          }
         }
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
