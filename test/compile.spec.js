@@ -1690,5 +1690,45 @@ describe('$compile', () => {
         expect(linkSpy.mock.calls[0][2].myDirective).toBeDefined()
       })
     })
+    it('links child elements when public link function is invoked', () => {
+      let linkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html' }
+        },
+        myOtherDirective: function() {
+          return { link: linkSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        let linkFunction = $compile(el)
+        $rootScope.$apply() // 未进行链接
+        requests[0].respond(200, {}, '<div my-other-directive></div>')
+        linkFunction($rootScope)
+        expect(linkSpy).toHaveBeenCalled()
+        expect(linkSpy.mock.calls[0][0]).toBe($rootScope)
+        expect(linkSpy.mock.calls[0][1][0]).toBe(el[0].firstChild)
+        expect(linkSpy.mock.calls[0][2].myOtherDirective).toBeDefined()
+      })
+    })
+    it('links when template arrives if node link fn was called', () => {
+      let linkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { templateUrl: '/my_directive.html', link: linkSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive></div>')
+        let linkFunction = $compile(el)($rootScope) // link first
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '<div></div>') // then receive template
+        expect(linkSpy).toHaveBeenCalled()
+        expect(linkSpy.mock.calls[0][0]).toBe($rootScope)
+        expect(linkSpy.mock.calls[0][1][0]).toBe(el[0])
+        expect(linkSpy.mock.calls[0][2].myDirective).toBeDefined()
+      })
+    })
   })
 })

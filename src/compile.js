@@ -726,6 +726,7 @@ export default function $CompileProvider($provide) {
             ? oriAsyncDirective.templateUrl($compileNode, attrs)
             : oriAsyncDirective.templateUrl
           let afterTemplateNodeLinkFn, afterTemplateChildLinkFn
+          let linkQueue = []
           $compileNode.empty()
           // 递归中断如何保存上下文
           $http.get(templateUrl).success(template => {
@@ -738,13 +739,26 @@ export default function $CompileProvider($provide) {
               previousCompileContext
             )
             afterTemplateChildLinkFn = compileNodes($compileNode[0].childNodes)
+            utils.forEach(linkQueue, linkCall => {
+              afterTemplateNodeLinkFn(
+                afterTemplateChildLinkFn,
+                linkCall.scope,
+                linkCall.linkNode
+              )
+            })
+            linkQueue = null
           })
           return function delayedNodeLinkFn(
             _ignoreChildLinkFn, // 前面已经调用empty()清空了子节点
             scope,
             linkNode
           ) {
-            afterTemplateNodeLinkFn(afterTemplateChildLinkFn, scope, linkNode)
+            if (linkQueue) {
+              // 模板还没拿回来
+              linkQueue.push({ scope, linkNode: linkNode })
+            } else {
+              afterTemplateNodeLinkFn(afterTemplateChildLinkFn, scope, linkNode)
+            }
           }
         }
         function directiveIsMultiElement(name) {
