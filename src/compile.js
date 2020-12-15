@@ -389,7 +389,9 @@ export default function $CompileProvider($provide) {
           let preLinkFns = previousCompileContext.preLinkFns || [],
             postLinkFns = previousCompileContext.postLinkFns || [],
             controllers = {}
-          let newScopeDirective, newIsolateScopeDirective
+          let newScopeDirective
+          let newIsolateScopeDirective =
+            previousCompileContext.newIsolateScopeDirective
           let controllerDirectives
           let templateDirective = previousCompileContext.templateDirective
           let nodeLinkFn = function(childLinkFn, scope, linkNode) {
@@ -598,6 +600,7 @@ export default function $CompileProvider($provide) {
                 attrs,
                 {
                   templateDirective,
+                  newIsolateScopeDirective,
                   preLinkFns,
                   postLinkFns
                 }

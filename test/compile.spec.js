@@ -1748,8 +1748,30 @@ describe('$compile', () => {
         requests[0].respond(200, {}, '<div></div>')
         expect(linkSpy).toHaveBeenCalled()
         expect(linkSpy.mock.calls[0][0]).toBe($rootScope)
-        expect(linkSpy.mock.calls[0][1][0]).toBe(el[0])
         expect(linkSpy.mock.calls[0][2].myDirective).toBeDefined()
+        expect(linkSpy.mock.calls[0][1][0]).toBe(el[0])
+      })
+    })
+    it('retains isolate scope directives from earlier', () => {
+      let linkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return { scope: { val: '=myDirective' }, link: linkSpy }
+        },
+        myOtherDirective: function() {
+          return { templateUrl: '/my_other_directive.html' }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive="42" my-other-directive></div>')
+        let linkFunction = $compile(el)
+        $rootScope.$apply()
+        linkFunction($rootScope)
+        requests[0].respond(200, {}, '<div></div>')
+        expect(linkSpy).toHaveBeenCalled()
+        expect(linkSpy.mock.calls[0][0]).toBeDefined()
+        expect(linkSpy.mock.calls[0][0]).not.toBe($rootScope)
+        expect(linkSpy.mock.calls[0][0].val).toBe(42)
       })
     })
   })
