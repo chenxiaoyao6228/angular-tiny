@@ -1804,4 +1804,18 @@ describe('$compile', () => {
       })
     })
   })
+  describe('transclude', () => {
+    it('removes the children of the element from the DOM', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: true }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-transcluder><div>Must go</div></div>')
+        $compile(el)
+        expect(el.is(':empty')).toBe(true)
+      })
+    })
+  })
 })

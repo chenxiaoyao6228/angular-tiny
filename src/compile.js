@@ -579,6 +579,10 @@ export default function $CompileProvider($provide) {
               controllerDirectives[directive.name] = directive
             }
 
+            if (directive.transclude) {
+              $compileNode.empty()
+            }
+
             if (directive.template) {
               if (templateDirective) {
                 throw new Error('Multiple directives asking for template')
