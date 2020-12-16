@@ -1817,5 +1817,21 @@ describe('$compile', () => {
         expect(el.is(':empty')).toBe(true)
       })
     })
+    it('compiles child elements', () => {
+      let insideCompileSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: true }
+        },
+        insideTranscluder: function() {
+          return { compile: insideCompileSpy }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-transcluder><div inside-transcluder></div></div>')
+        $compile(el)
+        expect(insideCompileSpy).toHaveBeenCalled()
+      })
+    })
   })
 })

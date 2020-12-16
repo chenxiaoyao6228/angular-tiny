@@ -580,6 +580,8 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.transclude) {
+              let $transcluedNodes = $compileNode.clone().contents()
+              compile($transcluedNodes)
               $compileNode.empty()
             }
 
