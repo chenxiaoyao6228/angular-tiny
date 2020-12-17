@@ -1871,5 +1871,73 @@ describe('$compile', () => {
         }).toThrow()
       })
     })
+
+    it('contents are destroyed along with transcluding directive', () => {
+      let watchSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: true,
+            scope: true,
+            link: function(scope, element, attrs, ctrl, transclude) {
+              element.append(transclude())
+              scope.$on('destroyNow', () => {
+                scope.$destroy()
+              })
+            }
+          }
+        },
+        myInnerDirective: function() {
+          return {
+            link: function(scope) {
+              scope.$watch(watchSpy)
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div my-inner-directive></div></div>')
+        $compile(el)($rootScope)
+
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(2)
+
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(3)
+
+        $rootScope.$broadcast('destroyNow')
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(3)
+      })
+    })
+
+    it('allows passing another scope to transclusion function', () => {
+      let otherLinkSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: true,
+            scope: {},
+            template: '<div></div>',
+            link: function(scope, element, attrs, ctrl, transclude) {
+              let mySpecialScope = scope.$new(true)
+              mySpecialScope.specialAttr = 42
+              transclude(mySpecialScope)
+            }
+          }
+        },
+        myOtherDirective: function() {
+          return { link: otherLinkSpy }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div my-other-directive></div></div>')
+
+        $compile(el)($rootScope)
+
+        let transcludedScope = otherLinkSpy.mock.calls[0][0]
+        expect(transcludedScope.specialAttr).toBe(42)
+      })
+    })
   })
 })

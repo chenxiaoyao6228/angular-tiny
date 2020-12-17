@@ -236,13 +236,34 @@ export default function $CompileProvider($provide) {
             })
             utils.forEach(linkFns, linkFn => {
               let node = stableNodeList[linkFn.idx]
-              // 把当前的scope挂载到dom上
               if (linkFn.nodeLinkFn) {
+                let childScope
                 if (linkFn.nodeLinkFn.scope) {
-                  scope = scope.$new()
-                  $(node).data('$scope', scope)
+                  childScope = scope.$new()
+                  $(node).data('$scope', childScope)
+                } else {
+                  childScope = scope
                 }
-                linkFn.nodeLinkFn(linkFn.childLinkFn, scope, node)
+
+                let boundTranscludeFn
+                if (linkFn.nodeLinkFn.transcludeOnThisElement) {
+                  boundTranscludeFn = function(
+                    transcludedScope,
+                    containingScope
+                  ) {
+                    if (!transcludedScope) {
+                      transcludedScope = scope.$new(false, containingScope)
+                    }
+                    return linkFn.nodeLinkFn.transclude(transcludedScope)
+                  }
+                }
+
+                linkFn.nodeLinkFn(
+                  linkFn.childLinkFn,
+                  childScope,
+                  node,
+                  boundTranscludeFn
+                )
               } else {
                 linkFn.childLinkFn(scope, node.childNodes)
               }
@@ -397,7 +418,12 @@ export default function $CompileProvider($provide) {
           let templateDirective = previousCompileContext.templateDirective
           let childTranscludeFn, hasTranscludeDirective
 
-          let nodeLinkFn = function(childLinkFn, scope, linkNode) {
+          let nodeLinkFn = function(
+            childLinkFn,
+            scope,
+            linkNode,
+            boundTranscludeFn
+          ) {
             let $element = $(linkNode)
             let isolateScope
             if (newIsolateScopeDirective) {
@@ -405,6 +431,7 @@ export default function $CompileProvider($provide) {
               $element.addClass('ng-isolate-scope')
               $element.data('$isolateScope', isolateScope)
             }
+
             if (controllerDirectives) {
               utils.forEach(controllerDirectives, directive => {
                 let locals = {
@@ -520,13 +547,17 @@ export default function $CompileProvider($provide) {
               controller()
             })
 
+            function scopeBoundTranscludeFn(transcludedScope) {
+              return boundTranscludeFn(transcludedScope, scope)
+            }
+
             utils.forEach(preLinkFns, linkFn => {
               linkFn(
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
                 linkFn.require && getControllers(linkFn.require, $element),
-                childTranscludeFn
+                scopeBoundTranscludeFn
               )
             })
 
@@ -547,7 +578,7 @@ export default function $CompileProvider($provide) {
                 $element,
                 attrs,
                 linkFn.require && getControllers(linkFn.require, $element),
-                childTranscludeFn
+                scopeBoundTranscludeFn
               )
             })
           }
@@ -657,6 +688,8 @@ export default function $CompileProvider($provide) {
           }
           nodeLinkFn.terminal = terminal
           nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
+          nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective
+          nodeLinkFn.transclude = childTranscludeFn
           return nodeLinkFn
 
           function addLinkFns(
