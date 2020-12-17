@@ -186,6 +186,7 @@ export default function $CompileProvider($provide) {
             // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
             compositeLinkFn(scope, $compileNodes)
+            return $compileNodes
           }
         }
         function compileNodes($compileNodes) {
@@ -394,6 +395,8 @@ export default function $CompileProvider($provide) {
             previousCompileContext.newIsolateScopeDirective
           let controllerDirectives = previousCompileContext.controllerDirectives
           let templateDirective = previousCompileContext.templateDirective
+          let childTranscludeFn, hasTranscludeDirective
+
           let nodeLinkFn = function(childLinkFn, scope, linkNode) {
             let $element = $(linkNode)
             let isolateScope
@@ -522,7 +525,8 @@ export default function $CompileProvider($provide) {
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
-                linkFn.require && getControllers(linkFn.require, $element)
+                linkFn.require && getControllers(linkFn.require, $element),
+                childTranscludeFn
               )
             })
 
@@ -542,7 +546,8 @@ export default function $CompileProvider($provide) {
                 linkFn.isolateScope ? isolateScope : scope,
                 $element,
                 attrs,
-                linkFn.require && getControllers(linkFn.require, $element)
+                linkFn.require && getControllers(linkFn.require, $element),
+                childTranscludeFn
               )
             })
           }
@@ -580,8 +585,12 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.transclude) {
-              let $transcluedNodes = $compileNode.clone().contents()
-              compile($transcluedNodes)
+              if (hasTranscludeDirective) {
+                throw 'Multiple directives asking for transclude'
+              }
+              hasTranscludeDirective = true
+              let $transcludedNodes = $compileNode.clone().contents()
+              childTranscludeFn = compile($transcludedNodes)
               $compileNode.empty()
             }
 
@@ -595,7 +604,8 @@ export default function $CompileProvider($provide) {
                   ? directive.template($compileNode, attrs)
                   : directive.template
               )
-            } else if (directive.templateUrl) {
+            }
+            if (directive.templateUrl) {
               if (templateDirective) {
                 throw new Error('Multiple directives asking for template')
               }

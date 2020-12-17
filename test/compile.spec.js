@@ -1833,5 +1833,43 @@ describe('$compile', () => {
         expect(insideCompileSpy).toHaveBeenCalled()
       })
     })
+
+    it('makes contents available to link function', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: true,
+            template: '<div in-template></div>',
+            link: function(scope, element, attrs, ctrl, transclude) {
+              element.find('[in-template]').append(transclude())
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transcluder></div></div>')
+
+        $compile(el)($rootScope)
+        expect(el.find('> [in-template] > [in-transcluder]').length).toBe(1)
+      })
+    })
+
+    it('is only allowed once per element', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: true }
+        },
+        mySecondTranscluder: function() {
+          return { transclude: true }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div my-transcluder my-second-transcluder></div>')
+
+        expect(() => {
+          $compile(el)
+        }).toThrow()
+      })
+    })
   })
 })
