@@ -1939,5 +1939,24 @@ describe('$compile', () => {
         expect(transcludedScope.specialAttr).toBe(42)
       })
     })
+    it('makes contents available to child elements', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: true, template: '<div in-template></div>' }
+        },
+        inTemplate: function() {
+          return {
+            link: function(scope, element, attrs, ctrl, transcludeFn) {
+              element.append(transcludeFn())
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transclude></div></div>')
+        $compile(el)($rootScope)
+        expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+      })
+    })
   })
 })

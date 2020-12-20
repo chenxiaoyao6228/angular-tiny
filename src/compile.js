@@ -228,7 +228,7 @@ export default function $CompileProvider($provide) {
               })
             }
           })
-          function compositeLinkFn(scope, linkNodes) {
+          function compositeLinkFn(scope, linkNodes, parentBoundTranscludeFn) {
             let stableNodeList = []
             utils.forEach(linkFns, linkFn => {
               let nodeIdx = linkFn.idx
@@ -257,6 +257,8 @@ export default function $CompileProvider($provide) {
                     }
                     return linkFn.nodeLinkFn.transclude(transcludedScope)
                   }
+                } else if (parentBoundTranscludeFn) {
+                  boundTranscludeFn = parentBoundTranscludeFn
                 }
 
                 linkFn.nodeLinkFn(
@@ -570,7 +572,7 @@ export default function $CompileProvider($provide) {
               ) {
                 scopeToChild = isolateScope
               }
-              childLinkFn(scopeToChild, linkNode.childNodes)
+              childLinkFn(scopeToChild, linkNode.childNodes, boundTranscludeFn)
             }
 
             utils.forEachRight(postLinkFns, linkFn => {
