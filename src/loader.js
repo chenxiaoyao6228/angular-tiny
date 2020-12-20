@@ -1,9 +1,11 @@
+// module: controller, services, filters, directives的一系列集合
+// angular.module: 用来创建模块
 export function setupModuleLoader(window) {
   let ensure = function(obj, name, factory) {
     return obj[name] || (obj[name] = factory())
   }
 
-  let angular = ensure(window, 'angular', Object)
+  let angular = ensure(window, 'angular', Object) // 单例
 
   let createModule = function(name, requires, modules, configFn) {
     if (name === 'hasOwnProperty') {

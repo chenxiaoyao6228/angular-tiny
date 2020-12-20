@@ -203,18 +203,19 @@ export default function $CompileProvider($provide) {
           let linkFns = []
           utils.forEach($compileNodes, (node, idx) => {
             let attrs = new Attributes($(node)) // 具体的类来处理,监听
-            let directives = collectDirectives(node, attrs) // directives对象的数组
+            let directives = collectDirectives(node, attrs) // directives对象的数组, 从依赖池中拿
             let nodeLinkFn
             if (directives.length) {
               nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
             }
             let childLinkFn
+            // nodeLink.terminal 是为了实现ng-if, 条件为true的时候不编译子节点
             if (
               (!nodeLinkFn || !nodeLinkFn.terminal) &&
               node.childNodes &&
               node.childNodes.length
             ) {
-              childLinkFn = compileNodes(node.childNodes) // preOrder BFS, 递归对子节点进行处理,
+              childLinkFn = compileNodes(node.childNodes) // 先序深度遍历, 递归对子节点进行处理,
             }
             if (nodeLinkFn && nodeLinkFn.scope) {
               attrs.$$element.addClass('ng-scope')
@@ -397,7 +398,7 @@ export default function $CompileProvider($provide) {
           }
           return match
         }
-        // 遍历每个指令, 将指令中的compile, controller, terminal等属性一一处理, 同时返回nodeLink函数
+        // 遍历每个指令, 将指令中的compile, , terminal等属性一一处理, 同时返回nodeLink函数
         function applyDirectivesToNode(
           directives,
           compileNode,
@@ -611,7 +612,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (directive.controller) {
-              controllerDirectives = controllerDirectives || {}
+              controllerDirectives = controllerDirectives || {} // controller也是directive的一部分
               controllerDirectives[directive.name] = directive
             }
 
@@ -655,7 +656,7 @@ export default function $CompileProvider($provide) {
               )
               return nodeLinkFn
             } else if (directive.compile) {
-              let linkFn = directive.compile($compileNode, attrs)
+              let linkFn = directive.compile($compileNode, attrs) // 执行compile
               let isolateScope = directive === newIsolateScopeDirective
               let attrStart = directive.$$start
               let attrEnd = directive.$$end
