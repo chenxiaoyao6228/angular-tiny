@@ -185,6 +185,13 @@ export default function $CompileProvider($provide) {
           return function publicLinkFn(scope, options) {
             options = options || {}
             let parentBoundTranscludeFn = options.parentBoundTranscludeFn
+            if (
+              parentBoundTranscludeFn &&
+              parentBoundTranscludeFn.$$boundTransclude
+            ) {
+              parentBoundTranscludeFn =
+                parentBoundTranscludeFn.$$boundTransclude
+            }
             // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
             compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn)
@@ -559,6 +566,7 @@ export default function $CompileProvider($provide) {
             function scopeBoundTranscludeFn(transcludedScope) {
               return boundTranscludeFn(transcludedScope, scope)
             }
+            scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn
 
             utils.forEach(preLinkFns, linkFn => {
               linkFn(
