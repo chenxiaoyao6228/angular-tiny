@@ -1958,119 +1958,123 @@ describe('$compile', () => {
         expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
       })
     })
-  })
-  it('makes contents available to indirect child elements', () => {
-    let injector = makeInjectorWithDirectives({
-      myTranscluder: function() {
-        return {
-          transclude: true,
-          template: '<div><div in-template></div></div>'
-        }
-      },
-      inTemplate: function() {
-        return {
-          link: function(scope, element, attrs, ctrl, transcludeFn) {
-            element.append(transcludeFn())
+    it('makes contents available to indirect child elements', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: true,
+            template: '<div><div in-template></div></div>'
+          }
+        },
+        inTemplate: function() {
+          return {
+            link: function(scope, element, attrs, ctrl, transcludeFn) {
+              element.append(transcludeFn())
+            }
           }
         }
-      }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transclude></div></div>')
+        $compile(el)($rootScope)
+        expect(el.find('> div > [in-template] > [in-transclude]').length).toBe(
+          1
+        )
+      })
     })
-    injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder><div in-transclude></div></div>')
-      $compile(el)($rootScope)
-      expect(el.find('> div > [in-template] > [in-transclude]').length).toBe(1)
-    })
-  })
-  it('supports passing transclusion function to public link function', () => {
-    let injector = makeInjectorWithDirectives({
-      myTranscluder: function($compile) {
-        return {
-          transclude: true,
-          link: function(scope, element, attrs, ctrl, transclude) {
-            let customTemplate = $('<div in-custom-template></div>')
-            element.append(customTemplate)
-            $compile(customTemplate)(scope, {
-              parentBoundTranscludeFn: transclude
-            })
+    it('supports passing transclusion function to public link function', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function($compile) {
+          return {
+            transclude: true,
+            link: function(scope, element, attrs, ctrl, transclude) {
+              let customTemplate = $('<div in-custom-template></div>')
+              element.append(customTemplate)
+              $compile(customTemplate)(scope, {
+                parentBoundTranscludeFn: transclude
+              })
+            }
+          }
+        },
+        inCustomTemplate: function() {
+          return {
+            link: function(scope, element, attrs, ctrl, transclude) {
+              element.append(transclude())
+            }
           }
         }
-      },
-      inCustomTemplate: function() {
-        return {
-          link: function(scope, element, attrs, ctrl, transclude) {
-            element.append(transclude())
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transclude></div></div>')
+        $compile(el)($rootScope)
+        expect(el.find('> [in-custom-template] > [in-transclude]').length).toBe(
+          1
+        )
+      })
+    })
+    it('destroys scope passed through public link fn at the right time', () => {
+      let watchSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function($compile) {
+          return {
+            transclude: true,
+            link: function(scope, element, attrs, ctrl, transclude) {
+              let customTemplate = $('<div in-custom-template></div>')
+              element.append(customTemplate)
+              $compile(customTemplate)(scope, {
+                parentBoundTranscludeFn: transclude
+              })
+            }
+          }
+        },
+        inCustomTemplate: function() {
+          return {
+            scope: true,
+            link: function(scope, element, attrs, ctrl, transclude) {
+              element.append(transclude())
+              scope.$on('destroyNow', () => {
+                scope.$destroy()
+              })
+            }
+          }
+        },
+        inTransclude: function() {
+          return {
+            link: function(scope) {
+              scope.$watch(watchSpy)
+            }
           }
         }
-      }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transclude></div></div>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(2)
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(3)
+        $rootScope.$broadcast('destroyNow')
+        $rootScope.$apply()
+        expect(watchSpy.mock.calls.length).toBe(3)
+      })
     })
-    injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder><div in-transclude></div></div>')
-      $compile(el)($rootScope)
-      expect(el.find('> [in-custom-template] > [in-transclude]').length).toBe(1)
-    })
-  })
-  it('destroys scope passed through public link fn at the right time', () => {
-    let watchSpy = jest.fn()
-    let injector = makeInjectorWithDirectives({
-      myTranscluder: function($compile) {
-        return {
-          transclude: true,
-          link: function(scope, element, attrs, ctrl, transclude) {
-            let customTemplate = $('<div in-custom-template></div>')
-            element.append(customTemplate)
-            $compile(customTemplate)(scope, {
-              parentBoundTranscludeFn: transclude
-            })
+    it('makes contents available to controller', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: true,
+            template: '<div in-template></div>',
+            controller: function($element, $transclude) {
+              $element.find('[in-template]').append($transclude())
+            }
           }
         }
-      },
-      inCustomTemplate: function() {
-        return {
-          scope: true,
-          link: function(scope, element, attrs, ctrl, transclude) {
-            element.append(transclude())
-            scope.$on('destroyNow', () => {
-              scope.$destroy()
-            })
-          }
-        }
-      },
-      inTransclude: function() {
-        return {
-          link: function(scope) {
-            scope.$watch(watchSpy)
-          }
-        }
-      }
-    })
-    injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder><div in-transclude></div></div>')
-      $compile(el)($rootScope)
-      $rootScope.$apply()
-      expect(watchSpy.mock.calls.length).toBe(2)
-      $rootScope.$apply()
-      expect(watchSpy.mock.calls.length).toBe(3)
-      $rootScope.$broadcast('destroyNow')
-      $rootScope.$apply()
-      expect(watchSpy.mock.calls.length).toBe(3)
-    })
-  })
-  it('makes contents available to controller', () => {
-    let injector = makeInjectorWithDirectives({
-      myTranscluder: function() {
-        return {
-          transclude: true,
-          template: '<div in-template></div>',
-          controller: function($element, $transclude) {
-            $element.find('[in-template]').append($transclude())
-          }
-        }
-      }
-    })
-    injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder><div in-transclude></div></div>')
-      $compile(el)($rootScope)
-      expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-transcluder><div in-transclude></div></div>')
+        $compile(el)($rootScope)
+        expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+      })
     })
   })
 })
