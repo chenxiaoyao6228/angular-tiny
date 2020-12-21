@@ -577,6 +577,14 @@ export default function $CompileProvider($provide) {
             })
 
             function scopeBoundTranscludeFn(transcludedScope, cloneAttachFn) {
+              if (
+                !transcludedScope ||
+                !transcludedScope.$watch ||
+                !transcludedScope.$evalAsync
+              ) {
+                cloneAttachFn = transcludedScope
+                transcludedScope = undefined
+              }
               return boundTranscludeFn(transcludedScope, cloneAttachFn, scope)
             }
             scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn
