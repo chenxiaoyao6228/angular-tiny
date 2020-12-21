@@ -194,11 +194,16 @@ export default function $CompileProvider($provide) {
             }
             // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
+            let $linkNodes
             if (cloneAttachFn) {
-              cloneAttachFn($compileNodes, scope)
+              $linkNodes = $compileNodes.clone()
+              cloneAttachFn($linkNodes, scope)
+            } else {
+              $linkNodes = $compileNodes
             }
-            compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn)
-            return $compileNodes
+            $linkNodes.data('$scope', scope)
+            compositeLinkFn(scope, $linkNodes, parentBoundTranscludeFn)
+            return $linkNodes
           }
         }
         function compileNodes($compileNodes) {
