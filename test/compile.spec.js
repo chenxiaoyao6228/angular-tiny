@@ -2055,4 +2055,22 @@ describe('$compile', () => {
       expect(watchSpy.mock.calls.length).toBe(3)
     })
   })
+  it('makes contents available to controller', () => {
+    let injector = makeInjectorWithDirectives({
+      myTranscluder: function() {
+        return {
+          transclude: true,
+          template: '<div in-template></div>',
+          controller: function($element, $transclude) {
+            $element.find('[in-template]').append($transclude())
+          }
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-transcluder><div in-transclude></div></div>')
+      $compile(el)($rootScope)
+      expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+    })
+  })
 })

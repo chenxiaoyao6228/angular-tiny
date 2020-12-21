@@ -456,6 +456,7 @@ export default function $CompileProvider($provide) {
                       ? isolateScope
                       : scope,
                   $element: $element,
+                  $transclude: scopeBoundTranscludeFn,
                   $attrs: attrs
                 }
                 let controllerName = directive.controller
