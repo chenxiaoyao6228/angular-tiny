@@ -182,10 +182,12 @@ export default function $CompileProvider($provide) {
         }
         function compile($compileNodes) {
           let compositeLinkFn = compileNodes($compileNodes)
-          return function publicLinkFn(scope) {
+          return function publicLinkFn(scope, options) {
+            options = options || {}
+            let parentBoundTranscludeFn = options.parentBoundTranscludeFn
             // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
-            compositeLinkFn(scope, $compileNodes)
+            compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn)
             return $compileNodes
           }
         }
