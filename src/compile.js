@@ -268,7 +268,11 @@ export default function $CompileProvider($provide) {
                   boundTranscludeFn
                 )
               } else {
-                linkFn.childLinkFn(scope, node.childNodes)
+                linkFn.childLinkFn(
+                  scope,
+                  node.childNodes,
+                  parentBoundTranscludeFn
+                )
               }
             })
           }
