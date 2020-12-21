@@ -182,7 +182,7 @@ export default function $CompileProvider($provide) {
         }
         function compile($compileNodes) {
           let compositeLinkFn = compileNodes($compileNodes)
-          return function publicLinkFn(scope, options) {
+          return function publicLinkFn(scope, cloneAttachFn, options) {
             options = options || {}
             let parentBoundTranscludeFn = options.parentBoundTranscludeFn
             if (
@@ -194,6 +194,9 @@ export default function $CompileProvider($provide) {
             }
             // 将scope与dom对应起来
             $compileNodes.data('$scope', $rootScope)
+            if (cloneAttachFn) {
+              cloneAttachFn($compileNodes, scope)
+            }
             compositeLinkFn(scope, $compileNodes, parentBoundTranscludeFn)
             return $compileNodes
           }
