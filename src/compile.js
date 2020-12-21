@@ -267,12 +267,16 @@ export default function $CompileProvider($provide) {
                 if (linkFn.nodeLinkFn.transcludeOnThisElement) {
                   boundTranscludeFn = function(
                     transcludedScope,
+                    cloneAttachFn,
                     containingScope
                   ) {
                     if (!transcludedScope) {
                       transcludedScope = scope.$new(false, containingScope)
                     }
-                    return linkFn.nodeLinkFn.transclude(transcludedScope)
+                    return linkFn.nodeLinkFn.transclude(
+                      transcludedScope,
+                      cloneAttachFn
+                    )
                   }
                 } else if (parentBoundTranscludeFn) {
                   boundTranscludeFn = parentBoundTranscludeFn
@@ -572,8 +576,8 @@ export default function $CompileProvider($provide) {
               controller()
             })
 
-            function scopeBoundTranscludeFn(transcludedScope) {
-              return boundTranscludeFn(transcludedScope, scope)
+            function scopeBoundTranscludeFn(transcludedScope, cloneAttachFn) {
+              return boundTranscludeFn(transcludedScope, cloneAttachFn, scope)
             }
             scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn
 
