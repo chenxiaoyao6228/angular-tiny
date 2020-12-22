@@ -814,7 +814,10 @@ export default function $CompileProvider($provide) {
           attrs,
           previousCompileContext
         ) {
-          let oriAsyncDirective = directives[0]
+          let oriAsyncDirective = directives.shift()
+          let derivedSyncDirective = Object.assign({}, oriAsyncDirective, {
+            templateUrl: null
+          })
           let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
             ? oriAsyncDirective.templateUrl($compileNode, attrs)
             : oriAsyncDirective.templateUrl
@@ -823,7 +826,7 @@ export default function $CompileProvider($provide) {
           $compileNode.empty()
           // 递归中断如何保存上下文
           $http.get(templateUrl).success(template => {
-            delete oriAsyncDirective.templateUrl
+            directives.unshift(derivedSyncDirective)
             $compileNode.html(template)
             afterTemplateNodeLinkFn = applyDirectivesToNode(
               directives,
