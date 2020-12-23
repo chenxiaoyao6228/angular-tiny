@@ -662,7 +662,9 @@ export default function $CompileProvider($provide) {
               }
               hasTranscludeDirective = true
               if (directive.transclude === 'element') {
-                $compileNode.remove()
+                $compileNode.replaceWith(
+                  $(document.createComment(' ' + directive.name + ': '))
+                )
               } else {
                 let $transcludedNodes = $compileNode.clone().contents()
                 childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数

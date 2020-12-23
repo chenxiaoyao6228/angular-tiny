@@ -2283,5 +2283,17 @@ describe('$compile', () => {
         expect(el.is(':empty')).toBe(true)
       })
     })
+    it('replaces the element with a comment', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: 'element' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div><div my-transcluder></div></div>')
+        $compile(el)
+        expect(el.html()).toEqual('<!-- myTranscluder: -->')
+      })
+    })
   })
 })
