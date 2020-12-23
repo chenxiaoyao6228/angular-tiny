@@ -444,7 +444,9 @@ export default function $CompileProvider($provide) {
             previousCompileContext.newIsolateScopeDirective
           let controllerDirectives = previousCompileContext.controllerDirectives
           let templateDirective = previousCompileContext.templateDirective
-          let childTranscludeFn, hasTranscludeDirective
+          let childTranscludeFn
+          let hasTranscludeDirective =
+            previousCompileContext.hasTranscludeDirective
 
           let nodeLinkFn = function(
             childLinkFn,
@@ -588,7 +590,7 @@ export default function $CompileProvider($provide) {
               return boundTranscludeFn(transcludedScope, cloneAttachFn, scope)
             }
             scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn
-
+            // link顺序: 父preLinks -> 子preLinks -> 子postLinks -> 父postLinks
             utils.forEach(preLinkFns, linkFn => {
               linkFn(
                 linkFn.isolateScope ? isolateScope : scope,
@@ -659,7 +661,7 @@ export default function $CompileProvider($provide) {
               }
               hasTranscludeDirective = true
               let $transcludedNodes = $compileNode.clone().contents()
-              childTranscludeFn = compile($transcludedNodes)
+              childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数
               $compileNode.empty()
             }
 
@@ -680,18 +682,20 @@ export default function $CompileProvider($provide) {
               }
               templateDirective = directive
               nodeLinkFn = compileTemplateUrl(
-                utils.drop(directives, i),
+                utils.drop(directives, i), //该指令之后的指令还没有被编译
                 $compileNode,
                 attrs,
                 {
+                  // 需要保存上下文
                   templateDirective,
                   newIsolateScopeDirective,
                   controllerDirectives,
                   preLinkFns,
-                  postLinkFns
+                  postLinkFns,
+                  hasTranscludeDirective
                 }
               )
-              return nodeLinkFn
+              return nodeLinkFn //正常的nodeLink或者delayNodeLink
             } else if (directive.compile) {
               let linkFn = directive.compile($compileNode, attrs) // 执行compile
               let isolateScope = directive === newIsolateScopeDirective
@@ -807,56 +811,79 @@ export default function $CompileProvider($provide) {
               return value || null
             }
           }
-        }
-        function compileTemplateUrl(
-          directives,
-          $compileNode,
-          attrs,
-          previousCompileContext
-        ) {
-          let oriAsyncDirective = directives.shift()
-          let derivedSyncDirective = Object.assign({}, oriAsyncDirective, {
-            templateUrl: null
-          })
-          let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
-            ? oriAsyncDirective.templateUrl($compileNode, attrs)
-            : oriAsyncDirective.templateUrl
-          let afterTemplateNodeLinkFn, afterTemplateChildLinkFn
-          let linkQueue = []
-          $compileNode.empty()
-          // 递归中断如何保存上下文
-          $http.get(templateUrl).success(template => {
-            directives.unshift(derivedSyncDirective)
-            $compileNode.html(template)
-            afterTemplateNodeLinkFn = applyDirectivesToNode(
-              directives,
-              $compileNode,
-              attrs,
-              previousCompileContext
-            )
-            afterTemplateChildLinkFn = compileNodes($compileNode[0].childNodes)
-            utils.forEach(linkQueue, linkCall => {
-              afterTemplateNodeLinkFn(
-                afterTemplateChildLinkFn,
-                linkCall.scope,
-                linkCall.linkNode
-              )
-            })
-            linkQueue = null
-          })
-          return function delayedNodeLinkFn(
-            _ignoreChildLinkFn, // 前面已经调用empty()清空了子节点
-            scope,
-            linkNode
+          function compileTemplateUrl(
+            directives,
+            $compileNode,
+            attrs,
+            previousCompileContext
           ) {
-            if (linkQueue) {
-              // 模板还没拿回来
-              linkQueue.push({ scope, linkNode: linkNode })
-            } else {
-              afterTemplateNodeLinkFn(afterTemplateChildLinkFn, scope, linkNode)
+            let oriAsyncDirective = directives.shift()
+            let derivedSyncDirective = Object.assign({}, oriAsyncDirective, {
+              templateUrl: null,
+              transclude: null
+            })
+            let templateUrl = utils.isFunction(oriAsyncDirective.templateUrl)
+              ? oriAsyncDirective.templateUrl($compileNode, attrs)
+              : oriAsyncDirective.templateUrl
+            let afterTemplateNodeLinkFn, afterTemplateChildLinkFn
+            let linkQueue = []
+            $compileNode.empty()
+            // 递归中断如何保存上下文
+            $http.get(templateUrl).success(template => {
+              directives.unshift(derivedSyncDirective)
+              $compileNode.html(template)
+              // 对处理了一半的节点进行进一步处理
+              afterTemplateNodeLinkFn = applyDirectivesToNode(
+                directives,
+                $compileNode,
+                attrs,
+                previousCompileContext
+              )
+              afterTemplateChildLinkFn = compileNodes(
+                $compileNode[0].childNodes
+              )
+              // 对子节点进行处理
+              utils.forEach(linkQueue, linkCall => {
+                afterTemplateNodeLinkFn(
+                  afterTemplateChildLinkFn,
+                  linkCall.scope,
+                  linkCall.linkNode,
+                  linkCall.boundTranscludeFn
+                )
+              })
+              linkQueue = null
+            })
+            function delayedNodeLinkFn(
+              _ignoreChildLinkFn, // 前面已经调用empty()清空了子节点
+              scope,
+              linkNode,
+              boundTranscludeFn
+            ) {
+              if (linkQueue) {
+                // 模板还没拿回来, 但是link的过程已经提前触发, 先保存到linkQueue中,等模板返回再一并处理
+                linkQueue.push({
+                  scope,
+                  linkNode,
+                  boundTranscludeFn
+                })
+              } else {
+                afterTemplateNodeLinkFn(
+                  afterTemplateChildLinkFn,
+                  scope,
+                  linkNode,
+                  boundTranscludeFn
+                )
+              }
             }
+            delayedNodeLinkFn.terminal = terminal
+            delayedNodeLinkFn.scope =
+              newScopeDirective && newScopeDirective.scope
+            delayedNodeLinkFn.transcludeOnThisElement = hasTranscludeDirective
+            delayedNodeLinkFn.transclude = childTranscludeFn
+            return delayedNodeLinkFn
           }
         }
+
         function directiveIsMultiElement(name) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
             let directives = $injector.get(name + 'Directive')

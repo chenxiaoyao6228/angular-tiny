@@ -60,17 +60,6 @@ function isPlainObject(obj) {
   return false
 }
 
-function forEach(value, operator) {
-  if (_.isArrayLikeObject(value)) {
-    return Array.from(value).forEach(operator)
-  } else if (isObject(value)) {
-    return Object.entries(value).forEach(v => {
-      let [key, val] = v
-      return operator(val, key, value)
-    })
-  }
-}
-
 function isString(value) {
   return _.isString(value)
 }
@@ -158,6 +147,7 @@ let some = _.some
 let difference = _.difference
 let noop = _.noop
 let drop = _.drop
+let forEach = _.forEach
 
 export default {
   times,

@@ -1803,6 +1803,84 @@ describe('$compile', () => {
         expect(myOtherDirectiveControllerInstantiated).toBe(true)
       })
     })
+    describe('with transclusion', () => {
+      it('makes transclusion available to link fn when template arrives first', () => {
+        let injector = makeInjectorWithDirectives({
+          myTranscluder: function() {
+            return {
+              transclude: true,
+              templateUrl: 'my_template.html',
+              link: function(scope, element, attrs, ctrl, transclude) {
+                element.find('[in-template]').append(transclude())
+              }
+            }
+          }
+        })
+        injector.invoke(($compile, $rootScope) => {
+          let el = $('<div my-transcluder><div in-transclude></div></div>')
+
+          let linkFunction = $compile(el)
+          $rootScope.$apply()
+          requests[0].respond(200, {}, '<div in-template></div>') // respond first
+          linkFunction($rootScope) // then link
+
+          expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+        })
+      })
+
+      it('makes transclusion available to link fn when template arrives after', () => {
+        let injector = makeInjectorWithDirectives({
+          myTranscluder: function() {
+            return {
+              transclude: true,
+              templateUrl: 'my_template.html',
+              link: function(scope, element, attrs, ctrl, transclude) {
+                element.find('[in-template]').append(transclude())
+              }
+            }
+          }
+        })
+        injector.invoke(($compile, $rootScope) => {
+          let el = $('<div my-transcluder><div in-transclude></div></div>')
+
+          let linkFunction = $compile(el)
+
+          $rootScope.$apply()
+          linkFunction($rootScope) // link first
+          requests[0].respond(200, {}, '<div in-template></div>') // then respond
+          expect(el.find('> [in-template] > [in-transclude]').length).toBe(1)
+        })
+      })
+
+      it('is only allowed once', () => {
+        let otherCompileSpy = jest.fn()
+        let injector = makeInjectorWithDirectives({
+          myTranscluder: function() {
+            return {
+              priority: 1,
+              transclude: true,
+              templateUrl: 'my_template.html'
+            }
+          },
+          mySecondTranscluder: function() {
+            return {
+              priority: 0,
+              transclude: true,
+              compile: otherCompileSpy
+            }
+          }
+        })
+        injector.invoke(($compile, $rootScope) => {
+          let el = $('<div my-transcluder my-second-transcluder></div>')
+
+          $compile(el)
+          $rootScope.$apply()
+          requests[0].respond(200, {}, '<div in-template></div>')
+
+          expect(otherCompileSpy).not.toHaveBeenCalled()
+        })
+      })
+    })
   })
   describe('transclude', () => {
     it('removes the children of the element from the DOM', () => {
