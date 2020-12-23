@@ -203,6 +203,7 @@ export default function $CompileProvider($provide) {
             }
             $linkNodes.data('$scope', scope)
             compositeLinkFn(scope, $linkNodes, parentBoundTranscludeFn)
+            // 返回需要被链接的节点, 因此每次使用的时候都是同一个片段, append(transclude())最终还是append
             return $linkNodes
           }
         }
@@ -731,7 +732,7 @@ export default function $CompileProvider($provide) {
           nodeLinkFn.terminal = terminal
           nodeLinkFn.scope = newScopeDirective && newScopeDirective.scope
           nodeLinkFn.transcludeOnThisElement = hasTranscludeDirective
-          nodeLinkFn.transclude = childTranscludeFn
+          nodeLinkFn.transclude = childTranscludeFn // 返回子节点的publicLink函数
           return nodeLinkFn
 
           function addLinkFns(
@@ -770,9 +771,9 @@ export default function $CompileProvider($provide) {
             }
           }
           function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
-            return function(scope, element, attrs, ctrl) {
+            return function(scope, element, attrs, ctrl, transclude) {
               let group = groupScan(element[0], attrStart, attrEnd)
-              return linkFn(scope, group, attrs, ctrl)
+              return linkFn(scope, group, attrs, ctrl, transclude)
             }
           }
           function getControllers(require, $element) {

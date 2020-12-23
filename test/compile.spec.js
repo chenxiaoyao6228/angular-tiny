@@ -2245,5 +2245,29 @@ describe('$compile', () => {
         expect(el.find('> [in-template] > [in-transclusion]').length).toBe(1)
       })
     })
+    it('can be used with multi-element directives', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function($compile) {
+          return {
+            transclude: true,
+            multiElement: true,
+            template: '<div in-template></div>',
+            link: function(scope, element, attrs, ctrl, transclude) {
+              element.find('[in-template]').append(transclude())
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $(
+          '<div><div my-transcluder-start><div in-transclude></div></div>' +
+            '<div my-transcluder-end></div></div>'
+        )
+        $compile(el)($rootScope)
+        expect(
+          el.find('[my-transcluder-start] [in-template] [in-transclude]').length
+        ).toBe(1)
+      })
+    })
   })
 })
