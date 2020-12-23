@@ -2307,5 +2307,27 @@ describe('$compile', () => {
         expect(el.html()).toEqual('<!--myTranscluder:42-->')
       })
     })
+    it('calls directive compile and link with comment', () => {
+      let gotCompiledEl, gotLinkedEl
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: 'element',
+            compile: function(compiledEl) {
+              gotCompiledEl = compiledEl
+              return function(scope, linkedEl) {
+                gotLinkedEl = linkedEl
+              }
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div><div my-transcluder></div></div>')
+        $compile(el)($rootScope)
+        expect(gotCompiledEl[0].nodeType).toBe(Node.COMMENT_NODE)
+        expect(gotLinkedEl[0].nodeType).toBe(Node.COMMENT_NODE)
+      })
+    })
   })
 })
