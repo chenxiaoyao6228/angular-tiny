@@ -9,4 +9,11 @@ describe('$interpolate', () => {
     let injector = createInjector(['ng'])
     expect(injector.has('$interpolate')).toBe(true)
   })
+  it('produces an identity function for static content', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('hello')
+    expect(interp instanceof Function).toBe(true)
+    expect(interp()).toEqual('hello')
+  })
 })

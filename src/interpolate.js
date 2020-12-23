@@ -1,6 +1,10 @@
 function $InterpolateProvider() {
   this.$get = function() {
-    return function $interpolate() {}
+    return function $interpolate(text) {
+      return function interpolationFn() {
+        return text
+      }
+    }
   }
 }
 
