@@ -22,4 +22,13 @@ describe('$interpolate', () => {
     let interp = $interpolate('{{anAttr}}')
     expect(interp({ anAttr: '42' })).toEqual('42')
   })
+  test('evalueates many expressions', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+
+    let interp = $interpolate('First {{ anAttr }}, then {{anotherAttr}}!')
+    expect(interp({ anAttr: '42', anotherAttr: '43' })).toEqual(
+      'First 42, then 43!'
+    )
+  })
 })
