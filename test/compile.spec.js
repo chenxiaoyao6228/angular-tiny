@@ -2386,5 +2386,27 @@ describe('$compile', () => {
         expect(compileSpy.mock.calls.length).toBe(1)
       })
     })
+    it('makes original element available for transclusion', () => {
+      let injector = makeInjectorWithDirectives({
+        myDouble: function() {
+          return {
+            transclude: 'element',
+            link: function(scope, el, attrs, ctrl, transclude) {
+              transclude(clone => {
+                el.after(clone)
+              })
+              transclude(clone => {
+                el.after(clone)
+              })
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div><div my-double>Hello</div>')
+        $compile(el)($rootScope)
+        expect(el.find('[my-double]').length).toBe(2)
+      })
+    })
   })
 })

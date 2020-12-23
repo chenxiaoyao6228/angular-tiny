@@ -685,7 +685,10 @@ export default function $CompileProvider($provide) {
                 )
                 $originalCompileNode.replaceWith($compileNode)
                 terminalPriority = directive.priority
-                compile($originalCompileNode, terminalPriority)
+                childTranscludeFn = compile(
+                  $originalCompileNode,
+                  terminalPriority
+                )
               } else {
                 let $transcludedNodes = $compileNode.clone().contents()
                 childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数
