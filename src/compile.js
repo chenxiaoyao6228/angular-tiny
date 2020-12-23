@@ -180,8 +180,8 @@ export default function $CompileProvider($provide) {
             this.$removeClass(removedClasses.join(' '))
           }
         }
-        function compile($compileNodes) {
-          let compositeLinkFn = compileNodes($compileNodes)
+        function compile($compileNodes, maxPriority) {
+          let compositeLinkFn = compileNodes($compileNodes, maxPriority)
           return function publicLinkFn(scope, cloneAttachFn, options) {
             options = options || {}
             let parentBoundTranscludeFn = options.parentBoundTranscludeFn
@@ -207,7 +207,7 @@ export default function $CompileProvider($provide) {
             return $linkNodes
           }
         }
-        function compileNodes($compileNodes) {
+        function compileNodes($compileNodes, maxPriority) {
           /* 形成这样的树结构
           [
             {
@@ -221,7 +221,7 @@ export default function $CompileProvider($provide) {
           let linkFns = []
           utils.forEach($compileNodes, (node, idx) => {
             let attrs = new Attributes($(node)) // 具体的类来处理,监听
-            let directives = collectDirectives(node, attrs) // directives对象的数组, 从依赖池中拿
+            let directives = collectDirectives(node, attrs, maxPriority) // directives对象的数组, 从依赖池中拿
             let nodeLinkFn
             if (directives.length) {
               nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
@@ -300,14 +300,14 @@ export default function $CompileProvider($provide) {
           }
           return compositeLinkFn
         }
-        function collectDirectives(node, attrs) {
+        function collectDirectives(node, attrs, maxPriority) {
           let match
           let directives = []
           if (node.nodeType === Node.ELEMENT_NODE) {
             let normalizedNodeName = directiveNormalize(
               nodeName(node).toLowerCase()
             )
-            addDirective(directives, normalizedNodeName, 'E')
+            addDirective(directives, normalizedNodeName, 'E', maxPriority)
             // attribute directive
             utils.forEach(node.attributes, attr => {
               let attrStartName, attrEndName
@@ -344,6 +344,7 @@ export default function $CompileProvider($provide) {
                 directives,
                 normalizedAttrName,
                 'A',
+                maxPriority,
                 attrStartName,
                 attrEndName
               )
@@ -360,7 +361,9 @@ export default function $CompileProvider($provide) {
             // class directive
             utils.forEach(node.classList, cls => {
               let normalizedClassName = directiveNormalize(cls)
-              if (addDirective(directives, normalizedClassName, 'C')) {
+              if (
+                addDirective(directives, normalizedClassName, 'C', maxPriority)
+              ) {
                 attrs[normalizedClassName] = undefined
               }
             })
@@ -381,7 +384,7 @@ export default function $CompileProvider($provide) {
             match = /^\s*directive:\s*([\d\w\-_]+)\s*(.*)$/.exec(node.nodeValue)
             if (match) {
               let normalizedName = directiveNormalize(match[1])
-              if (addDirective(directives, normalizedName, 'M')) {
+              if (addDirective(directives, normalizedName, 'M', maxPriority)) {
                 attrs[normalizedName] = match[2] ? match[2].trim() : undefined
               }
             }
@@ -404,6 +407,7 @@ export default function $CompileProvider($provide) {
           directives,
           name,
           mode,
+          maxPriority,
           attrStartName,
           attrEndName
         ) {
@@ -411,7 +415,10 @@ export default function $CompileProvider($provide) {
           if (Object.prototype.hasOwnProperty.call(hasDirectives, name)) {
             let foundDirectives = $injector.get(name + 'Directive')
             let applicableDirectives = foundDirectives.filter(dir => {
-              return dir.restrict.indexOf(mode) !== -1
+              return (
+                (maxPriority === undefined || maxPriority > dir.priority) &&
+                dir.restrict.indexOf(mode) !== -1
+              )
             })
             applicableDirectives.forEach(directive => {
               if (attrStartName) {
@@ -669,6 +676,8 @@ export default function $CompileProvider($provide) {
                   )
                 )
                 $originalCompileNode.replaceWith($compileNode)
+                terminalPriority = directive.priority
+                compile($originalCompileNode, terminalPriority)
               } else {
                 let $transcludedNodes = $compileNode.clone().contents()
                 childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数

@@ -2329,5 +2329,44 @@ describe('$compile', () => {
         expect(gotLinkedEl[0].nodeType).toBe(Node.COMMENT_NODE)
       })
     })
+    it('calls lower priority compile with original', () => {
+      let gotCompiledEl
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { priority: 2, transclude: 'element' }
+        },
+        myOtherDirective: function() {
+          return {
+            priority: 1,
+            compile: function(compiledEl) {
+              gotCompiledEl = compiledEl
+            }
+          }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div><div my-transcluder my-other-directive></div></div>')
+        $compile(el)
+        expect(gotCompiledEl[0].nodeType).toBe(Node.ELEMENT_NODE)
+      })
+    })
+    it('calls compile on child element directives', () => {
+      let compileSpy = jasmine.createSpy()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: 'element' }
+        },
+        myOtherDirective: function() {
+          return { compile: compileSpy }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $(
+          '<div><div my-transcluder><div my-other-directive></div></div></div>'
+        )
+        $compile(el)
+        expect(compileSpy).toHaveBeenCalled()
+      })
+    })
   })
 })
