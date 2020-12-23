@@ -2408,5 +2408,23 @@ describe('$compile', () => {
         expect(el.find('[my-double]').length).toBe(2)
       })
     })
+    it('sets directive attributes element to comment', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return {
+            transclude: 'element',
+            link: function(scope, element, attrs, ctrl, transclude) {
+              attrs.$set('testing', '42')
+              element.after(transclude())
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div><div my-transcluder></div></div>')
+        $compile(el)($rootScope)
+        expect(el.find('[my-transcluder]').attr('testing')).toBeUndefined()
+      })
+    })
   })
 })

@@ -678,7 +678,7 @@ export default function $CompileProvider($provide) {
               hasTranscludeDirective = true
               if (directive.transclude === 'element') {
                 let $originalCompileNode = $compileNode
-                $compileNode = $(
+                $compileNode = attrs.$$element = $(
                   document.createComment(
                     directive.name + ':' + attrs[directive.name]
                   )
