@@ -2270,4 +2270,18 @@ describe('$compile', () => {
       })
     })
   })
+  describe('element transclusion', () => {
+    it('removes the element from the DOM', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: 'element' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div><div my-transcluder></div></div>')
+        $compile(el)
+        expect(el.is(':empty')).toBe(true)
+      })
+    })
+  })
 })

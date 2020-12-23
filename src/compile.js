@@ -661,9 +661,13 @@ export default function $CompileProvider($provide) {
                 throw 'Multiple directives asking for transclude'
               }
               hasTranscludeDirective = true
-              let $transcludedNodes = $compileNode.clone().contents()
-              childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数
-              $compileNode.empty()
+              if (directive.transclude === 'element') {
+                $compileNode.remove()
+              } else {
+                let $transcludedNodes = $compileNode.clone().contents()
+                childTranscludeFn = compile($transcludedNodes) // 返回子节点的publicLink函数
+                $compileNode.empty()
+              }
             }
 
             if (directive.template) {
