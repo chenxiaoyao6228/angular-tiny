@@ -2292,7 +2292,19 @@ describe('$compile', () => {
       injector.invoke($compile => {
         let el = $('<div><div my-transcluder></div></div>')
         $compile(el)
-        expect(el.html()).toEqual('<!-- myTranscluder: -->')
+        expect(el.html()).toEqual('<!--myTranscluder:-->')
+      })
+    })
+    it('includes directive attribute value in comment', () => {
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: 'element' }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $('<div><div my-transcluder=42></div></div>')
+        $compile(el)
+        expect(el.html()).toEqual('<!--myTranscluder:42-->')
       })
     })
   })
