@@ -16,4 +16,10 @@ describe('$interpolate', () => {
     expect(interp instanceof Function).toBe(true)
     expect(interp()).toEqual('hello')
   })
+  it('evaluates a single expression', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{anAttr}}')
+    expect(interp({ anAttr: '42' })).toEqual('42')
+  })
 })
