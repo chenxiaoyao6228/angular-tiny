@@ -219,21 +219,29 @@ export default function $CompileProvider($provide) {
           ]
           */
           let linkFns = []
-          utils.forEach($compileNodes, (node, idx) => {
-            let attrs = new Attributes($(node)) // 具体的类来处理,监听
-            let directives = collectDirectives(node, attrs, maxPriority) // directives对象的数组, 从依赖池中拿
+          utils.times($compileNodes.length, i => {
+            let attrs = new Attributes($($compileNodes)) // 具体的类来处理,监听
+            let directives = collectDirectives(
+              $compileNodes[i],
+              attrs,
+              maxPriority
+            ) // directives对象的数组, 从依赖池中拿
             let nodeLinkFn
             if (directives.length) {
-              nodeLinkFn = applyDirectivesToNode(directives, node, attrs)
+              nodeLinkFn = applyDirectivesToNode(
+                directives,
+                $compileNodes[i],
+                attrs
+              )
             }
             let childLinkFn
             // nodeLink.terminal 是为了实现ng-if, 条件为true的时候不编译子节点
             if (
               (!nodeLinkFn || !nodeLinkFn.terminal) &&
-              node.childNodes &&
-              node.childNodes.length
+              $compileNodes[i].childNodes &&
+              $compileNodes[i].childNodes.length
             ) {
-              childLinkFn = compileNodes(node.childNodes) // 先序深度遍历, 递归对子节点进行处理,
+              childLinkFn = compileNodes($compileNodes[i].childNodes) // 先序深度遍历, 递归对子节点进行处理,
             }
             if (nodeLinkFn && nodeLinkFn.scope) {
               attrs.$$element.addClass('ng-scope')
@@ -242,7 +250,7 @@ export default function $CompileProvider($provide) {
               linkFns.push({
                 nodeLinkFn: nodeLinkFn,
                 childLinkFn: childLinkFn,
-                idx: idx
+                idx: i
               })
             }
           })

@@ -2351,7 +2351,7 @@ describe('$compile', () => {
       })
     })
     it('calls compile on child element directives', () => {
-      let compileSpy = jasmine.createSpy()
+      let compileSpy = jest.fn()
       let injector = makeInjectorWithDirectives({
         myTranscluder: function() {
           return { transclude: 'element' }
@@ -2366,6 +2366,24 @@ describe('$compile', () => {
         )
         $compile(el)
         expect(compileSpy).toHaveBeenCalled()
+      })
+    })
+    it('compiles original element contents once', () => {
+      let compileSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myTranscluder: function() {
+          return { transclude: 'element' }
+        },
+        myOtherDirective: function() {
+          return { compile: compileSpy }
+        }
+      })
+      injector.invoke($compile => {
+        let el = $(
+          '<div><div my-transcluder><div my-other-directive></div></div></div>'
+        )
+        $compile(el)
+        expect(compileSpy.mock.calls.length).toBe(1)
       })
     })
   })
