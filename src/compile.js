@@ -185,6 +185,7 @@ export default function $CompileProvider($provide) {
           return function publicLinkFn(scope, cloneAttachFn, options) {
             options = options || {}
             let parentBoundTranscludeFn = options.parentBoundTranscludeFn
+            let transcludeControllers = options.transcludeControllers
             if (
               parentBoundTranscludeFn &&
               parentBoundTranscludeFn.$$boundTransclude
@@ -201,6 +202,9 @@ export default function $CompileProvider($provide) {
             } else {
               $linkNodes = $compileNodes
             }
+            utils.forEach(transcludeControllers, (controller, name) => {
+              $linkNodes.data('$' + name + 'Controller', controller.instance)
+            })
             $linkNodes.data('$scope', scope)
             compositeLinkFn(scope, $linkNodes, parentBoundTranscludeFn)
             // 返回需要被链接的节点, 因此每次使用的时候都是同一个片段, append(transclude())最终还是append
@@ -277,6 +281,7 @@ export default function $CompileProvider($provide) {
                   boundTranscludeFn = function(
                     transcludedScope,
                     cloneAttachFn,
+                    transcludeControllers,
                     containingScope
                   ) {
                     if (!transcludedScope) {
@@ -284,7 +289,8 @@ export default function $CompileProvider($provide) {
                     }
                     return linkFn.nodeLinkFn.transclude(
                       transcludedScope,
-                      cloneAttachFn
+                      cloneAttachFn,
+                      { transcludeControllers: transcludeControllers }
                     )
                   }
                 } else if (parentBoundTranscludeFn) {
@@ -463,7 +469,7 @@ export default function $CompileProvider($provide) {
           let childTranscludeFn
           let hasTranscludeDirective =
             previousCompileContext.hasTranscludeDirective
-
+          let hasElementTranscludeDirective
           let nodeLinkFn = function(
             childLinkFn,
             scope,
@@ -595,6 +601,7 @@ export default function $CompileProvider($provide) {
             })
 
             function scopeBoundTranscludeFn(transcludedScope, cloneAttachFn) {
+              let transcludeControllers
               if (
                 !transcludedScope ||
                 !transcludedScope.$watch ||
@@ -603,7 +610,15 @@ export default function $CompileProvider($provide) {
                 cloneAttachFn = transcludedScope
                 transcludedScope = undefined
               }
-              return boundTranscludeFn(transcludedScope, cloneAttachFn, scope)
+              if (hasElementTranscludeDirective) {
+                transcludeControllers = controllers
+              }
+              return boundTranscludeFn(
+                transcludedScope,
+                cloneAttachFn,
+                transcludeControllers,
+                scope
+              )
             }
             scopeBoundTranscludeFn.$$boundTransclude = boundTranscludeFn
             // link顺序: 父preLinks -> 子preLinks -> 子postLinks -> 父postLinks
@@ -677,6 +692,7 @@ export default function $CompileProvider($provide) {
               }
               hasTranscludeDirective = true
               if (directive.transclude === 'element') {
+                hasElementTranscludeDirective = true
                 let $originalCompileNode = $compileNode
                 $compileNode = attrs.$$element = $(
                   document.createComment(
