@@ -414,12 +414,13 @@ export default function $CompileProvider($provide) {
             addTextInterpolateDirective(directives, node.nodeValue)
           }
           function addTextInterpolateDirective(directives, text) {
-            let interpolateFn = $interpolate(text)
+            let interpolateFn = $interpolate(text, true)
             if (interpolateFn) {
               directives.push({
                 priority: 0,
                 compile() {
-                  return function link(scope, element, attrs) {
+                  return function link(scope, element) {
+                    element.parent().addClass('ng-binding')
                     scope.$watch(interpolateFn, newValue => {
                       element[0].nodeValue = newValue
                     })
