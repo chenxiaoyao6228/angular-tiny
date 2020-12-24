@@ -6,6 +6,7 @@ function $InterpolateProvider() {
       return function $interpolate(text, mustHaveExpression) {
         let index = 0
         let parts = []
+        let expressions = []
         let startIndex, endIndex, exp, expFn
         let hasExpressions = false
         while (index < text.length) {
@@ -18,6 +19,7 @@ function $InterpolateProvider() {
               parts.push(unescapeText(text.substring(index, startIndex)))
             }
             exp = text.substring(startIndex + 2, endIndex)
+            expressions.push(exp)
             expFn = $parse(exp)
             parts.push(expFn)
             hasExpressions = true
@@ -28,7 +30,7 @@ function $InterpolateProvider() {
           }
         }
         if (hasExpressions || !mustHaveExpression) {
-          return function interpolationFn(context) {
+          let interpolationFn = function(context) {
             return parts.reduce((result, part) => {
               if (utils.isFunction(part)) {
                 return result + stringify(part(context))
@@ -37,6 +39,8 @@ function $InterpolateProvider() {
               }
             }, '')
           }
+          interpolationFn.$expressions = expressions
+          return interpolationFn
         }
       }
     }

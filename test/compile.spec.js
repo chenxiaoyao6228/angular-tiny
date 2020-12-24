@@ -2481,5 +2481,13 @@ describe('$compile', () => {
         expect(el.hasClass('ng-binding')).toBe(true)
       })
     })
+    it('adds binding data to text node parents', () => {
+      let injector = makeInjectorWithDirectives({})
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div>{{myExpr}} and {{myOtherExpr}}</div>')
+        $compile(el)($rootScope)
+        expect(el.data('$binding')).toEqual(['myExpr', 'myOtherExpr'])
+      })
+    })
   })
 })
