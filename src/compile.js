@@ -362,6 +362,11 @@ export default function $CompileProvider($provide) {
                 normalizedAttrName = directiveNormalize(name.toLowerCase())
                 attrs.$attr[normalizedAttrName] = name
               }
+              addAttrInterpolateDirective(
+                directives,
+                attr.value,
+                normalizedAttrName
+              )
               addDirective(
                 directives,
                 normalizedAttrName,
@@ -426,6 +431,21 @@ export default function $CompileProvider($provide) {
                     element.parent().data('$binding', bindings)
                     scope.$watch(interpolateFn, newValue => {
                       element[0].nodeValue = newValue
+                    })
+                  }
+                }
+              })
+            }
+          }
+          function addAttrInterpolateDirective(directives, value, name) {
+            let interpolateFn = $interpolate(value, true)
+            if (interpolateFn) {
+              directives.push({
+                priority: 100,
+                compile: () => {
+                  return function link(scope, element, attrs) {
+                    scope.$watch(interpolateFn, newValue => {
+                      element.attr(name, newValue)
                     })
                   }
                 }
