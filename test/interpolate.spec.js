@@ -73,4 +73,10 @@ describe('$interpolate', () => {
     let interp = $interpolate('{{anObject}}')
     expect(interp({ anObject: { a: 1, b: '2' } })).toEqual('{"a":1,"b":"2"}')
   })
+  it('unescapes escaped sequences', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('\\{\\{expr\\}\\} {{expr}} \\{\\{expr\\}\\}')
+    expect(interp({ expr: 'value' })).toEqual('{{expr}} value {{expr}}')
+  })
 })
