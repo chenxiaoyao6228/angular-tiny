@@ -3,10 +3,11 @@ function $InterpolateProvider() {
   this.$get = [
     '$parse',
     function($parse) {
-      return function $interpolate(text) {
+      return function $interpolate(text, mustHaveExpression) {
         let index = 0
         let parts = []
         let startIndex, endIndex, exp, expFn
+        let hasExpressions = false
         while (index < text.length) {
           startIndex = text.indexOf('{{', index)
           if (startIndex !== -1) {
@@ -19,20 +20,23 @@ function $InterpolateProvider() {
             exp = text.substring(startIndex + 2, endIndex)
             expFn = $parse(exp)
             parts.push(expFn)
+            hasExpressions = true
             index = endIndex + 2
           } else {
             parts.push(unescapeText(text.substring(index)))
             break
           }
         }
-        return function interpolationFn(context) {
-          return parts.reduce((result, part) => {
-            if (utils.isFunction(part)) {
-              return result + stringify(part(context))
-            } else {
-              return result + part
-            }
-          }, '')
+        if (hasExpressions || !mustHaveExpression) {
+          return function interpolationFn(context) {
+            return parts.reduce((result, part) => {
+              if (utils.isFunction(part)) {
+                return result + stringify(part(context))
+              } else {
+                return result + part
+              }
+            }, '')
+          }
         }
       }
     }

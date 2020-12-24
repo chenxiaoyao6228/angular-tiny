@@ -79,4 +79,16 @@ describe('$interpolate', () => {
     let interp = $interpolate('\\{\\{expr\\}\\} {{expr}} \\{\\{expr\\}\\}')
     expect(interp({ expr: 'value' })).toEqual('{{expr}} value {{expr}}')
   })
+  it('does not return function when flagged and no expressions', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('static content only', true)
+    expect(interp).toBeFalsy()
+  })
+  it('returns function when flagged and has expressions', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('has an {{expr}}', true)
+    expect(interp).not.toBeFalsy()
+  })
 })
