@@ -9,7 +9,9 @@ function $InterpolateProvider() {
         let startIndex, endIndex, exp, expFn
         while (index < text.length) {
           startIndex = text.indexOf('{{', index)
-          endIndex = text.indexOf('}}', index)
+          if (startIndex !== -1) {
+            endIndex = text.indexOf('}}', startIndex + 2)
+          }
           if (startIndex !== -1 && endIndex !== -1) {
             if (startIndex !== index) {
               parts.push(text.substring(index, startIndex))

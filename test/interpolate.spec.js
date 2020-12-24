@@ -31,4 +31,10 @@ describe('$interpolate', () => {
       'First 42, then 43!'
     )
   })
+  it('passes through ill-defined interpolations', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('why u no }}work{{')
+    expect(interp({})).toEqual('why u no }}work{{')
+  })
 })
