@@ -28,7 +28,7 @@ function $InterpolateProvider() {
         return function interpolationFn(context) {
           return parts.reduce((result, part) => {
             if (utils.isFunction(part)) {
-              return result + part(context)
+              return result + stringify(part(context))
             } else {
               return result + part
             }
@@ -37,6 +37,13 @@ function $InterpolateProvider() {
       }
     }
   ]
+}
+function stringify(value) {
+  if (value === undefined || value === null) {
+    return ''
+  } else {
+    return '' + value
+  }
 }
 
 export default $InterpolateProvider

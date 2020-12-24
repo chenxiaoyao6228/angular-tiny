@@ -37,4 +37,28 @@ describe('$interpolate', () => {
     let interp = $interpolate('why u no }}work{{')
     expect(interp({})).toEqual('why u no }}work{{')
   })
+  it('turns nulls into empty strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{aNull}}')
+    expect(interp({ aNull: null })).toEqual('')
+  })
+  it('turns undefineds into empty strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{anUndefined}}')
+    expect(interp({})).toEqual('')
+  })
+  it('turns numbers into strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{aNumber}}')
+    expect(interp({ aNumber: 42 })).toEqual('42')
+  })
+  it('turns booleans into strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{aBoolean}}')
+    expect(interp({ aBoolean: true })).toEqual('true')
+  })
 })
