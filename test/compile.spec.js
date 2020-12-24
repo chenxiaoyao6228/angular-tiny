@@ -2460,4 +2460,18 @@ describe('$compile', () => {
       })
     })
   })
+  describe('interpolation', () => {
+    it('is done for text nodes', () => {
+      let injector = makeInjectorWithDirectives({})
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div>My expression: {{myExpr}}</div>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(el.html()).toEqual('My expression: ')
+        $rootScope.myExpr = 'Hello'
+        $rootScope.$apply()
+        expect(el.html()).toEqual('My expression: Hello')
+      })
+    })
+  })
 })

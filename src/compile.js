@@ -111,7 +111,15 @@ export default function $CompileProvider($provide) {
       '$controller',
       '$rootScope',
       '$http',
-      function($injector, $parse, $controller, $rootScope, $http) {
+      '$interpolate',
+      function(
+        $injector,
+        $parse,
+        $controller,
+        $rootScope,
+        $http,
+        $interpolate
+      ) {
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -401,6 +409,23 @@ export default function $CompileProvider($provide) {
               if (addDirective(directives, normalizedName, 'M', maxPriority)) {
                 attrs[normalizedName] = match[2] ? match[2].trim() : undefined
               }
+            }
+          } else if (node.nodeType === Node.TEXT_NODE) {
+            addTextInterpolateDirective(directives, node.nodeValue)
+          }
+          function addTextInterpolateDirective(directives, text) {
+            let interpolateFn = $interpolate(text)
+            if (interpolateFn) {
+              directives.push({
+                priority: 0,
+                compile() {
+                  return function link(scope, element, attrs) {
+                    scope.$watch(interpolateFn, newValue => {
+                      element[0].nodeValue = newValue
+                    })
+                  }
+                }
+              })
             }
           }
           function byPriority(a, b) {
