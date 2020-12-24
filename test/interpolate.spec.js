@@ -61,4 +61,16 @@ describe('$interpolate', () => {
     let interp = $interpolate('{{aBoolean}}')
     expect(interp({ aBoolean: true })).toEqual('true')
   })
+  it('turns arrays into JSON strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{anArray}}')
+    expect(interp({ anArray: [1, 2, [3]] })).toEqual('[1,2,[3]]')
+  })
+  it('turns objects into JSON strings', () => {
+    let injector = createInjector(['ng'])
+    let $interpolate = injector.get('$interpolate')
+    let interp = $interpolate('{{anObject}}')
+    expect(interp({ anObject: { a: 1, b: '2' } })).toEqual('{"a":1,"b":"2"}')
+  })
 })

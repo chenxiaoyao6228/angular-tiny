@@ -41,6 +41,8 @@ function $InterpolateProvider() {
 function stringify(value) {
   if (value === undefined || value === null) {
     return ''
+  } else if (utils.isObject(value)) {
+    return JSON.stringify(value)
   } else {
     return '' + value
   }
