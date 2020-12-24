@@ -39,7 +39,7 @@ function $InterpolateProvider() {
               }
             }, '')
           }
-          interpolationFn.$expressions = expressions
+          utils.extend(interpolationFn, { expressions })
           return interpolationFn
         }
       }

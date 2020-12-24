@@ -421,9 +421,9 @@ export default function $CompileProvider($provide) {
                 compile() {
                   return function link(scope, element) {
                     element.parent().addClass('ng-binding')
-                    element
-                      .parent()
-                      .data('$binding', interpolateFn.$expressions)
+                    let bindings = element.parent().data('$binding') || []
+                    bindings = bindings.concat(interpolateFn.expressions)
+                    element.parent().data('$binding', bindings)
                     scope.$watch(interpolateFn, newValue => {
                       element[0].nodeValue = newValue
                     })

@@ -2489,5 +2489,13 @@ describe('$compile', () => {
         expect(el.data('$binding')).toEqual(['myExpr', 'myOtherExpr'])
       })
     })
+    it('adds binding data to parent from multiple text nodes', () => {
+      let injector = makeInjectorWithDirectives({})
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div>{{myExpr}} <span>and</span> {{myOtherExpr}}</div>')
+        $compile(el)($rootScope)
+        expect(el.data('$binding')).toEqual(['myExpr', 'myOtherExpr'])
+      })
+    })
   })
 })
