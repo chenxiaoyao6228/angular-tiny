@@ -449,7 +449,10 @@ export default function $CompileProvider($provide) {
                     pre: function link(scope, element, attrs) {
                       let newValue = attrs[name]
                       if (newValue !== value) {
-                        interpolateFn = $interpolate(newValue, true)
+                        interpolateFn = newValue && $interpolate(newValue, true)
+                      }
+                      if (!interpolateFn) {
+                        return
                       }
 
                       attrs.$$observers = attrs.$$observers || {}
