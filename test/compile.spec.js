@@ -12,6 +12,14 @@ function makeInjectorWithDirectives(...args) {
     }
   ])
 }
+function makeInjectorWithComponent(name, options) {
+  return createInjector([
+    'ng',
+    function($compileProvider) {
+      $compileProvider.component(name, options)
+    }
+  ])
+}
 
 describe('$compile', () => {
   beforeEach(() => {
@@ -2659,6 +2667,37 @@ describe('$compile', () => {
       myModule.component('myComponent', {})
       let injector = createInjector(['ng', 'myModule'])
       expect(injector.has('myComponentDirective')).toBe(true)
+    })
+    it('are element directives with controllers', () => {
+      let controllerInstantiated = false
+      let componentElement
+      let injector = makeInjectorWithComponent('myComponent', {
+        controller: function($element) {
+          controllerInstantiated = true
+          componentElement = $element
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        expect(controllerInstantiated).toBe(true)
+        expect(el[0]).toBe(componentElement[0])
+      })
+    })
+
+    it('cannot be applied to an attribute', () => {
+      let controllerInstantiated = false
+      let injector = makeInjectorWithComponent('myComponent', {
+        restrict: 'A', // Will be ignored
+        controller: function() {
+          controllerInstantiated = true
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-component></div>')
+        $compile(el)($rootScope)
+        expect(controllerInstantiated).toBe(false)
+      })
     })
   })
 })
