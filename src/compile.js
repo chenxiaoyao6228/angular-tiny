@@ -1032,6 +1032,12 @@ export default function $CompileProvider($provide) {
       }
     ]
   }
+  this.component = function(name, options) {
+    function factory() {
+      return {}
+    }
+    return this.directive(name, factory)
+  }
 }
 
 $CompileProvider.$inject = ['$provide']

@@ -2653,4 +2653,12 @@ describe('$compile', () => {
       expect(listenerSpy.mock.calls[1][1]).toEqual('42')
     })
   })
+  describe('components', () => {
+    it('can be registered and become directives', () => {
+      let myModule = window.angular.module('myModule', [])
+      myModule.component('myComponent', {})
+      let injector = createInjector(['ng', 'myModule'])
+      expect(injector.has('myComponentDirective')).toBe(true)
+    })
+  })
 })

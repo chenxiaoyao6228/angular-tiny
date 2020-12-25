@@ -43,6 +43,12 @@ export function setupModuleLoader(window) {
         'push',
         invokeQueue
       ),
+      component: invokeLater(
+        '$compileProvider',
+        'component',
+        'push',
+        invokeQueue
+      ),
       filter: invokeLater('$filterProvider', 'register', 'push', invokeQueue),
       config: invokeLater('$injector', 'invoke', 'push', configBlocks),
       run: fn => {
