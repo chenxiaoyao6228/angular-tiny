@@ -606,7 +606,9 @@ export default function $CompileProvider($provide) {
                       destination[scopeName] = newAttrValue
                     })
                     if (attrs[attrName]) {
-                      destination[scopeName] = attrs[attrName]
+                      destination[scopeName] = $interpolate(attrs[attrName])(
+                        scope
+                      )
                     }
                     break
                   case '=': {
