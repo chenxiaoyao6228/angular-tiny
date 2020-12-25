@@ -2620,5 +2620,15 @@ describe('$compile', () => {
         expect(el.attr('my-attr')).toBeFalsy()
       })
     })
+    it('cannot be done for event handler attributes', () => {
+      let injector = makeInjectorWithDirectives({})
+      injector.invoke(($compile, $rootScope) => {
+        $rootScope.myFunction = function() {}
+        let el = $('<button onclick="{{myFunction()}}"></button>')
+        expect(() => {
+          $compile(el)($rootScope)
+        }).toThrow()
+      })
+    })
   })
 })

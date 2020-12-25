@@ -440,6 +440,9 @@ export default function $CompileProvider($provide) {
             }
           }
           function addAttrInterpolateDirective(directives, value, name) {
+            if (/^(on[a-z]+|formaction)$/.test(name)) {
+              throw new Error('should not use vanilla events')
+            }
             let interpolateFn = $interpolate(value, true)
             if (interpolateFn) {
               directives.push({
