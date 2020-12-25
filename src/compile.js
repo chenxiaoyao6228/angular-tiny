@@ -445,13 +445,16 @@ export default function $CompileProvider($provide) {
               directives.push({
                 priority: 100,
                 compile: () => {
-                  return function link(scope, element, attrs) {
-                    attrs.$$observers = attrs.$$observers || {}
-                    attrs.$$observers[name] = attrs.$$observers[name] || []
-                    attrs.$$observers[name].$$inter = true
-                    scope.$watch(interpolateFn, newValue => {
-                      attrs.$set(name, newValue)
-                    })
+                  return {
+                    pre: function link(scope, element, attrs) {
+                      attrs.$$observers = attrs.$$observers || {}
+                      attrs.$$observers[name] = attrs.$$observers[name] || []
+                      attrs.$$observers[name].$$inter = true
+                      attrs[name] = interpolateFn(scope)
+                      scope.$watch(interpolateFn, newValue => {
+                        attrs.$set(name, newValue)
+                      })
+                    }
                   }
                 }
               })

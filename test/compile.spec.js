@@ -2546,5 +2546,23 @@ describe('$compile', () => {
         expect(observerSpy.mock.calls.length).toBe(1)
       })
     })
+    it('is done for attributes by the time other directive is linked', () => {
+      let gotMyAttr
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            link: function(scope, element, attrs) {
+              gotMyAttr = attrs.myAttr
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive my-attr="{{myExpr}}"></div>')
+        $rootScope.myExpr = 'Hello'
+        $compile(el)($rootScope)
+        expect(gotMyAttr).toEqual('Hello')
+      })
+    })
   })
 })
