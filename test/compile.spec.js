@@ -2583,5 +2583,24 @@ describe('$compile', () => {
         expect(gotMyAttr).toEqual('Hello')
       })
     })
+    it('is done for attributes so that compile-time changes apply', () => {
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            compile: function(element, attrs) {
+              attrs.$set('myAttr', '{{myDifferentExpr}}')
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive my-attr="{{myExpr}}"></div>')
+        $rootScope.myExpr = 'Hello'
+        $rootScope.myDifferentExpr = 'Other Hello'
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(el.attr('my-attr')).toEqual('Other Hello')
+      })
+    })
   })
 })
