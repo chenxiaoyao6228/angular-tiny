@@ -160,7 +160,9 @@ export default function $CompileProvider($provide) {
           this.$$observers[key] = this.$$observers[key] || []
           this.$$observers[key].push(fn)
           $rootScope.$evalAsync(() => {
-            fn(self[key])
+            if (!self.$$observers[key].$$inter) {
+              fn(self[key])
+            }
           })
           return () => {
             let index = self.$$observers[key].indexOf(fn)
@@ -444,8 +446,11 @@ export default function $CompileProvider($provide) {
                 priority: 100,
                 compile: () => {
                   return function link(scope, element, attrs) {
+                    attrs.$$observers = attrs.$$observers || {}
+                    attrs.$$observers[name] = attrs.$$observers[name] || []
+                    attrs.$$observers[name].$$inter = true
                     scope.$watch(interpolateFn, newValue => {
-                      element.attr(name, newValue)
+                      attrs.$set(name, newValue)
                     })
                   }
                 }

@@ -2509,5 +2509,42 @@ describe('$compile', () => {
         expect(el.attr('alt')).toEqual('My favourite photo')
       })
     })
+    it('fires observers on attribute expression changes', () => {
+      let observerSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            link: function(scope, element, attrs) {
+              attrs.$observe('alt', observerSpy)
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<img alt="{{myAltText}}" my-directive>')
+        $compile(el)($rootScope)
+        $rootScope.myAltText = 'My favourite photo'
+        $rootScope.$apply()
+        expect(observerSpy.mock.calls[0][0]).toEqual('My favourite photo')
+      })
+    })
+    it('fires observers just once upon registration', () => {
+      let observerSpy = jest.fn()
+      let injector = makeInjectorWithDirectives({
+        myDirective: function() {
+          return {
+            link: function(scope, element, attrs) {
+              attrs.$observe('alt', observerSpy)
+            }
+          }
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<img alt="{{myAltText}}" my-directive>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(observerSpy.mock.calls.length).toBe(1)
+      })
+    })
   })
 })
