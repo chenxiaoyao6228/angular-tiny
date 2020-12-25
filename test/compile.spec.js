@@ -2630,5 +2630,27 @@ describe('$compile', () => {
         }).toThrow()
       })
     })
+    it('uses a watch delegate', () => {
+      let injector = createInjector(['ng'])
+      let $interpolate = injector.get('$interpolate')
+      let interp = $interpolate('has an {{expr}}')
+      expect(interp.$$watchDelegate).toBeDefined()
+    })
+    it('correctly returns new and old value when watched', () => {
+      let injector = createInjector(['ng'])
+      let $interpolate = injector.get('$interpolate')
+      let $rootScope = injector.get('$rootScope')
+      let interp = $interpolate('{{expr}}')
+      let listenerSpy = jest.fn()
+      $rootScope.$watch(interp, listenerSpy)
+      $rootScope.expr = 42
+      $rootScope.$apply()
+      expect(listenerSpy.mock.calls[0][0]).toEqual('42')
+      expect(listenerSpy.mock.calls[0][1]).toEqual('42')
+      $rootScope.expr++
+      $rootScope.$apply()
+      expect(listenerSpy.mock.calls[1][0]).toEqual('43')
+      expect(listenerSpy.mock.calls[1][1]).toEqual('42')
+    })
   })
 })

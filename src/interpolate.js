@@ -7,6 +7,8 @@ function $InterpolateProvider() {
         let index = 0
         let parts = []
         let expressions = []
+        let expressionFns = []
+        let expressionPositions = []
         let startIndex, endIndex, exp, expFn
         let hasExpressions = false
         while (index < text.length) {
@@ -21,6 +23,8 @@ function $InterpolateProvider() {
             exp = text.substring(startIndex + 2, endIndex)
             expressions.push(exp)
             expFn = $parse(exp)
+            expressionFns.push(expFn)
+            expressionPositions.push(parts.length)
             parts.push(expFn)
             hasExpressions = true
             index = endIndex + 2
@@ -31,16 +35,37 @@ function $InterpolateProvider() {
         }
         if (hasExpressions || !mustHaveExpression) {
           let interpolationFn = function(context) {
-            return parts.reduce((result, part) => {
-              if (utils.isFunction(part)) {
-                return result + stringify(part(context))
-              } else {
-                return result + part
-              }
-            }, '')
+            let values = utils.map(expressionFns, expressionFn => {
+              return expressionFn(context)
+            })
+            return compute(values)
           }
-          utils.extend(interpolationFn, { expressions })
+          utils.extend(interpolationFn, {
+            expressions,
+            $$watchDelegate: function(scope, listener) {
+              let lastValue
+              return scope.$watchGroup(
+                expressionFns,
+                (newValues, oldValues) => {
+                  let newValue = compute(newValues)
+                  listener(
+                    newValue,
+                    utils.isEqual(newValues, oldValues) ? newValue : lastValue,
+                    scope
+                  )
+                  lastValue = newValue
+                }
+              )
+            }
+          })
           return interpolationFn
+        }
+        // 提前将值计算好
+        function compute(values) {
+          utils.forEach(values, (value, i) => {
+            parts[expressionPositions[i]] = stringify(value)
+          })
+          return parts.join('')
         }
       }
     }
