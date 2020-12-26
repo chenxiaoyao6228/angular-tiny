@@ -1,4 +1,26 @@
 import utils from './utils'
+
+let CNTRL_REG = /^(\S+)(\s+as\s+(\w+))?/
+
+function identifierForController(ctrl) {
+  if (utils.isString(ctrl)) {
+    let match = CNTRL_REG.exec(ctrl)
+    if (match) {
+      return match[3]
+    }
+  }
+}
+
+function addToScope(locals, identifier, instance) {
+  if (locals && utils.isObject(locals.$scope)) {
+    locals.$scope[identifier] = instance
+  } else {
+    throw 'Cannot export controller as ' +
+      identifier +
+      '! No $scope object provided via locals'
+  }
+}
+
 function $ControllerProvider() {
   let controllers = {}
   let globals = false
@@ -17,7 +39,7 @@ function $ControllerProvider() {
     function($injector) {
       return function(ctrl, locals, later, identifier) {
         if (utils.isString(ctrl)) {
-          let match = ctrl.match(/^(\S+)(\s+as\s+(\w+))?/)
+          let match = ctrl.match(CNTRL_REG)
           ctrl = match[1]
           identifier = identifier || match[3]
           if (Object.hasOwnProperty.call(controllers, ctrl)) {
@@ -49,18 +71,8 @@ function $ControllerProvider() {
           }
           return instance
         }
-
-        function addToScope(locals, identifier, instance) {
-          if (locals && utils.isObject(locals.$scope)) {
-            locals.$scope[identifier] = instance
-          } else {
-            throw 'Cannot export controller as ' +
-              identifier +
-              '! No $scope object provided via locals'
-          }
-        }
       }
     }
   ]
 }
-export default $ControllerProvider
+export { $ControllerProvider, identifierForController }

@@ -1,5 +1,7 @@
 import utils from './utils'
 import $ from 'jquery'
+import { identifierForController } from './controller'
+
 const PREFIX_REGEXP = /(x[:_-]|data[:_-])/i
 let BOOLEAN_ATTRS = {
   multiple: true,
@@ -553,6 +555,7 @@ export default function $CompileProvider($provide) {
             }
 
             if (controllerDirectives) {
+              // 初始化controller
               utils.forEach(controllerDirectives, directive => {
                 let locals = {
                   $scope:
@@ -1036,9 +1039,16 @@ export default function $CompileProvider($provide) {
     function factory() {
       return {
         restrict: 'E',
-        controller: options.controller
+        controller: options.controller,
+        controllerAs:
+          options.controllerAs ||
+          identifierForController(options.controller) ||
+          '$ctrl',
+        scope: {},
+        bindToController: options.bindings || {}
       }
     }
+
     return this.directive(name, factory)
   }
 }

@@ -9,7 +9,7 @@ import $HttpProvider, {
   $HttpParamSerializerJQLikeProvider
 } from './http'
 import $CompileProvider from './compile'
-import $ControllerProvider from './controller'
+import { $ControllerProvider } from './controller'
 import ngControllerDirective from '../src/directives/ng_controller'
 import ngTranscludeDirective from '../src/directives/ng_transclude'
 import $InterpolateProvider from '../src/interpolate'
