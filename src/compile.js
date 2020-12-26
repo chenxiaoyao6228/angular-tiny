@@ -1060,7 +1060,8 @@ export default function $CompileProvider($provide) {
         scope: {},
         bindToController: options.bindings || {},
         template: makeInjectable(options.template, $injector),
-        templateUrl: makeInjectable(options.templateUrl, $injector)
+        templateUrl: makeInjectable(options.templateUrl, $injector),
+        transclude: options.transclude
       }
     }
     factory.$inject = ['$injector']

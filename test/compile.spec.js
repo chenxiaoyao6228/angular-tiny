@@ -2916,5 +2916,16 @@ describe('$compile', () => {
         expect(requests[0].url).toBe('/template42.html')
       })
     })
+    it('may use transclusion', () => {
+      let injector = makeInjectorWithComponent('myComponent', {
+        transclude: true,
+        template: '<div ng-transclude></div>'
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component>Transclude me</my-component>')
+        $compile(el)($rootScope)
+        expect(el.find('div').text()).toEqual('Transclude me')
+      })
+    })
   })
 })
