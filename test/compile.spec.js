@@ -2662,6 +2662,19 @@ describe('$compile', () => {
     })
   })
   describe('components', () => {
+    let xhr, requests
+
+    beforeEach(() => {
+      xhr = sinon.useFakeXMLHttpRequest()
+      requests = []
+      xhr.onCreate = function(req) {
+        requests.push(req)
+      }
+    })
+    afterEach(() => {
+      xhr.restore()
+    })
+
     it('can be registered and become directives', () => {
       let myModule = window.angular.module('myModule', [])
       myModule.component('myComponent', {})
@@ -2791,6 +2804,116 @@ describe('$compile', () => {
         let el = $('<my-component></my-component>')
         $compile(el)($rootScope)
         expect(componentScope.$ctrl).toBe(controllerInstance)
+      })
+    })
+    it('may have a template', () => {
+      let injector = makeInjectorWithComponent('myComponent', {
+        controller: function() {
+          this.message = 'Hello from component'
+        },
+        template: '{{ $ctrl.message }}'
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(el.text()).toEqual('Hello from component')
+      })
+    })
+
+    it.skip('may have a templateUrl', () => {
+      let injector = makeInjectorWithComponent('myComponent', {
+        controller: function() {
+          this.message = 'Hello from component'
+        },
+        templateUrl: '/my_component.html'
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        requests[0].respond(200, {}, '{{ $ctrl.message }}')
+        $rootScope.$apply()
+        expect(el.text()).toEqual('Hello from component')
+      })
+    })
+
+    it('may have a template function with DI support', () => {
+      let injector = createInjector([
+        'ng',
+        function($provide, $compileProvider) {
+          $provide.constant('myConstant', 42)
+          $compileProvider.component('myComponent', {
+            template: function(myConstant) {
+              return '' + myConstant
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        expect(el.text()).toEqual('42')
+      })
+    })
+
+    it('may have a template function with array-wrapped DI', () => {
+      let injector = createInjector([
+        'ng',
+        function($provide, $compileProvider) {
+          $provide.constant('myConstant', 42)
+          $compileProvider.component('myComponent', {
+            template: [
+              'myConstant',
+              function(c) {
+                return '' + c
+              }
+            ]
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        expect(el.text()).toEqual('42')
+      })
+    })
+
+    it('may inject $element and $attrs to template function', () => {
+      let injector = createInjector([
+        'ng',
+        function($provide, $compileProvider) {
+          $compileProvider.component('myComponent', {
+            template: function($element, $attrs) {
+              return $element.attr('copiedAttr', $attrs.myAttr)
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component my-attr="42"></my-component>')
+        $compile(el)($rootScope)
+        expect(el.attr('copiedAttr')).toEqual('42')
+      })
+    })
+
+    it('component may have a template function with DI support', () => {
+      let injector = createInjector([
+        'ng',
+        function($provide, $compileProvider) {
+          $provide.constant('myConstant', 42)
+          $compileProvider.component('myComponent', {
+            templateUrl: function(myConstant) {
+              return '/template' + myConstant + '.html'
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        expect(requests[0].url).toBe('/template42.html')
       })
     })
   })
