@@ -774,6 +774,13 @@ export default function $CompileProvider($provide) {
                 scopeBoundTranscludeFn
               )
             })
+
+            utils.forEach(controllers, controller => {
+              let controllerInstance = controller.instance
+              if (controllerInstance.$postLink) {
+                controllerInstance.$postLink()
+              }
+            })
           }
 
           for (let [i, directive] of directives.entries()) {

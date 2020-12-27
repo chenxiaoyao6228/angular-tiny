@@ -3566,5 +3566,41 @@ describe('$compile', () => {
         expect(destroySpy).toHaveBeenCalled()
       })
     })
+    it('calls $postLink after all linking is done', () => {
+      let invocations = []
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.component('first', {
+            controller: function() {
+              this.$postLink = function() {
+                invocations.push('first controller $postLink')
+              }
+            }
+          })
+          $compileProvider.directive('second', () => {
+            return {
+              controller: function() {
+                this.$postLink = function() {
+                  invocations.push('second controller $postLink')
+                }
+              },
+              link: function() {
+                invocations.push('second postlink')
+              }
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<first><second></second></first>')
+        $compile(el)($rootScope)
+        expect(invocations).toEqual([
+          'second postlink',
+          'second controller $postLink',
+          'first controller $postLink'
+        ])
+      })
+    })
   })
 })
