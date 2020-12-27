@@ -3602,5 +3602,326 @@ describe('$compile', () => {
         ])
       })
     })
+    it('calls $onChanges with all bindings during init', () => {
+      let changesSpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '<',
+          myAttr: '@'
+        },
+        controller: function() {
+          this.$onChanges = changesSpy
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component my-binding="42" my-attr="43"></my-component>')
+        $compile(el)($rootScope)
+        expect(changesSpy).toHaveBeenCalled()
+        let changes = changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0]
+        expect(changes.myBinding.currentValue).toBe(42)
+        expect(changes.myBinding.isFirstChange()).toBe(true)
+        expect(changes.myAttr.currentValue).toBe('43')
+        expect(changes.myAttr.isFirstChange()).toBe(true)
+      })
+    })
+
+    it('does not call $onChanges for two-way bindings', () => {
+      let changesSpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '='
+        },
+        controller: function() {
+          this.$onChanges = changesSpy
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component my-binding="42"></my-component>')
+        $compile(el)($rootScope)
+        expect(changesSpy).toHaveBeenCalled()
+        expect(
+          changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0].myBinding
+        ).toBeUndefined()
+      })
+    })
+
+    it('calls $onChanges when binding changes', () => {
+      let changesSpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '<'
+        },
+        controller: function() {
+          this.$onChanges = changesSpy
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        $rootScope.aValue = 42
+        let el = $('<my-component my-binding="aValue"></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        expect(changesSpy.mock.calls.length).toBe(1)
+
+        $rootScope.aValue = 43
+        $rootScope.$apply()
+        expect(changesSpy.mock.calls.length).toBe(2)
+
+        let lastChanges =
+          changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0]
+        expect(lastChanges.myBinding.currentValue).toBe(43)
+        expect(lastChanges.myBinding.previousValue).toBe(42)
+        expect(lastChanges.myBinding.isFirstChange()).toBe(false)
+      })
+    })
+
+    it('calls $onChanges when attribute changes', () => {
+      let changesSpy = jest.fn()
+      let attrs
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myAttr: '@'
+        },
+        controller: function($attrs) {
+          this.$onChanges = changesSpy
+          attrs = $attrs
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component my-attr="42"></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        expect(changesSpy.mock.calls.length).toBe(1)
+
+        attrs.$set('myAttr', '43')
+        $rootScope.$apply()
+        expect(changesSpy.mock.calls.length).toBe(2)
+
+        let lastChanges =
+          changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0]
+        expect(lastChanges.myAttr.currentValue).toBe('43')
+        expect(lastChanges.myAttr.previousValue).toBe('42')
+        expect(lastChanges.myAttr.isFirstChange()).toBe(false)
+      })
+    })
+
+    it('calls $onChanges once with multiple changes', () => {
+      let changesSpy = jest.fn()
+      let attrs
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '<',
+          myAttr: '@'
+        },
+        controller: function($attrs) {
+          this.$onChanges = changesSpy
+          attrs = $attrs
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        $rootScope.aValue = 42
+        let el = $(
+          '<my-component my-binding="aValue" my-attr="fourtyTwo"></my-component>'
+        )
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        expect(changesSpy.mock.calls.length).toBe(1)
+
+        $rootScope.aValue = 43
+        attrs.$set('myAttr', 'fourtyThree')
+        $rootScope.$apply()
+        expect(changesSpy.mock.calls.length).toBe(2)
+
+        let lastChanges =
+          changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0]
+        expect(lastChanges.myBinding.currentValue).toBe(43)
+        expect(lastChanges.myBinding.previousValue).toBe(42)
+        expect(lastChanges.myAttr.currentValue).toBe('fourtyThree')
+        expect(lastChanges.myAttr.previousValue).toBe('fourtyTwo')
+      })
+    })
+
+    it('runs $onChanges in a digest', () => {
+      let changesSpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '<'
+        },
+        controller: function() {
+          this.$onChanges = function() {
+            this.innerValue = 'myBinding is ' + this.myBinding
+          }
+        },
+        template: '{{ $ctrl.innerValue }}'
+      })
+      injector.invoke(($compile, $rootScope) => {
+        $rootScope.aValue = 42
+        let el = $('<my-component my-binding="aValue"></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        $rootScope.aValue = 43
+        $rootScope.$apply()
+
+        expect(el.text()).toEqual('myBinding is 43')
+      })
+    })
+
+    it('keeps first value as previous for $onChanges when multiple changes', () => {
+      let changesSpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        bindings: {
+          myBinding: '<'
+        },
+        controller: function() {
+          this.$onChanges = changesSpy
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        $rootScope.aValue = 42
+        let el = $('<my-component my-binding="aValue"></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        $rootScope.aValue = 43
+        $rootScope.$watch('aValue', () => {
+          if ($rootScope.aValue !== 44) {
+            $rootScope.aValue = 44
+          }
+        })
+        $rootScope.$apply()
+        expect(changesSpy.mock.calls.length).toBe(2)
+
+        let lastChanges =
+          changesSpy.mock.calls[changesSpy.mock.calls.length - 1][0]
+        expect(lastChanges.myBinding.currentValue).toBe(44)
+        expect(lastChanges.myBinding.previousValue).toBe(42)
+      })
+    })
+
+    it('runs $onChanges for all components in the same digest', () => {
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.component('first', {
+            bindings: { myBinding: '<' },
+            controller: function() {
+              this.$onChanges = function() {}
+            }
+          })
+          $compileProvider.component('second', {
+            bindings: { myBinding: '<' },
+            controller: function() {
+              this.$onChanges = function() {}
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let watchSpy = jest.fn()
+        $rootScope.$watch(watchSpy)
+
+        $rootScope.aValue = 42
+        let el = $(
+          '<div>' +
+            '<first my-binding="aValue"></first>' +
+            '<second my-binding="aValue"></second>' +
+            '</div>'
+        )
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+        // Dirty watches always cause a second digest
+        expect(watchSpy.mock.calls.length).toBe(2)
+
+        $rootScope.aValue = 43
+        $rootScope.$apply()
+        // Two more because of dirty watches $apply here,
+        // plus one more for onchanges
+        expect(watchSpy.mock.calls.length).toBe(5)
+      })
+    })
+
+    it('has a TTL for $onChanges', () => {
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.component('myComponent', {
+            bindings: {
+              input: '<',
+              increment: '='
+            },
+            controller: function() {
+              this.$onChanges = function() {
+                if (this.increment) {
+                  this.increment = this.increment + 1
+                }
+              }
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let watchSpy = jest.fn()
+        $rootScope.$watch(watchSpy)
+
+        let el = $(
+          '<div>' +
+            '<my-component input="valueOne" increment="valueTwo"></my-component>' +
+            '<my-component input="valueTwo" increment="valueOne"></my-component>' +
+            '</div>'
+        )
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        $rootScope.valueOne = 42
+        $rootScope.valueTwo = 42
+        $rootScope.$apply()
+        expect($rootScope.valueOne).toBe(51)
+        expect($rootScope.valueTwo).toBe(51)
+      })
+    })
+
+    it('allows configuring $onChanges TTL', () => {
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.onChangesTtl(50)
+          $compileProvider.component('myComponent', {
+            bindings: {
+              input: '<',
+              increment: '='
+            },
+            controller: function() {
+              this.$onChanges = function() {
+                if (this.increment) {
+                  this.increment = this.increment + 1
+                }
+              }
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let watchSpy = jest.fn()
+        $rootScope.$watch(watchSpy)
+
+        let el = $(
+          '<div>' +
+            '<my-component input="valueOne" increment="valueTwo"></my-component>' +
+            '<my-component input="valueTwo" increment="valueOne"></my-component>' +
+            '</div>'
+        )
+        $compile(el)($rootScope)
+        $rootScope.$apply()
+
+        $rootScope.valueOne = 42
+        $rootScope.valueTwo = 42
+        $rootScope.$apply()
+        expect($rootScope.valueOne).toBe(91)
+        expect($rootScope.valueTwo).toBe(91)
+      })
+    })
   })
 })

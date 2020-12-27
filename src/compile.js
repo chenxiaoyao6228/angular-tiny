@@ -58,8 +58,29 @@ function makeInjectable(template, $injector) {
     return template
   }
 }
+
+function UNINITIALIZED_VALUE() {}
+let _UNINITIALIZED_VALUE = new UNINITIALIZED_VALUE()
+
+function SimpleChange(previous, current) {
+  this.previousValue = previous
+  this.currentValue = current
+}
+SimpleChange.prototype.isFirstChange = function() {
+  return this.previousValue === _UNINITIALIZED_VALUE
+}
 export default function $CompileProvider($provide) {
   let hasDirectives = {}
+
+  let TTL = 10
+  this.onChangesTtl = function(value) {
+    if (arguments.length) {
+      TTL = value
+      return this
+    }
+    return TTL
+  }
+
   this.directive = function(name, directiveFactory) {
     if (utils.isString(name)) {
       if (name === 'hasOwnProperty') {
@@ -142,6 +163,27 @@ export default function $CompileProvider($provide) {
         $http,
         $interpolate
       ) {
+        let onChangesQueue
+        let onChangesTtl = TTL
+
+        function flushOnChanges() {
+          try {
+            onChangesTtl--
+            if (!onChangesTtl) {
+              onChangesQueue = null
+              throw TTL + ' $onChanges() iterations reached. Aborting!'
+            }
+            $rootScope.$apply(() => {
+              utils.forEach(onChangesQueue, onChangesHook => {
+                onChangesHook()
+              })
+              onChangesQueue = null
+            })
+          } finally {
+            onChangesTtl++
+          }
+        }
+
         function Attributes(element) {
           this.$$element = element
           this.$attr = {}
@@ -618,7 +660,9 @@ export default function $CompileProvider($provide) {
             // bindToController
             let scopeDirective = newIsolateScopeDirective || newScopeDirective
             if (scopeDirective && controllers[scopeDirective.name]) {
-              initializeDirectiveBindings(
+              controllers[
+                scopeDirective.name
+              ].initialChanges = initializeDirectiveBindings(
                 scope,
                 attrs,
                 controllers[scopeDirective.name].instance,
@@ -633,19 +677,54 @@ export default function $CompileProvider($provide) {
               bindings,
               newScope
             ) {
+              let initialChanges = {}
+              let changes
+
+              function recordChanges(key, currentValue, previousValue) {
+                if (destination.$onChanges && currentValue !== previousValue) {
+                  if (!onChangesQueue) {
+                    onChangesQueue = []
+                    $rootScope.$$postDigest(flushOnChanges)
+                  }
+                  if (!changes) {
+                    changes = {}
+                    onChangesQueue.push(triggerOnChanges)
+                  }
+                  if (changes[key]) {
+                    previousValue = changes[key].previousValue
+                  }
+                  changes[key] = new SimpleChange(previousValue, currentValue)
+                }
+              }
+
+              function triggerOnChanges() {
+                try {
+                  destination.$onChanges(changes)
+                } finally {
+                  changes = null
+                }
+              }
+
               utils.forEach(bindings, (definition, scopeName) => {
                 let attrName = definition.attrName
                 switch (definition.mode) {
-                  case '@':
+                  case '@': {
                     attrs.$observe(attrName, newAttrValue => {
+                      let oldValue = destination[scopeName]
                       destination[scopeName] = newAttrValue
+                      recordChanges(scopeName, destination[scopeName], oldValue)
                     })
                     if (attrs[attrName]) {
                       destination[scopeName] = $interpolate(attrs[attrName])(
                         scope
                       )
                     }
+                    initialChanges[scopeName] = new SimpleChange(
+                      _UNINITIALIZED_VALUE,
+                      destination[scopeName]
+                    )
                     break
+                  }
                   case '<': {
                     if (definition.optional && !attrs[attrName]) {
                       break
@@ -653,9 +732,15 @@ export default function $CompileProvider($provide) {
                     let parentGet = $parse(attrs[attrName])
                     destination[scopeName] = parentGet(scope)
                     let unwatch = scope.$watch(parentGet, newValue => {
+                      let oldValue = destination[scopeName]
                       destination[scopeName] = newValue
+                      recordChanges(scopeName, destination[scopeName], oldValue)
                     })
                     newScope.$on('$destroy', unwatch)
+                    initialChanges[scopeName] = new SimpleChange(
+                      _UNINITIALIZED_VALUE,
+                      destination[scopeName]
+                    )
                     break
                   }
                   case '=': {
@@ -701,6 +786,7 @@ export default function $CompileProvider($provide) {
                   }
                 }
               })
+              return initialChanges
             }
             utils.forEach(controllers, controller => {
               controller()
@@ -711,6 +797,10 @@ export default function $CompileProvider($provide) {
               let controllerInstance = controller.instance
               if (controllerInstance.$onInit) {
                 controllerInstance.$onInit()
+              }
+
+              if (controllerInstance.$onChanges) {
+                controllerInstance.$onChanges(controller.initialChanges)
               }
 
               if (controllerInstance.$onDestroy) {
