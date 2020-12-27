@@ -108,6 +108,13 @@ export default function $CompileProvider($provide) {
                     )
                   }
                 }
+
+                if (utils.isObject(directive.bindToController)) {
+                  bindings.bindToController = parseIsolateBindings(
+                    directive.bindToController
+                  )
+                }
+
                 return bindings
               }
             })
