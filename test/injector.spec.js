@@ -236,8 +236,7 @@ describe('injector', () => {
       let instance = injector.instantiate(Type)
       expect(instance.result).toBe(3)
     })
-    // TODO
-    it.skip('uses the prototype of the constructor when instantiating', () => {
+    it('uses the prototype of the constructor when instantiating', () => {
       function BaseType() {}
       BaseType.prototype.getValue = () => 42
 

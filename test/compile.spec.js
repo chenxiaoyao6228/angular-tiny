@@ -1136,6 +1136,7 @@ describe('$compile', () => {
       expect(el.data('$isolateScope')).toBe(givenScope)
     })
   })
+  // @ isolate scope binding
   it('allows observing attribute to the isolate scope', () => {
     let givenScope, givenAttrs
     let injector = makeInjectorWithDirectives('myDirective', () => {
@@ -1186,11 +1187,12 @@ describe('$compile', () => {
       expect(givenScope.aScopeAttr).toEqual('42')
     })
   })
+  // < oneway binding
   it('allows binding expression to isolate scope', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        scope: { anAttr: '=' },
+        scope: { anAttr: '<' },
         link: function(scope) {
           givenScope = scope
         }
@@ -1206,7 +1208,7 @@ describe('$compile', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        scope: { myAttr: '=theAttr' },
+        scope: { myAttr: '<theAttr' },
         link: function(scope) {
           givenScope = scope
         }
@@ -1222,7 +1224,7 @@ describe('$compile', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        scope: { myAttr: '=' },
+        scope: { myAttr: '<' },
         link: function(scope) {
           givenScope = scope
         }
@@ -1239,7 +1241,7 @@ describe('$compile', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
       return {
-        scope: { myAttr: '=' },
+        scope: { myAttr: '<' },
         link: function(scope) {
           givenScope = scope
         }
@@ -1253,6 +1255,26 @@ describe('$compile', () => {
       expect(givenScope.myAttr).toBe(42)
     })
   })
+  it('does not watch optional missing isolate scope expressions', () => {
+    let givenScope
+    let injector = makeInjectorWithDirectives('myDirective', () => {
+      return {
+        scope: {
+          myAttr: '<?'
+        },
+        link: function(scope) {
+          givenScope = scope
+        }
+      }
+    })
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div my-directive></div>')
+      $compile(el)($rootScope)
+      expect($rootScope.$$watchers.length).toBe(0)
+    })
+  })
+  // = two way binding
+
   it('allows assigning to isolated scope expressions', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
@@ -1329,19 +1351,7 @@ describe('$compile', () => {
       expect(givenScope.myAttr).toEqual([1, 2, 3])
     })
   })
-  it('does not watch optional missing isolate scope expressions', () => {
-    let injector = makeInjectorWithDirectives('myDirective', () => {
-      return {
-        scope: { myAttr: '=?' },
-        link: function(scope) {}
-      }
-    })
-    injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-directive></div>')
-      $compile(el)($rootScope)
-      expect($rootScope.$$watchers.length).toBe(0)
-    })
-  })
+  // &
   it('allows binding an invokable expression on the parent scope', () => {
     let givenScope
     let injector = makeInjectorWithDirectives('myDirective', () => {
@@ -3294,7 +3304,7 @@ describe('$compile', () => {
         expect(Object.getPrototypeOf(componentScope)).not.toBe($rootScope)
       })
     })
-    it.skip('may have bindings which are attached to controller', () => {
+    it('may have bindings which are attached to controller', () => {
       let controllerInstance
       let injector = makeInjectorWithComponent('myComponent', {
         bindings: {
