@@ -560,6 +560,8 @@ export default function $CompileProvider($provide) {
             boundTranscludeFn
           ) {
             let $element = $(linkNode)
+
+            // 为了实现bindToController,要提前将isolateScope创建
             let isolateScope
             if (newIsolateScopeDirective) {
               isolateScope = scope.$new(true)
@@ -606,6 +608,7 @@ export default function $CompileProvider($provide) {
                 isolateScope
               )
             }
+            // bindToController
             if (
               newIsolateScopeDirective &&
               controllers[newIsolateScopeDirective.name]
