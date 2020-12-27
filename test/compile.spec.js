@@ -3505,4 +3505,52 @@ describe('$compile', () => {
       })
     })
   })
+  describe('lifecycle', () => {
+    it('calls $onInit after all ctrls created before linking', () => {
+      let invocations = []
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.component('first', {
+            controller: function() {
+              invocations.push('first controller created')
+              this.$onInit = function() {
+                invocations.push('first controller $onInit')
+              }
+            }
+          })
+          $compileProvider.directive('second', () => {
+            return {
+              controller: function() {
+                invocations.push('second controller created')
+                this.$onInit = function() {
+                  invocations.push('second controller $onInit')
+                }
+              },
+              link: {
+                pre: function() {
+                  invocations.push('second prelink')
+                },
+                post: function() {
+                  invocations.push('second postlink')
+                }
+              }
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<first second></first>')
+        $compile(el)($rootScope)
+        expect(invocations).toEqual([
+          'first controller created',
+          'second controller created',
+          'first controller $onInit',
+          'second controller $onInit',
+          'second prelink',
+          'second postlink'
+        ])
+      })
+    })
+  })
 })

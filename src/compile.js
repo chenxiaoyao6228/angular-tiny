@@ -706,6 +706,13 @@ export default function $CompileProvider($provide) {
               controller()
             })
 
+            // 生命周期相关
+            utils.forEach(controllers, controller => {
+              let controllerInstance = controller.instance
+              if (controllerInstance.$onInit) {
+                controllerInstance.$onInit()
+              }
+            })
             function scopeBoundTranscludeFn(transcludedScope, cloneAttachFn) {
               let transcludeControllers
               if (
@@ -1081,7 +1088,8 @@ export default function $CompileProvider($provide) {
         bindToController: options.bindings || {},
         template: makeInjectable(options.template, $injector),
         templateUrl: makeInjectable(options.templateUrl, $injector),
-        transclude: options.transclude
+        transclude: options.transclude,
+        require: options.require
       }
     }
     factory.$inject = ['$injector']
