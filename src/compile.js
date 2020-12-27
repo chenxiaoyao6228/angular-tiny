@@ -712,6 +712,15 @@ export default function $CompileProvider($provide) {
               if (controllerInstance.$onInit) {
                 controllerInstance.$onInit()
               }
+
+              if (controllerInstance.$onDestroy) {
+                ;(newIsolateScopeDirective ? isolateScope : scope).$on(
+                  '$destroy',
+                  () => {
+                    controllerInstance.$onDestroy()
+                  }
+                )
+              }
             })
             function scopeBoundTranscludeFn(transcludedScope, cloneAttachFn) {
               let transcludeControllers

@@ -3552,5 +3552,19 @@ describe('$compile', () => {
         ])
       })
     })
+    it('calls $onDestroy when the scope is destroyed', () => {
+      let destroySpy = jest.fn()
+      let injector = makeInjectorWithComponent('myComponent', {
+        controller: function() {
+          this.$onDestroy = destroySpy
+        }
+      })
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<my-component></my-component>')
+        $compile(el)($rootScope)
+        $rootScope.$destroy()
+        expect(destroySpy).toHaveBeenCalled()
+      })
+    })
   })
 })
