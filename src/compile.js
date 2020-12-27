@@ -616,15 +616,13 @@ export default function $CompileProvider($provide) {
               )
             }
             // bindToController
-            if (
-              newIsolateScopeDirective &&
-              controllers[newIsolateScopeDirective.name]
-            ) {
+            let scopeDirective = newIsolateScopeDirective || newScopeDirective
+            if (scopeDirective && controllers[scopeDirective.name]) {
               initializeDirectiveBindings(
                 scope,
                 attrs,
-                controllers[newIsolateScopeDirective.name].instance,
-                newIsolateScopeDirective.$$bindings.bindToController,
+                controllers[scopeDirective.name].instance,
+                scopeDirective.$$bindings.bindToController,
                 isolateScope
               )
             }

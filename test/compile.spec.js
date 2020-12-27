@@ -1692,6 +1692,30 @@ describe('$compile', () => {
         expect(gotMyAttr).toEqual('abc')
       })
     })
+    it('can bind through bindToController without iso scope', () => {
+      let gotMyAttr
+      function MyController() {
+        gotMyAttr = this.myAttr
+      }
+      let injector = createInjector([
+        'ng',
+        function($controllerProvider, $compileProvider) {
+          $controllerProvider.register('MyController', MyController)
+          $compileProvider.directive('myDirective', () => {
+            return {
+              scope: true,
+              controller: 'MyController',
+              bindToController: { myAttr: '@myDirective' }
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<div my-directive="abc"></div>')
+        $compile(el)($rootScope)
+        expect(gotMyAttr).toEqual('abc')
+      })
+    })
 
     // require
     it('can be required from a sibling directive', () => {
