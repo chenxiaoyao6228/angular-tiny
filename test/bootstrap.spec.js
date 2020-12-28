@@ -55,5 +55,19 @@ describe('bootstrap', () => {
 
       expect(compileSpy).toHaveBeenCalled()
     })
+    it('links the element', () => {
+      let element = $('<div><div my-directive></div></div>')
+      let linkSpy = jest.fn()
+
+      window.angular.module('myModule', []).directive('myDirective', () => {
+        return { link: linkSpy }
+      })
+      window.angular.bootstrap(element, ['myModule'])
+
+      expect(linkSpy).toHaveBeenCalled()
+      expect(linkSpy.mock.calls[linkSpy.mock.calls.length - 1][0]).toEqual(
+        element.data('$injector').get('$rootScope')
+      )
+    })
   })
 })
