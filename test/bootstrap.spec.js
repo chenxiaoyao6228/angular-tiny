@@ -36,5 +36,14 @@ describe('bootstrap', () => {
       expect(injector.get('aValue')).toBe(42)
       expect(injector.get('aSecondValue')).toBe(43)
     })
+    it('makes root element available for injection', () => {
+      let element = $('<div></div>')
+
+      window.angular.bootstrap(element)
+
+      let injector = element.data('$injector')
+      expect(injector.has('$rootElement')).toBe(true)
+      expect(injector.get('$rootElement')[0]).toBe(element[0])
+    })
   })
 })
