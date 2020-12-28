@@ -83,5 +83,20 @@ describe('bootstrap', () => {
 
       expect(element.find('div').text()).toBe('42')
     })
+    it('supports enabling strictDi mode', () => {
+      let element = $('<div><div my-directive></div></div>')
+      let compileSpy = jest.fn()
+
+      window.angular
+        .module('myModule', [])
+        .constant('aValue', 42)
+        .directive('myDirective', aValue => {
+          return {}
+        })
+
+      expect(() => {
+        window.angular.bootstrap(element, ['myModule'], { strictDi: true })
+      }).toThrow()
+    })
   })
 })

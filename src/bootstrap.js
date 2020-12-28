@@ -4,7 +4,7 @@ import { createInjector } from './injector'
 
 publishExternalAPI()
 
-window.angular.bootstrap = function bootstrap(element, modules) {
+window.angular.bootstrap = function bootstrap(element, modules, config) {
   const $element = $(element)
   modules = modules || []
   modules.unshift([
@@ -14,7 +14,8 @@ window.angular.bootstrap = function bootstrap(element, modules) {
     }
   ])
   modules.unshift('ng')
-  let injector = createInjector(modules)
+  let strictDi = config && config.strictDi
+  let injector = createInjector(modules, strictDi)
   injector.invoke([
     '$compile',
     '$rootScope',
