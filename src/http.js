@@ -93,7 +93,7 @@ export default function $HttpProvider() {
           config.transformRequest
         )
         if (!reqData) {
-          utils.forEach(config.headers, (k, v) => {
+          utils.forEach(config.headers, (v, k) => {
             if (k.toLowerCase() === 'content-type') {
               delete config.headers[k]
             }
@@ -285,7 +285,7 @@ export default function $HttpProvider() {
           defaults.headers.common,
           defaults.headers[(config.method || 'get').toLowerCase()]
         )
-        utils.forEach(defHeaders, (key, value) => {
+        utils.forEach(defHeaders, (value, key) => {
           let headerExists = utils.some(reqHeaders, (v, k) => {
             return k.toLowerCase() === key.toLowerCase()
           })
@@ -355,7 +355,7 @@ export function $HttpParamSerializerProvider() {
   this.$get = function() {
     return function serializeParams(params) {
       let parts = []
-      utils.forEach(params, (key, value) => {
+      utils.forEach(params, (value, key) => {
         if (value === undefined && value === null) {
           return
         }
@@ -390,7 +390,7 @@ export function $HttpParamSerializerJQLikeProvider() {
             serialize(v, prefix + '[]')
           })
         } else if (utils.isObject(value) && !utils.isDate(value)) {
-          utils.forEach(value, (k, v) => {
+          utils.forEach(value, (v, k) => {
             serialize(v, prefix + '[' + k + ']')
           })
         } else {
@@ -399,7 +399,7 @@ export function $HttpParamSerializerJQLikeProvider() {
           )
         }
       }
-      utils.forEach(params, (key, value) => {
+      utils.forEach(params, (value, key) => {
         if (value === null || value === undefined) {
           return
         }
@@ -408,7 +408,7 @@ export function $HttpParamSerializerJQLikeProvider() {
             serialize(v, key + '[]')
           })
         } else if (utils.isObject(value) && !utils.isDate(value)) {
-          utils.forEach(value, (k, v) => {
+          utils.forEach(value, (v, k) => {
             serialize(v, key + '[' + k + ']')
           })
         } else {

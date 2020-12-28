@@ -148,7 +148,7 @@ function qFactory(callLater) {
     let results = utils.isArray(promises) ? [] : {}
     let counter = 0
     let d = defer()
-    _.forEach(promises, (promise, index) => {
+    utils.forEach(promises, (promise, index) => {
       counter++
       when(promise).then(
         value => {

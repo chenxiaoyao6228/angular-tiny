@@ -6,8 +6,6 @@ let FN_ARG = /^\s*(_?)(\S+?)\1\s*$/
 let STRIP_COMMENTS = /(\/\/.*$)|(\/\*.*?\*\/)/gm
 let INSTANTIATING = {}
 
-// TODO replace Object.prototype.hasOwnProperty with _hasOwnProperty
-
 export function createInjector(modulesToLoad, strictDi) {
   let providerCache = {}
   let providerInjector = (providerCache.$injector = createInternalInjector(
@@ -111,6 +109,7 @@ export function createInjector(modulesToLoad, strictDi) {
       }
     }
     function invoke(fn, self, locals) {
+      // 获取函数的的参数,并且从cache中查找相应的Provider函数
       let args = annotate(fn).map(token => {
         if (utils.isString(token)) {
           if (locals && Object.prototype.hasOwnProperty.call(locals, token)) {

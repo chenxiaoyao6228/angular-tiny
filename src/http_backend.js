@@ -14,7 +14,7 @@ export default function $HttpBackendProvider() {
       let timeoutId
       request.open(method, url, true)
       // set before send method and after open
-      utils.forEach(headers, (key, value) => {
+      utils.forEach(headers, (value, key) => {
         request.setRequestHeader(key, value)
       })
       if (withCredentials) {

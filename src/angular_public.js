@@ -8,6 +8,12 @@ import $HttpProvider, {
   $HttpParamSerializerProvider,
   $HttpParamSerializerJQLikeProvider
 } from './http'
+import $CompileProvider from './compile'
+import { $ControllerProvider } from './controller'
+import ngControllerDirective from '../src/directives/ng_controller'
+import ngTranscludeDirective from '../src/directives/ng_transclude'
+import ngClickDirective from '../src/directives/ng_click'
+import $InterpolateProvider from '../src/interpolate'
 
 export function publishExternalAPI() {
   'use strict'
@@ -25,4 +31,10 @@ export function publishExternalAPI() {
     '$httpParamSerializerJQLike',
     $HttpParamSerializerJQLikeProvider
   )
+  ngModule.provider('$compile', $CompileProvider)
+  ngModule.provider('$controller', $ControllerProvider)
+  ngModule.directive('ngController', ngControllerDirective)
+  ngModule.directive('ngTransclude', ngTranscludeDirective)
+  ngModule.directive('ngClick', ngClickDirective)
+  ngModule.provider('$interpolate', $InterpolateProvider)
 }

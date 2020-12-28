@@ -60,17 +60,6 @@ function isPlainObject(obj) {
   return false
 }
 
-function forEach(value, operator) {
-  if (isArrayLike(value)) {
-    return Array.from(value).forEach(operator)
-  } else if (isObject(value)) {
-    return Object.entries(value).forEach(v => {
-      let [key, val] = v
-      return operator(key, val)
-    })
-  }
-}
-
 function isString(value) {
   return _.isString(value)
 }
@@ -108,15 +97,6 @@ function isBoolean(val) {
 
 function repeat(s, times) {
   return s.repeat(times)
-}
-
-function some(value, predicate) {
-  if (isArrayLike(value)) {
-    return Array.from(value).some(predicate)
-  } else {
-    // eslint-disable-next-line you-dont-need-lodash-underscore/some
-    return _.some(value, predicate)
-  }
 }
 
 function every(value, predicate) {
@@ -161,6 +141,13 @@ function isDate(date) {
 
 let transform = _.transform
 let remove = _.remove
+let camelCase = _.camelCase
+let kebabCase = _.kebabCase
+let some = _.some
+let difference = _.difference
+let noop = _.noop
+let drop = _.drop
+let forEach = _.forEach
 
 export default {
   times,
@@ -194,5 +181,10 @@ export default {
   map,
   uniqueId,
   transform,
-  remove
+  remove,
+  camelCase,
+  kebabCase,
+  difference,
+  noop,
+  drop
 }

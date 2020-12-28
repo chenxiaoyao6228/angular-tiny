@@ -140,7 +140,7 @@ function $ParseProvider() {
           case 'function':
             return expr
           default:
-            return () => {}
+            return utils.noop
         }
       }
     }
