@@ -25,5 +25,16 @@ describe('bootstrap', () => {
       expect(injector.has('$compile')).toBe(true)
       expect(injector.has('$rootScope')).toBe(true)
     })
+    it('loads other specified modules into the injector', () => {
+      let element = $('<div></div>')
+
+      window.angular.module('myModule', []).constant('aValue', 42)
+      window.angular.module('mySecondModule', []).constant('aSecondValue', 43)
+      window.angular.bootstrap(element, ['myModule', 'mySecondModule'])
+
+      let injector = element.data('$injector')
+      expect(injector.get('aValue')).toBe(42)
+      expect(injector.get('aSecondValue')).toBe(43)
+    })
   })
 })
