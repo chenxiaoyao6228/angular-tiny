@@ -84,6 +84,7 @@
     "@commitlint/prompt": "~8.1.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^24.9.0",
+    "caniuse-lite": "^1.0.30001170",
     "commitizen": "^4.0.3",
     "cz-conventional-changelog": "~3.0.2",
     "eslint": "^6.4.0",
