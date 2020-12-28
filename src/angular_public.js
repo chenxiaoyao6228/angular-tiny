@@ -12,7 +12,9 @@ import $CompileProvider from './compile'
 import { $ControllerProvider } from './controller'
 import ngControllerDirective from '../src/directives/ng_controller'
 import ngTranscludeDirective from '../src/directives/ng_transclude'
+import ngClickDirective from '../src/directives/ng_click'
 import $InterpolateProvider from '../src/interpolate'
+
 export function publishExternalAPI() {
   'use strict'
   setupModuleLoader(window)
@@ -33,5 +35,6 @@ export function publishExternalAPI() {
   ngModule.provider('$controller', $ControllerProvider)
   ngModule.directive('ngController', ngControllerDirective)
   ngModule.directive('ngTransclude', ngTranscludeDirective)
+  ngModule.directive('ngClick', ngClickDirective)
   ngModule.provider('$interpolate', $InterpolateProvider)
 }
