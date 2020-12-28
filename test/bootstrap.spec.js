@@ -85,7 +85,6 @@ describe('bootstrap', () => {
     })
     it('supports enabling strictDi mode', () => {
       let element = $('<div><div my-directive></div></div>')
-      let compileSpy = jest.fn()
 
       window.angular
         .module('myModule', [])
