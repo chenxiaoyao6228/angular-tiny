@@ -1,60 +1,100 @@
-import $ from 'jquery'
-
 import { publishExternalAPI } from '../../src/angular_public'
 import { createInjector } from '../../src/injector'
-describe('ngTransclude', () => {
+import $ from 'jquery'
+
+describe('ngController', () => {
   beforeEach(() => {
     delete window.angular
     publishExternalAPI()
   })
-  function createInjectorWithTranscluderTemplate(template) {
-    return createInjector([
+  it('is instantiated during compilation & linking', () => {
+    let instantiated
+    function MyController() {
+      instantiated = true
+    }
+    let injector = createInjector([
       'ng',
-      function($compileProvider) {
-        $compileProvider.directive('myTranscluder', () => {
-          return { transclude: true, template: template }
-        })
+      function($controllerProvider) {
+        $controllerProvider.register('MyController', MyController)
       }
     ])
-  }
-  it('transcludes the parent directive transclusion', () => {
-    let injector = createInjectorWithTranscluderTemplate(
-      '<div ng-transclude></div>'
-    )
     injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder>Hello</div>')
+      let el = $('<div ng-controller="MyController"></div>')
       $compile(el)($rootScope)
-      expect(el.find('> [ng-transclude]').html()).toEqual('Hello')
+      expect(instantiated).toBe(true)
     })
   })
-  it('empties existing contents', () => {
-    let injector = createInjectorWithTranscluderTemplate(
-      '<div ng-transclude>Existing contents</div>'
-    )
+  it('may inject scope, element, and attrs', () => {
+    let gotScope, gotElement, gotAttrs
+    function MyController($scope, $element, $attrs) {
+      gotScope = $scope
+      gotElement = $element
+      gotAttrs = $attrs
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.register('MyController', MyController)
+      }
+    ])
     injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder>Hello</div>')
+      let el = $('<div ng-controller="MyController"></div>')
       $compile(el)($rootScope)
-      expect(el.find('> [ng-transclude]').html()).toEqual('Hello')
+      expect(gotScope).toBeDefined()
+      expect(gotElement).toBeDefined()
+      expect(gotAttrs).toBeDefined()
     })
   })
-  it('may be used as element', () => {
-    let injector = createInjectorWithTranscluderTemplate(
-      '<ng-transclude>Existing contents</ng-transclude>'
-    )
+  it('has an inherited scope', () => {
+    let gotScope
+    function MyController($scope, $element, $attrs) {
+      gotScope = $scope
+    }
+
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.register('MyController', MyController)
+      }
+    ])
     injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder>Hello</div>')
+      let el = $('<div ng-controller="MyController"></div>')
       $compile(el)($rootScope)
-      expect(el.find('> ng-transclude').html()).toEqual('Hello')
+      expect(gotScope).not.toBe($rootScope)
+      expect(gotScope.$parent).toBe($rootScope)
+      expect(Object.getPrototypeOf(gotScope)).toBe($rootScope)
     })
   })
-  it('may be used as class', () => {
-    let injector = createInjectorWithTranscluderTemplate(
-      '<div class="ng-transclude">Existing contents</div>'
-    )
+  it('allows aliasing controller in expression', () => {
+    let gotScope
+    function MyController($scope) {
+      gotScope = $scope
+    }
+    let injector = createInjector([
+      'ng',
+      function($controllerProvider) {
+        $controllerProvider.register('MyController', MyController)
+      }
+    ])
     injector.invoke(($compile, $rootScope) => {
-      let el = $('<div my-transcluder>Hello</div>')
+      let el = $('<div ng-controller="MyController as myCtrl"></div>')
       $compile(el)($rootScope)
-      expect(el.find('> .ng-transclude').html()).toEqual('Hello')
+      expect(gotScope.myCtrl).toBeDefined()
+      expect(gotScope.myCtrl instanceof MyController).toBe(true)
+    })
+  })
+  it('allows looking up controller from surrounding scope', () => {
+    let gotScope
+    function MyController($scope) {
+      gotScope = $scope
+    }
+    let injector = createInjector(['ng'])
+    injector.invoke(($compile, $rootScope) => {
+      let el = $('<div ng-controller="MyCtrlOnScope as myCtrl"></div>')
+      $rootScope.MyCtrlOnScope = MyController
+      $compile(el)($rootScope)
+      expect(gotScope.myCtrl).toBeDefined()
+      expect(gotScope.myCtrl instanceof MyController).toBe(true)
     })
   })
 })
