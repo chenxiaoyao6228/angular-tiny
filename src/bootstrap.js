@@ -4,7 +4,8 @@ import { createInjector } from './injector'
 
 publishExternalAPI()
 
-window.angular.bootstrap = function bootstrap() {
+window.angular.bootstrap = function bootstrap(element) {
   let injector = createInjector()
+  element.data('$injector', injector)
   return injector
 }
