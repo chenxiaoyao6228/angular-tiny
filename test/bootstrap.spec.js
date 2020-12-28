@@ -69,5 +69,19 @@ describe('bootstrap', () => {
         element.data('$injector').get('$rootScope')
       )
     })
+    it('runs a digest', () => {
+      let element = $('<div><div my-directive>{{expr}}</div></div>')
+
+      window.angular.module('myModule', []).directive('myDirective', () => {
+        return {
+          link: function(scope) {
+            scope.expr = '42'
+          }
+        }
+      })
+      window.angular.bootstrap(element, ['myModule'])
+
+      expect(element.find('div').text()).toBe('42')
+    })
   })
 })

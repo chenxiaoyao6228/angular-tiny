@@ -19,7 +19,9 @@ window.angular.bootstrap = function bootstrap(element, modules) {
     '$compile',
     '$rootScope',
     function($compile, $rootScope) {
-      $compile($element)($rootScope)
+      $rootScope.$apply(() => {
+        $compile($element)($rootScope)
+      })
     }
   ])
   element.data('$injector', injector)
