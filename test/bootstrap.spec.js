@@ -17,5 +17,13 @@ describe('bootstrap', () => {
       let injector = window.angular.bootstrap(element)
       expect(element.data('$injector')).toBe(injector)
     })
+    it('loads built-ins into the injector', () => {
+      let element = $('<div></div>')
+      window.angular.bootstrap(element)
+
+      let injector = element.data('$injector')
+      expect(injector.has('$compile')).toBe(true)
+      expect(injector.has('$rootScope')).toBe(true)
+    })
   })
 })
