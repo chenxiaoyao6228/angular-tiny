@@ -45,5 +45,15 @@ describe('bootstrap', () => {
       expect(injector.has('$rootElement')).toBe(true)
       expect(injector.get('$rootElement')[0]).toBe(element[0])
     })
+    it('compiles the element', () => {
+      let element = $('<div><div my-directive></div></div>')
+      let compileSpy = jest.fn()
+      window.angular.module('myModule', []).directive('myDirective', () => {
+        return { compile: compileSpy }
+      })
+      window.angular.bootstrap(element, ['myModule'])
+
+      expect(compileSpy).toHaveBeenCalled()
+    })
   })
 })

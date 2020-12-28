@@ -7,14 +7,20 @@ publishExternalAPI()
 window.angular.bootstrap = function bootstrap(element, modules) {
   const $element = $(element)
   modules = modules || []
-  modules.unshift('ng')
   modules.unshift([
     '$provide',
     function($provide) {
       $provide.value('$rootElement', $element)
     }
   ])
+  modules.unshift('ng')
   let injector = createInjector(modules)
+  injector.invoke([
+    '$compile',
+    function($compile) {
+      $compile($element)
+    }
+  ])
   element.data('$injector', injector)
   return injector
 }
