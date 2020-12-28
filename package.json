@@ -1,6 +1,6 @@
 {
-  "name": "tdd-angular",
-  "version": "1.0.0",
+  "name": "angular-tiny",
+  "version": "0.0.1",
   "description": "a frontend starter",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
-    "lint": "eslint --fix . && echo 'Lint complete.'"
+    "lint": "eslint --fix . && echo 'Lint complete.'",
+    "build": "parcel build src/bootstrap.js -o  angular-tiny.js --no-minify",
+    "build:minified": "parcel build src/bootstrap.js -o angular-tiny.min.js"
   },
   "keywords": [
     "frontend",
@@ -94,6 +96,7 @@
     "jest": "^24.9.0",
     "jest-config": "^24.9.0",
     "lint-staged": "^9.2.5",
+    "parcel": "^1.12.4",
     "prettier": "^1.18.2"
   },
   "dependencies": {
