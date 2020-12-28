@@ -12,27 +12,52 @@
 yarn add angular-tiny
 ```
 
-## 基本用法
+实现基本的counter app
 
-### 插值语法
+html部分
 
-### 组件化
+```html
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body ng-app="myCounterApp">
+  <div ng-controller="CounterController as ctrl">
+    {{ctrl.counter}}
+    <button ng-click="ctrl.increment()">+</button>
+    <button ng-click="ctrl.decrement()">-</button>
+  </div>
+  <script src="../dist/angular-tiny.js"></script>
+  <script src="counter.js"></script>
+</body>
+</html>
 
-### http服务
+```
 
-### 在线预览地址
+js部分
 
-## 已完成
+```js
+angular.module('myCounterApp', []).controller('CounterController', function() {
+  this.counter = 1
+  this.increment = function() {
+    this.counter++
+  }
+  this.decrement = function() {
+    this.counter--
+  }
+})
+
+```
+
+## Done/Todo
 
 - [x] scope继承
 - [x] 依赖注入系统
 - [x] Promise服务模块
 - [x] Http服务模块
 - [x] 指令,插值绑定及组件化
+- [ ] ngModel, ngSwitch等指令
 - [ ] 路由模块
-- [ ] 加入virtualDOM
-
-## 实现笔记
 
 ## 参考资料
 
