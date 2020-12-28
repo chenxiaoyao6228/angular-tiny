@@ -11,7 +11,7 @@
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint --fix . && echo 'Lint complete.'",
     "build": "parcel build src/bootstrap.js -o  angular-tiny.js --no-minify",
-    "build:minified": "parcel build src/bootstrap.js -o angular-tiny.min.js"
+    "build:minified": "parcel build src/bootstrap.js -o index.js"
   },
   "keywords": [
     "frontend",
