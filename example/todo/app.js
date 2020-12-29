@@ -11,8 +11,7 @@ angular.module('app', []).controller('TodoController', [
     }
 
     $scope.addTodo = function() {
-      $scope.todos.push({ text: $scope.formTodoText, done: false })
-      $scope.formTodoText = ''
+      $scope.todos.push({ text: 'xxxx', done: false })
     }
 
     $scope.clearCompleted = function() {

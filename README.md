@@ -62,6 +62,7 @@ angular.module('myCounterApp', []).controller('CounterController', function() {
 - [ ] ngModel
 - [ ] ng-switch
 - [ ] ng-Route
+- [ ] ng-animate
 
 ## 参考资料
 
