@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="./style.css"></style>
+  </head>
+  <body ng-app="app"> 
+    <div class="todo-wrapper" ng-controller="CounterController as ctrl">
+      <h2>You've got <span class="emphasis">{{getTotalTodos()}}</span> things to do</h2>
+      <ul>
+        <li ng-repeat="todo in todos">
+          <input type="checkbox" ng-model="todo.done" />
+          <span class="done-{{todo.done}}">{{todo.text}}</span>
+        </li>
+      </ul>
+      <form>
+        <input
+          class="add-input"
+          placeholder="I need to..."
+          type="text"
+          ng-model="formTodoText"
+          ng-model-instant
+        />
+        <button class="add-btn" ng-click="addTodo()"><h2>Add</h2></button>
+      </form>
+
+      <button class="clear-btn" ng-click="clearCompleted()">
+        Clear completed
+      </button>
+    </div>
+    <script src="../../dist/angular-tiny.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -3415,6 +3415,31 @@ describe('$compile', () => {
       })
     })
 
+    it.skip('may require other directive controllers', () => {
+      let secondControllerInstance
+      let injector = createInjector([
+        'ng',
+        function($compileProvider) {
+          $compileProvider.component('first', {
+            controller: function() {}
+          })
+          $compileProvider.component('second', {
+            require: { first: '^' },
+            controller: function() {
+              secondControllerInstance = this
+              // eslint-disable-next-line
+              console.log(secondControllerInstance, 'secondControllerInstance');
+            }
+          })
+        }
+      ])
+      injector.invoke(($compile, $rootScope) => {
+        let el = $('<first><second></second></first>')
+        $compile(el)($rootScope)
+        expect(secondControllerInstance.first).toBeDefined()
+      })
+    })
+
     it('may have a template function with DI support', () => {
       let injector = createInjector([
         'ng',

@@ -5,6 +5,7 @@ import utils from '../src/utils'
 
 publishExternalAPI()
 
+// 手动初始化
 window.angular.bootstrap = function bootstrap(element, modules, config) {
   const $element = $(element)
   modules = modules || []
@@ -26,7 +27,7 @@ window.angular.bootstrap = function bootstrap(element, modules, config) {
       })
     }
   ])
-  element.data('$injector', injector)
+  $element.data('$injector', injector)
   return injector
 }
 let ngAttrPrefixes = ['ng-', 'data-ng-', 'ng:', 'x-ng-']

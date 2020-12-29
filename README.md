@@ -56,7 +56,7 @@ angular.module('myCounterApp', []).controller('CounterController', function() {
 - [x] Promise服务模块
 - [x] Http服务模块
 - [x] 指令,插值绑定及组件化
-- [ ] ngModel, ngSwitch等指令
+- [ ] ngModel, ngRepeat, ng-switch等指令
 - [ ] 路由模块
 
 ## 参考资料
