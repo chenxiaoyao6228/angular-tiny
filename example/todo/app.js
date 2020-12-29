@@ -1,4 +1,4 @@
-angular.module('app', []).controller('CounterController', [
+angular.module('app', []).controller('TodoController', [
   '$scope',
   function($scope) {
     $scope.todos = [
