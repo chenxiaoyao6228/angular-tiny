@@ -13,6 +13,7 @@ import { $ControllerProvider } from './controller'
 import ngControllerDirective from '../src/directives/ng_controller'
 import ngTranscludeDirective from '../src/directives/ng_transclude'
 import ngClickDirective from '../src/directives/ng_click'
+import ngRepeatDirective from '../src/directives/ng_repeat'
 import $InterpolateProvider from '../src/interpolate'
 
 export function publishExternalAPI() {
@@ -31,10 +32,11 @@ export function publishExternalAPI() {
     '$httpParamSerializerJQLike',
     $HttpParamSerializerJQLikeProvider
   )
+  ngModule.provider('$interpolate', $InterpolateProvider)
   ngModule.provider('$compile', $CompileProvider)
   ngModule.provider('$controller', $ControllerProvider)
   ngModule.directive('ngController', ngControllerDirective)
   ngModule.directive('ngTransclude', ngTranscludeDirective)
   ngModule.directive('ngClick', ngClickDirective)
-  ngModule.provider('$interpolate', $InterpolateProvider)
+  ngModule.directive('ngRepeat', ngRepeatDirective)
 }
